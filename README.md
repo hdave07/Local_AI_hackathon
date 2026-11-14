@@ -33,16 +33,33 @@ Window control needs Accessibility permission for whichever app runs it (Flow.ap
 
 `FLOW_LMSTUDIO_URL` and `FLOW_MODEL_ID` override the defaults; non-localhost URLs are refused.
 
+Speech (Argmax Pro, SDK 3.1.8) comes from Argmax's authenticated Swift registry:
+
+```
+swift package-registry set --global --scope argmaxinc https://api.argmaxinc.com/v1/sdk
+swift package-registry login https://api.argmaxinc.com/v1/sdk/login --token <SECRET_API_TOKEN>
+cp .env.example .env             # then set ARGMAX_API_KEY (runtime key, ax_…); .env is git-ignored
+scripts/flow_voice.sh --once     # mic → Argmax → Bonsai → mock consumer (executes nothing)
+swift run flow-bench --runs 3 --out docs/evidence/T-002   # T-002 Bonsai benchmark
+```
+
+No registry access? `FLOW_DISABLE_ARGMAX=1 swift build` builds everything except the Argmax adapter.
+
 Modules (SwiftPM):
 - `FlowCore` — intents, typed action allowlist, risk tiers, errors, deterministic control router
 - `FlowLLM` — LM Studio client, Bonsai prompt + JSON schema, strict validator, classifier
 - `FlowWindow` — app launch/switch and window move/resize/tile/minimize/restore via Accessibility, verified re-reads, undo
+- `FlowAudio` — speech pipeline independent of any SDK: microphone consent, utterance endpointing (partial vs final), VAD, deterministic stop/cancel, routing to the classifier and an `IntentSink`
+- `FlowArgmax` — Argmax Pro `LiveTranscriber` adapter implementing `SpeechTranscribing`
 - `FlowApp` — SwiftUI shell: "Interpret" tab (classifier preview, nothing executed) and "Window Control" tab (typed window commands)
 - `flowctl` — command-line typed interface to FlowWindow
+- `flow-voice` / `flow-bench` — Track B developer harnesses (voice → typed intent; Bonsai benchmark). Neither executes actions.
 
 ## Status
 
 - T-011 initial intent classifier (typed command → validated action preview)
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
+- T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
+- T-002 Bonsai benchmark harness and results
 
 See [docs/evidence](docs/evidence) and [docs/adr](docs/adr).
