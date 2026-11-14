@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Xcode / Swift
+DerivedData/
+.build/
+xcuserdata/
+*.xcuserstate
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+
+# Secrets
+.env
+.env.*
+!.env.example
+Secrets.xcconfig
+*.p8
+
+# Local models and recordings
+models/
+recordings/
+*.gguf
+*.safetensors
+
+# Temporary files
+tmp/
