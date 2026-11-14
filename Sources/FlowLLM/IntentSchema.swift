@@ -13,19 +13,28 @@ public enum IntentSchema {
         ActionType.allCases.map(\.rawValue) + [noAction]
     }
 
-    public static var jsonSchema: [String: Any] {
-        [
-            "type": "object",
-            "additionalProperties": false,
-            "required": fields,
-            "properties": [
-                "kind": ["type": "string", "enum": IntentKind.modelEmittable.map(\.rawValue)],
-                "action": ["type": "string", "enum": allowedActionNames],
-                "target": ["type": "string", "maxLength": 200],
-                "detail": ["type": "string", "maxLength": 2000],
-                "summary": ["type": "string", "maxLength": 200],
-            ],
+    /// The schema, with `properties` in exactly `fields` order. Order matters: the
+    /// constrained decoder generates fields in this order (see `OrderedJSON`).
+    public static var jsonSchema: OrderedJSON {
+        func string(maxLength: Int) -> OrderedJSON {
+            .object([("type", .string("string")), ("maxLength", .int(maxLength))])
+        }
+        func oneOf(_ values: [String]) -> OrderedJSON {
+            .object([("type", .string("string")), ("enum", .array(values.map(OrderedJSON.string)))])
+        }
+        let definitions: [String: OrderedJSON] = [
+            "kind": oneOf(IntentKind.modelEmittable.map(\.rawValue)),
+            "action": oneOf(allowedActionNames),
+            "target": string(maxLength: 200),
+            "detail": string(maxLength: 2000),
+            "summary": string(maxLength: 200),
         ]
+        return .object([
+            ("type", .string("object")),
+            ("additionalProperties", .bool(false)),
+            ("required", .array(fields.map(OrderedJSON.string))),
+            ("properties", .object(fields.map { ($0, definitions[$0]!) })),
+        ])
     }
 
     public static let systemPrompt: String = """

@@ -93,32 +93,33 @@ public struct LMStudioClient: Sendable {
         return entries.compactMap { $0["id"] as? String }
     }
 
-    /// Chat completion constrained to a JSON schema. `schema` is the JSON Schema object.
+    /// Chat completion constrained to a JSON schema. `schema` is the JSON Schema object;
+    /// its key order is preserved on the wire (it steers generation order).
     public func complete(
         messages: [ChatMessage],
         schemaName: String,
-        schema: [String: Any]
+        schema: OrderedJSON
     ) async throws(ClassificationError) -> CompletionResult {
-        let body: [String: Any] = [
-            "model": configuration.modelID,
-            "temperature": 0,
-            "max_tokens": configuration.maxTokens,
-            "stream": false,
-            "messages": messages.map { ["role": $0.role.rawValue, "content": $0.content] },
-            "response_format": [
-                "type": "json_schema",
-                "json_schema": ["name": schemaName, "strict": true, "schema": schema],
-            ],
-        ]
+        let body: OrderedJSON = .object([
+            ("model", .string(configuration.modelID)),
+            ("temperature", .int(0)),
+            ("max_tokens", .int(configuration.maxTokens)),
+            ("stream", .bool(false)),
+            ("messages", .array(messages.map {
+                .object([("role", .string($0.role.rawValue)), ("content", .string($0.content))])
+            })),
+            ("response_format", .object([
+                ("type", .string("json_schema")),
+                ("json_schema", .object([
+                    ("name", .string(schemaName)), ("strict", .bool(true)), ("schema", schema),
+                ])),
+            ])),
+        ])
         var request = URLRequest(url: configuration.baseURL.appending(path: "chat/completions"))
         request.httpMethod = "POST"
         request.timeoutInterval = configuration.requestTimeout
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        } catch {
-            throw .invalidConfiguration("could not encode request")
-        }
+        request.httpBody = body.serialized()
 
         let data = try await perform(request)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
