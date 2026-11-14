@@ -1,11 +1,13 @@
 import AppKit
 import FlowCore
 import FlowLLM
+import FlowWindow
 import SwiftUI
 
 @main
 struct FlowApp: App {
     @State private var model: ClassifierViewModel
+    @State private var windowModel = WindowControlViewModel(controller: WindowController(backend: AXWindowBackend()))
 
     init() {
         // Composition root. Defaults match the verified local setup; the
@@ -31,7 +33,12 @@ struct FlowApp: App {
 
     var body: some Scene {
         WindowGroup("Flow") {
-            ContentView(model: model)
+            TabView {
+                ContentView(model: model)
+                    .tabItem { Label("Interpret", systemImage: "text.bubble") }
+                WindowControlView(model: windowModel)
+                    .tabItem { Label("Window Control", systemImage: "macwindow") }
+            }
                 .onAppear {
                     // Needed when launched as a bare SwiftPM executable (no .app bundle).
                     NSApplication.shared.setActivationPolicy(.regular)
