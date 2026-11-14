@@ -23,3 +23,6 @@ recordings/
 
 # Temporary files
 tmp/
+
+# App bundle output
+build/

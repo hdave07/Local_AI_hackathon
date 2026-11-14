@@ -16,8 +16,22 @@ It combines:
 
 ## Development
 
-See the implementation plan for development stages, dependencies, and acceptance criteria.
+Requirements: Xcode 27+/Swift 6.4, LM Studio local server on `http://localhost:1234/v1` with `ternary-bonsai-2-2b-mlx` loaded.
+
+```
+swift build                      # build all modules
+swift test                       # unit tests (no server needed)
+FLOW_LIVE_LLM=1 swift test       # plus live tests against LM Studio
+scripts/build_app.sh --open      # build and launch build/Flow.app
+```
+
+`FLOW_LMSTUDIO_URL` and `FLOW_MODEL_ID` override the defaults; non-localhost URLs are refused.
+
+Modules (SwiftPM):
+- `FlowCore` — intents, typed action allowlist, risk tiers, errors, deterministic control router
+- `FlowLLM` — LM Studio client, Bonsai prompt + JSON schema, strict validator, classifier
+- `FlowApp` — SwiftUI shell: type a command, see the interpreted action (nothing is executed)
 
 ## Status
 
-Initial project setup.
+T-011 initial intent classifier (typed command → validated action preview). See [docs/evidence](docs/evidence).
