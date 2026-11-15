@@ -285,6 +285,11 @@ enum Rules {
     static let draftPronoun = Rx(draftVerb + #"\s+"# + personPronoun + #"(?:"# + connector + #"(.+))?"#)
     static let draftPronounAsk = Rx(draftVerb + #"\s+"# + personPronoun + #"\s*,?\s+(?:and\s+|to\s+)?((?:ask|asking)\b.+)"#)
     static let replyThat = Rx(#"(?:reply|respond|answer)(?:\s+to)?\s+(?:that|this|the)\s+(?:email|message|mail|one)(?:"# + connector + #"(.+))?"#)
+    /// "draft a reply saying …", "write a response", "reply to it saying …": the open message.
+    /// Content needs an explicit connector so "reply to sarah that …" stays a named reply.
+    static let explicitConnector = #"(?:\s*[,:]\s*|\s+(?:saying|that|to say|with)\s+)"#
+    static let replyCurrent = Rx(#"(?:(?:draft|write|compose|send|prepare)\s+(?:a\s+|the\s+)?(?:reply|response|answer)|reply|respond)(?:\s+to\s+(?:it|that|this))?(?:"# + explicitConnector + #"(.+))?"#)
+    static let reviewPronoun = Rx(#"(?:show|read|let me see|display)\s+(?:me\s+)?(?:it|that|this|the reply|my reply|the response)(?:\s+to me)?(?:\s+(?:before sending|first))?"#)
     static let sendTo = Rx(#"send\s+(?:it|this|that|the draft)\s+to\s+.+"#)
     static let searchPronoun = Rx(#"(?:find|show(?: me)?|open|search for|look for|pull up|read)\s+(her|his|their)\s+((?:(?:latest|last|newest|most recent|recent|new|unread)\s+)?(?:email|e-mail|mail|message)s?\b.*)"#)
     static let findPronoun = Rx(#"(?:find|search for|look for|show me|open)\s+(?:it|that|this|them)"#)
@@ -321,6 +326,15 @@ enum Rules {
         }
         if let m = draftPronounAsk.match(s) ?? draftPronoun.match(s) {
             return person(ctx, then: .draft(content: m[1] ?? ""), verb: "write to")
+        }
+        if let m = replyCurrent.match(s) {
+            return person(ctx, then: .draft(content: m[0] ?? ""), verb: "reply to")
+        }
+        if reviewPronoun.match(s) != nil {
+            guard ctx.hasDraft || ctx.draft != nil else {
+                return RuleHit(intent: Make.ask("There's no draft yet. Who should I write to?"), stage: .clarify)
+            }
+            return RuleHit(intent: Make.intent(.direct, .requestReview, "Review the current draft"), stage: .context)
         }
         if let m = replyThat.match(s) {
             return person(ctx, then: .draft(content: m[0] ?? ""), verb: "reply to")
@@ -404,6 +418,8 @@ enum Rules {
             }
             if !Set(w).isDisjoint(with: ["no", "nope", "keep"]) { return Make.intent(kind, otherwise, "Kept as heard") }
             return nil
+        case .plan:
+            return nil  // answered by the plan runner
         case .textToReplace(let replacement):
             guard !lower.isEmpty, !Words.contentTokens(s).isEmpty else { return nil }
             return Make.intent(.edit, .replaceText(old: s, new: replacement), "Replace “\(s)” with “\(replacement)”")

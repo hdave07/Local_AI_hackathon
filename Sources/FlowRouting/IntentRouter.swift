@@ -99,8 +99,8 @@ public struct IntentRouterCore: Sendable {
 /// with executor-verified state through `updateContext(_:)`. Context older than
 /// `contextTTL` is ignored, so stale references are never resolved silently.
 public actor IntentRouter: IntentClassifying {
-    public let core: IntentRouterCore
-    public let contextTTL: TimeInterval
+    public nonisolated let core: IntentRouterCore
+    public nonisolated let contextTTL: TimeInterval
     public private(set) var context: ConversationContext
     private let now: @Sendable () -> Date
 

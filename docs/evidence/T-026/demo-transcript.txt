@@ -1,0 +1,123 @@
+
+══ Acceptance: find, choose, reply, review — then confirm send
+
+USER: Find Sarah's email about tomorrow, draft a reply saying I can meet at 3, and show it to me.
+  plan[0] Open Mail (implied, risk low)
+  plan[1] Find “Sarah's email about tomorrow” in Mail [mail] after 0 (risk low)
+  plan[2] Draft a reply: “I can meet at 3” [mail] after 1 (risk content)
+  plan[3] Show the draft for review [mail] after 2 (risk low)
+    → executor: activate_app
+    → executor: read_message [mail]
+FLOW: I found 2 messages: 1. Sarah Chen — “Meeting tomorrow” (today 9:14); 2. Sarah Patel — “Tomorrow's lunch” (yesterday). Which one?
+  state: paused: waiting for a choice
+
+USER: the first one
+    → executor: read_message [mail] message=m1
+    → executor: create_draft [mail] message=m1
+    → executor: request_review [mail] draft=d-1v1
+FLOW: Here's the draft. Say “send it” when you're ready.
+  state: completed
+
+USER: send it
+  plan[0] Send the draft (needs your confirmation) [mail] (needs confirmation, risk external)
+FLOW: Send this by mail to sarah.chen@example.com? “I can meet at 3” Say yes to send, or no.
+  state: paused: waiting for confirmation
+
+USER: yes
+    → executor: request_send [mail] draft=d-1v1 approval(draft d-1 v1 hash bbc420d8…)
+FLOW: Sent.
+  state: completed
+
+USER: send it
+  plan[0] Show the draft for review [mail] (implied, risk low)
+  plan[1] Send the draft (needs your confirmation) [mail] after 0 (needs confirmation, risk external)
+FLOW: There's no draft yet.
+  state: stopped (There's no draft yet.)
+  sent: 1 message(s) — mail d-1
+
+══ Edit while confirming invalidates the approval
+
+USER: Find Sarah's email about tomorrow, draft a reply saying I can meet at 3, and show it to me.
+  plan[0] Open Mail (implied, risk low)
+  plan[1] Find “Sarah's email about tomorrow” in Mail [mail] after 0 (risk low)
+  plan[2] Draft a reply: “I can meet at 3” [mail] after 1 (risk content)
+  plan[3] Show the draft for review [mail] after 2 (risk low)
+    → executor: activate_app
+    → executor: read_message [mail]
+FLOW: I found 2 messages: 1. Sarah Chen — “Meeting tomorrow” (today 9:14); 2. Sarah Patel — “Tomorrow's lunch” (yesterday). Which one?
+  state: paused: waiting for a choice
+
+USER: Sarah Chen
+    → executor: read_message [mail] message=m1
+    → executor: create_draft [mail] message=m1
+    → executor: request_review [mail] draft=d-1v1
+FLOW: Here's the draft. Say “send it” when you're ready.
+  state: completed
+
+USER: send it
+  plan[0] Send the draft (needs your confirmation) [mail] (needs confirmation, risk external)
+FLOW: Send this by mail to sarah.chen@example.com? “I can meet at 3” Say yes to send, or no.
+  state: paused: waiting for confirmation
+
+USER: change 3 to 3:30
+  plan[0] Replace “3” with “3:30” [mail] (risk content)
+    → executor: replace_text [mail] draft=d-1v1
+FLOW: Okay, I won't send it yet.
+  state: completed
+
+USER: send it
+  plan[0] Show the draft for review [mail] (implied, risk low)
+  plan[1] Send the draft (needs your confirmation) [mail] after 0 (needs confirmation, risk external)
+    → executor: request_review [mail] draft=d-1v2
+FLOW: Here's the draft. Say “send it” when you're ready.
+FLOW: Send this by mail to sarah.chen@example.com? “I can meet at 3:30” Say yes to send, or no.
+  state: paused: waiting for confirmation
+
+USER: yes
+    → executor: request_send [mail] draft=d-1v2 approval(draft d-1 v2 hash f9c8cec7…)
+FLOW: Sent.
+  state: completed
+  sent: 1 message(s) — mail d-1
+
+══ Same planner, WhatsApp channel
+
+USER: find Lee's whatsapp message, reply saying see you soon, and show it to me
+  plan[0] Find “Lee's message” in WhatsApp [whatsapp] (risk low)
+  plan[1] Draft a reply: “see you soon” [whatsapp] after 0 (risk content)
+  plan[2] Show the draft for review [whatsapp] after 1 (risk low)
+    → executor: read_message [whatsapp]
+    → executor: create_draft [whatsapp] message=w1
+    → executor: request_review [whatsapp] draft=d-1v1
+FLOW: Here's the draft. Say “send it” when you're ready.
+  state: completed
+
+USER: send it
+  plan[0] Send the draft (needs your confirmation) [whatsapp] (needs confirmation, risk external)
+FLOW: Send this by whatsapp to +1 555 0100? “see you soon” Say yes to send, or no.
+  state: paused: waiting for confirmation
+
+USER: no
+FLOW: Okay, I won't send it.
+  state: stopped (Okay, I won't send it.)
+  sent: 0 message(s)
+
+══ Stop while choosing
+
+USER: Find Sarah's email about tomorrow, draft a reply saying I can meet at 3, and show it to me.
+  plan[0] Open Mail (implied, risk low)
+  plan[1] Find “Sarah's email about tomorrow” in Mail [mail] after 0 (risk low)
+  plan[2] Draft a reply: “I can meet at 3” [mail] after 1 (risk content)
+  plan[3] Show the draft for review [mail] after 2 (risk low)
+    → executor: activate_app
+    → executor: read_message [mail]
+FLOW: I found 2 messages: 1. Sarah Chen — “Meeting tomorrow” (today 9:14); 2. Sarah Patel — “Tomorrow's lunch” (yesterday). Which one?
+  state: paused: waiting for a choice
+
+USER: stop
+FLOW: Stopped.
+  state: cancelled
+
+USER: the first one
+FLOW: I didn't understand that (model disabled in this demo).
+  state: cancelled
+  sent: 0 message(s)

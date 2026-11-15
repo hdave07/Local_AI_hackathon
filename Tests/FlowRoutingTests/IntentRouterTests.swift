@@ -510,3 +510,29 @@ struct FlowAXCompatibilityTests {
         #expect(try await route(utterance).outcome.get().kind == .unsupported)
     }
 }
+
+@Suite("Replies to the open message and draft review references")
+struct OpenMessageReferenceTests {
+    @Test func namelessReplyUsesTheSinglePersonInContext() async throws {
+        let ctx = ConversationContext(recentPeople: ["Sarah"], openMessage: "Meeting tomorrow")
+        #expect(try await route("draft a reply saying I can meet at 3", ctx).outcome.get().action
+            == .createDraft(recipient: "Sarah", content: "I can meet at 3"))
+        #expect(try await route("reply saying sounds good", ctx).outcome.get().action
+            == .createDraft(recipient: "Sarah", content: "sounds good"))
+    }
+
+    @Test func namedReplyIsNotTreatedAsAReplyToTheOpenMessage() async throws {
+        let ctx = ConversationContext(recentPeople: ["Sarah"])
+        #expect(try await route("reply to john that I agree", ctx).outcome.get().action
+            == .createDraft(recipient: "john", content: "I agree"))
+    }
+
+    @Test func namelessReplyWithoutContextAsks() async throws {
+        #expect(try await route("draft a reply saying ok").outcome.get().kind == .clarification)
+    }
+
+    @Test func showItToMeReviewsOnlyWhenADraftExists() async throws {
+        #expect(try await route("show it to me", ConversationContext(hasDraft: true)).outcome.get().action == .requestReview)
+        #expect(try await route("show it to me").outcome.get().kind == .clarification)
+    }
+}

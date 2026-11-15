@@ -20,6 +20,17 @@ public struct ConversationContext: Sendable, Equatable {
     public var lastEditedText: String?
     /// An unanswered clarification question.
     public var pending: PendingQuestion?
+
+    // Verified state, written only from executor results (FlowPlanner). Proposal-level
+    // fields above remain for single-intent routing.
+    /// Message the executor opened and verified.
+    public var selectedMessage: MessageRef?
+    /// Current Flow-authored draft as observed in the compose window.
+    public var draft: DraftSnapshot?
+    /// Draft version last presented for review (send requires the current version).
+    public var reviewedDraftVersion: Int?
+    /// Window the executor last verified.
+    public var selectedWindow: SelectedWindow?
     /// When the context last changed; stale context is ignored.
     public var updatedAt: Date?
 
@@ -27,7 +38,9 @@ public struct ConversationContext: Sendable, Equatable {
 
     public init(
         activeApp: KnownApp? = nil, recentPeople: [String] = [], openMessage: String? = nil, hasDraft: Bool = false,
-        lastEditedText: String? = nil, pending: PendingQuestion? = nil, updatedAt: Date? = nil
+        lastEditedText: String? = nil, pending: PendingQuestion? = nil, updatedAt: Date? = nil,
+        selectedMessage: MessageRef? = nil, draft: DraftSnapshot? = nil, reviewedDraftVersion: Int? = nil,
+        selectedWindow: SelectedWindow? = nil
     ) {
         self.activeApp = activeApp
         self.recentPeople = recentPeople
@@ -36,6 +49,16 @@ public struct ConversationContext: Sendable, Equatable {
         self.lastEditedText = lastEditedText
         self.pending = pending
         self.updatedAt = updatedAt
+        self.selectedMessage = selectedMessage
+        self.draft = draft
+        self.reviewedDraftVersion = reviewedDraftVersion
+        self.selectedWindow = selectedWindow
+    }
+
+    /// The current draft was presented for review in exactly its current version.
+    public var draftReviewed: Bool {
+        guard let draft, let reviewed = reviewedDraftVersion else { return false }
+        return draft.version == reviewed
     }
 
     public static let empty = ConversationContext()
@@ -88,7 +111,7 @@ public struct ConversationContext: Sendable, Equatable {
     }
 
     /// "email from priya about the invoice" → "priya"; "sarah's email" → "sarah".
-    static func person(inQuery query: String) -> String? {
+    public static func person(inQuery query: String) -> String? {
         if let m = Rx(#".*?\bfrom\s+([a-z][a-z'.-]*).*"#).match(query), let name = m[0], !nonNames.contains(name.lowercased()) {
             return name
         }
@@ -118,6 +141,8 @@ public enum PendingQuestion: Sendable, Equatable {
     case textToReplace(replacement: String)
     /// Yes → `proposed`, no → `otherwise` (e.g. "Did you mean 3:30?").
     case confirm(proposed: FlowAction, otherwise: FlowAction, kind: IntentKind)
+    /// A paused plan is waiting for this answer (FlowPlanner resolves it, not the router).
+    case plan(prompt: String, options: [String])
 
     public enum AppFollowUp: Sendable, Equatable {
         case activate

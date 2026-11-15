@@ -15,9 +15,11 @@ var products: [Product] = [
     .library(name: "FlowWindow", targets: ["FlowWindow"]),
     .library(name: "FlowAudio", targets: ["FlowAudio"]),
     .library(name: "FlowRouting", targets: ["FlowRouting"]),
+    .library(name: "FlowPlanner", targets: ["FlowPlanner"]),
     .executable(name: "FlowApp", targets: ["FlowApp"]),
     .executable(name: "flowctl", targets: ["flowctl"]),
     .executable(name: "flow-bench", targets: ["FlowBenchCLI"]),
+    .executable(name: "flow-plan-demo", targets: ["FlowPlanDemoCLI"]),
     .library(name: "FlowAX", targets: ["FlowAX"]),
     .executable(name: "flow-nav-fixture", targets: ["FlowNavFixture"]),
 ]
@@ -40,6 +42,11 @@ var targets: [Target] = [
     // Track B — intent router: control phrases, fast path, task context and references,
     // clarification, Bonsai fallback with slot grounding. Proposes intents; executes nothing.
     .target(name: "FlowRouting", dependencies: ["FlowCore", "FlowLLM"]),
+    // Track B — bounded multi-step planner, plan runner, approvals and send ledger, task state.
+    // Channel-agnostic; talks to macOS only through the `PlanExecuting` protocol (Track A).
+    .target(name: "FlowPlanner", dependencies: ["FlowCore", "FlowLLM", "FlowRouting"]),
+    // Track B — planner walkthrough against the mock executor (no macOS actions).
+    .executableTarget(name: "FlowPlanDemoCLI", dependencies: ["FlowCore", "FlowLLM", "FlowRouting", "FlowPlanner"]),
     // SwiftUI shell. Composition root for FlowLLM, FlowWindow and FlowAX.
     .executableTarget(name: "FlowApp", dependencies: ["FlowCore", "FlowLLM", "FlowWindow", "FlowAX"]),
     // Typed command-line interface to FlowWindow and FlowAX for manual and scripted testing.
@@ -53,6 +60,7 @@ var targets: [Target] = [
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
     .testTarget(name: "FlowBenchTests", dependencies: ["FlowBenchCLI", "FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowRoutingTests", dependencies: ["FlowRouting", "FlowCore", "FlowLLM"]),
+    .testTarget(name: "FlowPlannerTests", dependencies: ["FlowPlanner", "FlowRouting", "FlowCore", "FlowLLM"]),
 ]
 
 var dependencies: [Package.Dependency] = []
