@@ -106,7 +106,8 @@ public struct FeedbackPolicy: Sendable, Equatable {
     public static func spokenConfirmation(_ r: ApprovalRequest) -> String {
         let to = r.draft.recipients.joined(separator: " and ")
         let channel = r.draft.channel == .mail ? "email" : r.draft.channel.rawValue
-        let body = clean(r.draft.body)
+        let own = SendWording.ownText(r.draft.body)  // the quoted original is not read aloud
+        let body = clean(own.text) + (own.quoted ? ", followed by the quoted original" : "")
         return "Send this \(channel) to \(to)? It says: \(body). Say yes to send it, or no."
     }
 

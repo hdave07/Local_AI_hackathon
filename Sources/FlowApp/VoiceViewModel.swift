@@ -35,7 +35,13 @@ final class VoiceViewModel {
         case .testMailbox(let name): mail = "Mail: \(name) mailbox only (test mode)"
         case .inbox: mail = "Mail: Inbox"
         }
-        mailScopeDescription = mail + " · Calendar: " + (executor.calendarScope?.description ?? "off")
+        let sending: String
+        switch executor.sender?.mode {
+        case .dryRun?: sending = "Sending: dry run (nothing is sent)"
+        case .live?: sending = "Sending: LIVE (allowlisted recipients, confirmation required)"
+        default: sending = "Sending: off"
+        }
+        mailScopeDescription = mail + " · Calendar: " + (executor.calendarScope?.description ?? "off") + " · " + sending
         keySource = ArgmaxKeyStore.load().source
         listener = Task { [weak self, coordinator] in
             for await event in coordinator.events { self?.apply(event) }

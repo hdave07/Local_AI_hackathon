@@ -64,7 +64,8 @@ Modules (SwiftPM):
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
 - `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
 - `FlowCalendar` — read-only EventKit availability: time-expression parsing, busy/tentative/free-in-checked-calendars/unknown classification, configurable calendar scope, optional "show this day" in Calendar
-- `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail, FlowCalendar); Mail limited to the FlowTest test mailbox; sending disabled
+- `FlowMailSend` — confirmed Mail sending: re-checks the approved draft in Mail, dispatches at most once, classifies Sent / Outbox / not sent / unknown; disabled by default, dry-run mode records without sending
+- `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail, FlowCalendar, FlowMailSend); Mail limited to the FlowTest test mailbox; sending off unless `FLOW_SEND_MODE` is set
 - `FlowSession` — `VoiceSessionCoordinator`: Argmax utterances → TaskSession (router + planner) → executor, with stop/cancel priority and HUD status
 - `flowctl` — command-line typed interface to FlowWindow, FlowAX and FlowMail
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
@@ -76,6 +77,7 @@ Modules (SwiftPM):
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
 - T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
+- T-023C confirmed Mail sending (explicit "yes, send it", bound to the exact draft version, at most once; disabled by default, dry-run available; real sending not yet verified live — see docs/evidence/T-023C-confirmed-sending.md, ADR 0010)
 - T-024 Calendar read (EventKit availability answers by voice or typing, "show me … on my calendar"; see docs/evidence/T-024-calendar.md, ADR 0008)
 - T-031 voice → plan → real executor in Flow.app (spoken "Open Notes" and Mail search/choose verified live; see docs/evidence/T-031-voice-executor-integration.md, ADR 0007)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)

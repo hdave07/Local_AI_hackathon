@@ -83,7 +83,7 @@ struct VoiceView: View {
                 }
             }
 
-            Label("Replies are drafted in Mail for you to review; sending and deleting are disabled. Only finalized speech is acted on; say “stop” to interrupt.",
+            Label("Replies are drafted in Mail for you to review. Sending always asks for an explicit “yes, send it” first; deleting is disabled. Only finalized speech is acted on; say “stop” to interrupt.",
                   systemImage: "hand.raised")
                 .font(.footnote)
                 .foregroundStyle(.secondary)

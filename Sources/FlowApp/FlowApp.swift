@@ -6,6 +6,7 @@ import FlowCore
 import FlowExecutor
 import FlowLLM
 import FlowMail
+import FlowMailSend
 import FlowPlanner
 import FlowRouting
 import FlowSession
@@ -68,6 +69,10 @@ struct FlowApp: App {
             calendar: CalendarController(store: EventKitStore(),
                                          scope: env["FLOW_CALENDAR_SCOPE"] == "all" ? .allAuthorized : .named(["FlowTest"]),
                                          viewer: JXACalendarViewer()),
+            // Confirmed sending (T-023C), off by default. FLOW_SEND_MODE=dry-run runs every check and
+            // records the send without pressing Send. FLOW_SEND_MODE=live additionally requires
+            // FLOW_SEND_ALLOWED_RECIPIENTS (comma-separated addresses); without it sending stays off.
+            sender: Self.makeSender(env: env),
             configuration: ExecutorConfiguration(mailScope: .testMailbox("FlowTest")))
         let session = TaskSession(store: IntentRouter(model: BonsaiIntentClassifier(client: client)), executor: executor)
         let coordinator = VoiceSessionCoordinator(session: session, transcriber: nil, permission: SystemMicrophonePermission())
@@ -78,6 +83,22 @@ struct FlowApp: App {
             modelID: configuration.modelID,
             listModels: { () async throws(ClassificationError) -> [String] in try await client.listModels() }
         ))
+    }
+
+    /// Sending is disabled unless explicitly configured; live sending needs a recipient allowlist.
+    @MainActor
+    static func makeSender(env: [String: String]) -> MailSender? {
+        switch env["FLOW_SEND_MODE"]?.lowercased() {
+        case "dry-run", "dryrun", "dry_run":
+            return MailSender(mode: .dryRun, transport: JXAMailSendTransport())
+        case "live":
+            let allow = Set((env["FLOW_SEND_ALLOWED_RECIPIENTS"] ?? "").split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespaces).lowercased() }.filter { !$0.isEmpty })
+            guard !allow.isEmpty else { return nil }
+            return MailSender(mode: .live, transport: JXAMailSendTransport(), configuration: .init(recipientAllowlist: allow))
+        default:
+            return nil
+        }
     }
 
     var body: some Scene {

@@ -283,12 +283,14 @@ public struct TaskPlanner: Sendable {
                     channel: ch, summary: "Show the draft for review")
 
             case .send:
-                // Never send what the user has not seen in its current version (spec 02 §9).
+                // Never send what the user has not seen in its current version (spec 02 §9). The
+                // live draft is always re-read and shown right before the confirmation (T-023C):
+                // an earlier review may predate an edit made in Mail or by FlowText.
                 let ch = draftStep?.channel ?? real.draft?.channel ?? catalog.defaultChannel
                 var deps: [Int] = []
                 if let review = reviewStep {
                     deps = [review]
-                } else if draftStep != nil || !real.draftReviewed {
+                } else {
                     let d = draftStep.map { [$0.id] } ?? []
                     let review = append(
                         .requestReview, dependsOn: d, preconditions: d.isEmpty ? [.draftExists] : [], expectation: .draftShown,

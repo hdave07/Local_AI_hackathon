@@ -174,7 +174,7 @@ struct VoiceSessionCoordinatorTests {
             Issue.record("phase \(await rig.coordinator.status.task)")
             return
         }
-        #expect(prompt.contains("Say yes to send"))
+        #expect(prompt.contains("Say “yes, send it” to send"))
         let no = try #require(await rig.coordinator.submit("no"))
         guard case .stopped = no.state else { Issue.record("state \(no.state)"); return }
         #expect(await rig.mock.world.sent.isEmpty)
