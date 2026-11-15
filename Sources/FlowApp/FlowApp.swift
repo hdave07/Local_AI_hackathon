@@ -1,4 +1,5 @@
 import AppKit
+import FlowAX
 import FlowCore
 import FlowLLM
 import FlowWindow
@@ -7,7 +8,8 @@ import SwiftUI
 @main
 struct FlowApp: App {
     @State private var model: ClassifierViewModel
-    @State private var windowModel = WindowControlViewModel(controller: WindowController(backend: AXWindowBackend()))
+    @State private var windowModel: WindowControlViewModel
+    @State private var navigationModel: NavigationViewModel
 
     init() {
         // Composition root. Defaults match the verified local setup; the
@@ -23,6 +25,17 @@ struct FlowApp: App {
             // Refuse non-local overrides rather than silently falling back to a remote server.
             fatalError("Invalid Flow model configuration: \(error.userMessage)")
         }
+        // One frontmost-app tracker shared by window control and UI navigation, so "the
+        // frontmost app" means the app used before clicking into Flow.
+        let windowBackend = AXWindowBackend()
+        _windowModel = State(initialValue: WindowControlViewModel(controller: WindowController(backend: windowBackend)))
+        var navigation = UINavigator.Configuration()
+        navigation.bringTargetToFront = true  // commands are typed into Flow, which is then frontmost
+        _navigationModel = State(initialValue: NavigationViewModel(navigator: UINavigator(
+            backend: AXUIBackend(frontmost: { windowBackend.frontmostApp() }),
+            overlay: ScreenOverlay(),
+            configuration: navigation)))
+
         let client = LMStudioClient(configuration: configuration)
         _model = State(initialValue: ClassifierViewModel(
             classifier: BonsaiIntentClassifier(client: client),
@@ -38,6 +51,8 @@ struct FlowApp: App {
                     .tabItem { Label("Interpret", systemImage: "text.bubble") }
                 WindowControlView(model: windowModel)
                     .tabItem { Label("Window Control", systemImage: "macwindow") }
+                NavigationView(model: navigationModel)
+                    .tabItem { Label("UI Navigation", systemImage: "cursorarrow.click") }
             }
                 .onAppear {
                     // Needed when launched as a bare SwiftPM executable (no .app bundle).
