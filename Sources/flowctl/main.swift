@@ -1,6 +1,7 @@
 import AppKit
 import FlowAX
 import FlowCore
+import FlowMail
 import FlowWindow
 import Foundation
 
@@ -29,9 +30,22 @@ func run() async -> Int32 {
     var navConfig = UINavigator.Configuration()
     navConfig.bringTargetToFront = true
     let navigator = UINavigator(backend: AXUIBackend(frontmost: { windowBackend.frontmostApp() }), configuration: navConfig)
+    let mail = MailController(backend: JXAMailBackend(), verifier: AXMailDisplayVerifier())
     var allCompleted = true
     for text in commands {
         print("> \(text)")
+        if text.lowercased().hasPrefix("mail ") || text.lowercased().hasPrefix("email ") {
+            do throws(MailParseError) {
+                let result = await mail.perform(try MailCommandParser.parse(text))
+                print(result.report)
+                if let content = result.content { print("  --- body ---\n\(content.body)\n  --- end ---") }
+                allCompleted = allCompleted && (result.status == .completed || result.status == .needsClarification)
+            } catch {
+                print("  parse error: \(error.message)")
+                allCompleted = false
+            }
+            continue
+        }
         let windowVerbs: Set<String> = ["activate", "open", "switch", "launch", "move", "resize", "tile", "minimize",
                                         "minimise", "restore", "unminimize", "undo", "list"]
         let verb = text.split(separator: " ").first.map { $0.lowercased() } ?? ""

@@ -179,6 +179,11 @@ struct LiveNavigationTests {
         _ = try await NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
         let (nav, backend) = makeNav(bringToFront: true)
         let scope = AppScope.named("Calculator")
+        // A cold-launched Calculator answers AX with "cannot complete" until its window exists.
+        for _ in 0..<50 {
+            if let app = try? backend.resolveApp(scope), (try? backend.observe(app, limits: SnapshotLimits())) != nil { break }
+            try await Task.sleep(for: .milliseconds(100))
+        }
         // Setup: All Clear is `unverified` when the display already shows 0 (nothing visibly changes).
         let clear = await nav.perform(.click(.parse("all clear"), scope))
         #expect(clear.status == .completed || clear.status == .unverified)

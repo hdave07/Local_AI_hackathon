@@ -27,6 +27,8 @@ scripts/build_app.sh --open      # build and launch build/Flow.app
 .build/debug/flowctl "activate notes" "move notes left_half" "undo"   # typed window commands
 .build/debug/flowctl "click seven in Calculator" "show numbers in Calculator" "choose 25"   # typed UI navigation
 swift build --product flow-nav-fixture && FLOW_LIVE_AX=1 swift test --filter FlowAXTests   # live navigation tests
+.build/debug/flowctl "mail find mail from sarah in mailbox FlowTest" "mail choose 2" "mail read it"   # typed Mail commands
+FLOW_LIVE_MAIL=1 swift test --filter FlowMailTests   # live Mail tests (import fixtures/mail/FlowTest.mbox into Mail first)
 ```
 
 Window control needs Accessibility permission for whichever app runs it (Flow.app, or the terminal/IDE running `swift test` / `flowctl`).
@@ -55,9 +57,10 @@ Modules (SwiftPM):
 - `FlowArgmax` — Argmax Pro `LiveTranscriber` adapter implementing `SpeechTranscribing`
 - `FlowRouting` — intent router: stop/cancel, deterministic fast path, task context and references, clarification with follow-up answers, Bonsai fallback with slot grounding (proposes intents; executes nothing)
 - `FlowPlanner` — bounded multi-step planner (≤5 allowlisted steps), plan runner with pause/resume, bound single-use send approvals, at-most-once send ledger; channel-agnostic (Mail, Messages, WhatsApp, …); talks to macOS only through `PlanExecuting` (Track A)
-- `FlowApp` — SwiftUI shell: "Interpret" tab (classifier preview, nothing executed) and "Window Control" tab (typed window commands)
+- `FlowApp` — SwiftUI shell with typed-command tabs: "Interpret" (classifier preview, nothing executed), "Window Control", "UI Navigation" and "Mail" (read-only)
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
-- `flowctl` — command-line typed interface to FlowWindow and FlowAX
+- `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
+- `flowctl` — command-line typed interface to FlowWindow, FlowAX and FlowMail
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
 - `flow-voice` / `flow-bench` / `flow-speech-eval` / `flow-plan-demo` — Track B developer harnesses (voice → typed intent; intent benchmark; synthesized-speech ASR and segmentation evaluation; planner walkthrough against a mock executor). None executes actions.
 
@@ -66,6 +69,7 @@ Modules (SwiftPM):
 - T-011 initial intent classifier (typed command → validated action preview)
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
+- T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results
 - T-026 bounded task planner, execution safety and task state against a mock executor (see docs/evidence/T-026-task-planner.md, ADR 0005)
