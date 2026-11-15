@@ -19,9 +19,16 @@ public enum ActionType: String, Sendable, Codable, CaseIterable {
     case showCalendar = "show_calendar"
     case requestReview = "request_review"
     case requestSend = "request_send"
+    /// A voice edit of the selected draft, interpreted by FlowText against its live text
+    /// ("change 3:30 to 4", "remove the last sentence", "undo that change"). Produced only
+    /// by deterministic routing; never offered to the language model (ADR 0010).
+    case editText = "edit_text"
 
     /// Text-editing actions, the only ones valid for `edit` / `dictation` intents.
-    public var isTextAction: Bool { self == .insertText || self == .replaceText }
+    public var isTextAction: Bool { self == .insertText || self == .replaceText || self == .editText }
+
+    /// Actions the language model may emit (`edit_text` is deterministic-only).
+    public static var modelEmittable: [ActionType] { allCases.filter { $0 != .editText } }
 }
 
 /// Apps Flow targets in the MVP (PRD D-004: Mail and Calendar anchor; Finder,
@@ -147,6 +154,8 @@ public enum FlowAction: Sendable, Equatable {
     case showCalendar(dateExpression: String)
     case requestReview
     case requestSend
+    /// The user's edit command, verbatim (wake word and discourse openers removed).
+    case editText(String)
 
     public var type: ActionType {
         switch self {
@@ -165,6 +174,7 @@ public enum FlowAction: Sendable, Equatable {
         case .showCalendar: .showCalendar
         case .requestReview: .requestReview
         case .requestSend: .requestSend
+        case .editText: .editText
         }
     }
 
@@ -174,7 +184,7 @@ public enum FlowAction: Sendable, Equatable {
         case .activateApp, .moveWindow, .resizeWindow, .tileWindows, .clickElement,
             .scroll, .focus, .readMessage, .queryCalendar, .showCalendar, .requestReview:
             .low
-        case .insertText, .replaceText, .createDraft:
+        case .insertText, .replaceText, .createDraft, .editText:
             .content
         case .requestSend:
             .external
@@ -198,6 +208,7 @@ public enum FlowAction: Sendable, Equatable {
         case .queryCalendar(let t): t
         case .showCalendar(let d): d
         case .requestReview, .requestSend: "current draft"
+        case .editText(let command): "draft: “\(command)”"
         }
     }
 }

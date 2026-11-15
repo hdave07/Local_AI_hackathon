@@ -137,6 +137,9 @@ enum Guard {
             return spoken.contains("send") ? nil : ask("Do you want to send the current draft?")
         case .requestReview:
             return spoken.isDisjoint(with: ["review", "check", "show", "read", "see", "look"]) ? ask("Do you want to review the current draft?") : nil
+        case .editText:
+            // Never produced by the model (not in its schema); if it ever appears, refuse.
+            return ask("What should I change in the draft?")
         }
     }
 

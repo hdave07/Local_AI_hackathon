@@ -1,5 +1,6 @@
 import FlowCore
 import Foundation
+import FlowText
 
 /// Which stage of the router produced a decision.
 public enum RouteStage: String, Sendable, Equatable {
@@ -441,6 +442,41 @@ enum Rules {
         }
     }
 
+    // MARK: Draft editing (T-023B, ADR 0010)
+
+    /// Edit commands FlowText understands ("add that …", "change 3:30 to 4", "remove the last
+    /// sentence", "undo that change") become `edit_text` for the current draft, carrying the
+    /// command with its wrappers removed and its own punctuation kept. Deterministic only.
+    /// Without a draft, edits that need one get a question; replace/insert keep their
+    /// existing routing (they also apply to other text).
+    /// "What does the draft say?" reads the draft back; it is never an edit.
+    static func draftReview(_ s: String, _ ctx: ConversationContext) -> RuleHit? {
+        guard ctx.draft != nil || ctx.hasDraft, draftReference.match(s) != nil else { return nil }
+        return RuleHit(intent: Make.intent(.direct, .requestReview, "Show the current draft"), stage: .context)
+    }
+
+    static func draftEdit(raw: String, cleaned s: String, _ ctx: ConversationContext) -> RuleHit? {
+        guard case .edit(let op) = EditCommandParser.parse(s) else { return nil }
+        switch op {
+        case .insert: return nil  // "type …" stays insert_text (dictation into the focused field)
+        case .append, .prepend:
+            // "Add Sarah to the meeting" is not draft text: only unmistakable phrasings append.
+            guard draftAppend.match(s) != nil else { return nil }
+        case .replace, .delete, .undo, .rewrite: break
+        }
+        guard ctx.draft != nil || ctx.hasDraft else {
+            switch op {
+            case .replace, .rewrite: return nil  // may be about other text; existing routing applies
+            default: return RuleHit(intent: Make.ask("There's no draft open to edit. Which message should I reply to?"), stage: .clarify)
+            }
+        }
+        let payload = s + Cleaner.terminalPunctuation(raw)
+        return RuleHit(intent: Make.intent(.edit, .editText(payload), "Edit the draft: “\(payload)”"), stage: .context)
+    }
+
+    private static let draftAppend = Rx(
+        #"(?:and\s+)?(?:also\s+)?(?:add|say|mention|write|include|tell (?:her|him|them))\s+that\s+.+|also\s+(?:say|add|mention|write)\s+.+|(?:start|begin|open) (?:it |the (?:draft|reply|email|message) )?with\s+.+"#)
+
     // MARK: Follow-up answers
 
     static func answer(_ s: String, to pending: PendingQuestion) -> Intent? {
@@ -488,6 +524,9 @@ enum Rules {
             let content = (contentLead.match(s).flatMap { $0[0] } ?? s).trimmingCharacters(in: .whitespaces)
             guard !content.isEmpty, !Words.contentTokens(content).isEmpty else { return nil }
             return Make.intent(.task, .createDraft(recipient: recipient, content: content), "Draft a reply to \(recipient): “\(content)”")
+        case .textEdit(_, let options):
+            guard TextEditingSession.isAnswer(s, optionCount: options.count) else { return nil }
+            return Make.intent(.edit, .editText(s), "Answer the draft question: “\(s)”")
         case .textToReplace(let replacement):
             guard !lower.isEmpty, !Words.contentTokens(s).isEmpty else { return nil }
             return Make.intent(.edit, .replaceText(old: s, new: replacement), "Replace “\(s)” with “\(replacement)”")

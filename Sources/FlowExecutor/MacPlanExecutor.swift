@@ -18,9 +18,14 @@ public struct ExecutorConfiguration: Sendable, Equatable {
     }
 
     public var mailScope: MailScope
+    /// Voice editing of Flow-created Mail reply drafts (T-023B). Off by default: the Mail
+    /// scripting/Accessibility path is implemented and tested against simulated Mail only,
+    /// and has not been verified in real Mail yet (docs/evidence/T-023B).
+    public var allowMailDraftEditing: Bool
 
-    public init(mailScope: MailScope = .testMailbox("FlowTest")) {
+    public init(mailScope: MailScope = .testMailbox("FlowTest"), allowMailDraftEditing: Bool = false) {
         self.mailScope = mailScope
+        self.allowMailDraftEditing = allowMailDraftEditing
     }
 }
 
@@ -76,6 +81,10 @@ final class ExecutorEngine {
     private(set) var log: [ExecutionLogEntry] = []
     /// Message candidates belong to one search; a newer search makes older choices stale.
     private(set) var searchEpoch = 0
+    /// Per-draft FlowText sessions (edit history, open questions). Which draft is current
+    /// stays in the router's task context.
+    let editSessions = DraftEditSessions()
+    private let editWitness = EditWitness()
 
     init(window: WindowController, navigator: UINavigator, mail: MailController, drafts: MailDraftController?,
          calendar: CalendarController? = nil, configuration: ExecutorConfiguration) {
@@ -111,6 +120,8 @@ final class ExecutorEngine {
             result = await review(request)
         case .insertText, .replaceText:
             result = Self.unsupported("Editing drafts by voice isn't enabled yet. Nothing was changed.")
+        case .editText(let command):
+            result = await editDraft(command, request)
         case .requestSend:
             result = Self.unsupported("Sending is disabled in this version. Nothing was sent.")
         }
@@ -310,6 +321,34 @@ final class ExecutorEngine {
         return draftResult(r, inReplyTo: bound.inReplyTo, presented: true)
     }
 
+    private func editDraft(_ command: String, _ request: ExecutionRequest) async -> ExecutionResult {
+        guard let drafts, configuration.allowMailDraftEditing else {
+            return Self.unsupported("Editing Mail drafts by voice isn't enabled yet. Nothing was changed.")
+        }
+        guard let bound = request.bindings.draft else {
+            return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "There's no draft open to edit.")
+        }
+        guard bound.channel == .mail, let state = drafts.state(bound.id) else {
+            return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "I don't have that draft open.")
+        }
+        guard scopeAllows(state.inReplyTo) else { return outOfScope() }
+        let witness = editWitness
+        _ = await witness.take()
+        let session = await editSessions.session(for: bound.id) { MailDraftTextBackend(drafts: drafts, draftID: bound.id, witness: witness) }
+        let inReplyTo = bound.inReplyTo
+        let result = await DraftEditSessions.run(command, in: session) { @MainActor in
+            drafts.state(bound.id).map {
+                DraftSnapshot(channel: .mail, id: $0.id, recipients: $0.recipients, subject: $0.subject, body: $0.body,
+                              version: $0.version, inReplyTo: inReplyTo)
+            }
+        }
+        // Mail may have taken the write even though it couldn't be confirmed: say so.
+        if result.status == .failed, let w = await witness.take(), w.status == .unverified {
+            return ExecutionResult(status: .unverified, error: .draftChanged, userMessage: w.userMessage)
+        }
+        return result
+    }
+
     private func draftResult(_ r: MailDraftResult, inReplyTo: String?, presented: Bool) -> ExecutionResult {
         let snapshot = r.draft.map {
             DraftSnapshot(channel: .mail, id: $0.id, recipients: $0.recipients, subject: $0.subject, body: $0.body,
@@ -433,6 +472,7 @@ final class ExecutorEngine {
         case .lookupResult: "lookup answered"
         case .availability(let a): "availability: \(a.status.rawValue), \(a.events.count) event(s), calendars \(a.calendarsChecked.count)"
         case .sent: "sent"
+        case .textChoice(let prompt, _): "text question: \(prompt.prefix(60))"
         }
     }
 }

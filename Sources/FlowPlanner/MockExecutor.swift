@@ -1,5 +1,6 @@
 import FlowCore
 import FlowRouting
+import FlowText
 import Foundation
 
 /// Scripted stand-in for Track A's executor, for tests and the developer harness.
@@ -30,6 +31,7 @@ public actor MockExecutor: PlanExecuting {
     private var delays: [Capability: Duration] = [:]
     private var sendBehavior: SendBehavior = .succeed
     private var nextDraft = 1
+    private let editSessions = DraftEditSessions()
 
     public init(world: World) {
         self.world = world
@@ -149,6 +151,16 @@ public actor MockExecutor: PlanExecuting {
             world.drafts[live.id] = updated
             return ExecutionResult(status: .completed, observation: .draft(updated))
 
+        case .editText(let command):
+            guard let bound = request.bindings.draft else {
+                return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "There's no draft open to edit.")
+            }
+            guard world.drafts[bound.id] != nil else {
+                return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "The draft is gone.")
+            }
+            let session = await editSessions.session(for: bound.id) { MockDraftTextBackend(executor: self, draftID: bound.id) }
+            return await DraftEditSessions.run(command, in: session) { await self.world.drafts[bound.id] }
+
         case .requestReview:
             guard let bound = request.bindings.draft, let live = world.drafts[bound.id] else {
                 return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "There's no draft to show.")
@@ -166,6 +178,7 @@ public actor MockExecutor: PlanExecuting {
             case .succeed:
                 world.sent.append((live.channel, live.id, live.contentHash))
                 world.drafts[live.id] = nil
+                await editSessions.forget(live.id)
                 return ExecutionResult(status: .completed, observation: .sent(draftID: live.id, queued: false))
             case .unverified:
                 world.sent.append((live.channel, live.id, live.contentHash))  // it actually went out
@@ -174,5 +187,39 @@ public actor MockExecutor: PlanExecuting {
                 return ExecutionResult(status: .failed, error: .timeout, userMessage: "The app didn't respond.")
             }
         }
+    }
+}
+
+// MARK: - Draft text (FlowText backend over the simulated drafts)
+
+extension MockExecutor {
+    func draftText(_ id: String) throws(TextBackendError) -> TextSnapshot {
+        guard let d = world.drafts[id] else { throw .documentNotFound }
+        return TextSnapshot(document: DraftEditSessions.documentID(id), text: d.body, version: d.version)
+    }
+
+    /// Compare-and-set, like a real backend: refuses unless the live body is the base.
+    func applyDraftText(_ id: String, _ change: TextChange) throws(TextBackendError) -> TextSnapshot {
+        guard let d = world.drafts[id] else { throw .documentNotFound }
+        let live = TextSnapshot(document: change.document, text: d.body, version: d.version)
+        guard live.version == change.baseVersion, live.contentHash == change.baseHash else { throw .stale(liveVersion: d.version) }
+        let body = TextChange.apply(change.replacements, to: d.body)
+        let updated = DraftSnapshot(channel: d.channel, id: d.id, recipients: d.recipients, subject: d.subject, body: body,
+                                    version: d.version + 1, inReplyTo: d.inReplyTo)
+        world.drafts[id] = updated
+        return TextSnapshot(document: change.document, text: body, version: updated.version)
+    }
+}
+
+struct MockDraftTextBackend: TextBackend {
+    let executor: MockExecutor
+    let draftID: String
+
+    func snapshot(_ document: TextDocumentID) async throws(TextBackendError) -> TextSnapshot {
+        try await executor.draftText(draftID)
+    }
+
+    func apply(_ change: TextChange) async throws(TextBackendError) -> TextSnapshot {
+        try await executor.applyDraftText(draftID, change)
     }
 }

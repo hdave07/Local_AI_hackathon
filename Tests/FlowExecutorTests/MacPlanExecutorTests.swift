@@ -19,7 +19,7 @@ struct Rig {
     let compose: FakeComposeInspector
     let executor: MacPlanExecutor
 
-    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest"), drafting: Bool = false) {
+    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest"), drafting: Bool = false, editing: Bool = false) {
         for app in [KnownApp.notes, .mail] {
             windows.openCreatesWindowFor[app.bundleIdentifier] = CGRect(x: 100, y: 100, width: 800, height: 600)
         }
@@ -35,7 +35,7 @@ struct Rig {
         dc.pollInterval = .milliseconds(5)
         let drafts = drafting ? MailDraftController(mail: mail, backend: draftBackend, inspector: compose, configuration: dc) : nil
         executor = MacPlanExecutor(window: makeController(windows), navigator: makeNavigator(ui), mail: makeMail(mail),
-                                   drafts: drafts, configuration: ExecutorConfiguration(mailScope: scope))
+                                   drafts: drafts, configuration: ExecutorConfiguration(mailScope: scope, allowMailDraftEditing: editing))
     }
 
     func run(_ action: FlowAction, channel: MessageChannel? = nil, bindings: StepBindings = StepBindings()) async -> ExecutionResult {

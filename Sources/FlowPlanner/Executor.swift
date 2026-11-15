@@ -79,6 +79,9 @@ public enum Observation: Sendable, Equatable {
     case messageOpened(MessageRef)
     /// A draft was created or changed; this is its current visible state.
     case draft(DraftSnapshot)
+    /// FlowText needs an answer before editing (which occurrence; keep or discard a preview).
+    /// The question moves to the shared task context; nothing was changed.
+    case textChoice(prompt: String, options: [String])
     /// The draft was presented for review in this state.
     case reviewShown(DraftSnapshot)
     /// Answer of a lookup (e.g. calendar availability).

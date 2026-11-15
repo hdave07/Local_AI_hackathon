@@ -45,6 +45,14 @@ enum Cleaner {
         return t
     }
 
+    /// The raw utterance's final ".", "!" or "?" (dropped by `clean`), so appended draft
+    /// sentences keep the user's punctuation.
+    static func terminalPunctuation(_ raw: String) -> String {
+        let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let last = t.last, ".!?".contains(last), !t.hasSuffix("..") else { return "" }
+        return String(last)
+    }
+
     /// "?" or "!" ending the raw utterance: meaningful in dictated content, unlike ASR's final ".".
     static func terminalMark(_ raw: String) -> String {
         let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)

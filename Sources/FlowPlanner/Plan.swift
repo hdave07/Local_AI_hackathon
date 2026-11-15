@@ -103,6 +103,9 @@ public enum Expectation: Sendable, Equatable {
     case messageOpened(matching: String)
     /// A draft (any channel) whose body contains `content` verbatim; recipient matches when given.
     case draftWritten(recipient: String?, content: String)
+    /// The bound draft was edited by FlowText (or the edit was answered without change);
+    /// the observation must be that same draft, re-read.
+    case draftEdited
     /// The draft was presented for review.
     case draftShown
     /// A lookup (e.g. calendar availability) returned an answer.
@@ -121,7 +124,7 @@ public enum Capability: String, Sendable, Equatable {
         case .moveWindow, .resizeWindow, .tileWindows: self = .arrangeWindows
         case .clickElement, .focus: self = .interact
         case .scroll: self = .scroll
-        case .insertText, .replaceText: self = .editText
+        case .insertText, .replaceText, .editText: self = .editText
         case .readMessage: self = .findMessage
         case .createDraft: self = .compose
         case .requestReview: self = .review

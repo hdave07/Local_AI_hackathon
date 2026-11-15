@@ -278,11 +278,26 @@ public actor PlanRunner {
             log(.stepCompleted(stepID: step.id, summary: step.summary))
             if case .lookupResult(let answer) = result.observation { spoken.append(answer) }
             if case .availability(let a) = result.observation { spoken.append(a.answer) }
-            if case .reviewShown = result.observation { spoken.append("Here's the draft. Say “send it” when you're ready.") }
+            if case .reviewShown(let d) = result.observation {
+                // Read back what was verified on screen, not what Flow intended to write.
+                spoken.append(d.body.isEmpty ? "Here's the draft. It's empty." : "Here's the draft. It says: “\(d.body)”")
+            }
+            if step.capability == .editText, case .draft = result.observation, !result.userMessage.isEmpty {
+                spoken.append(result.userMessage)  // the executor's verified summary of the edit
+            }
             if case .sent(_, let queued) = result.observation { spoken.append(queued ? "Queued to send." : "Sent.") }
             return true
 
         case .needsClarification:
+            if case .textChoice(let prompt, let options) = result.observation {
+                // FlowText is waiting (which occurrence / keep or discard). Nothing changed. The
+                // question lives in the shared task context so the next answer reaches FlowText.
+                var ctx = await store.context
+                ctx.pending = .textEdit(prompt: prompt, options: options)
+                await store.updateContext(ctx)
+                stop(prompt)
+                return false
+            }
             if case .messageCandidates(let candidates) = result.observation, candidates.count > 1 {
                 let options = candidates.enumerated().map { "\($0.offset + 1). \($0.element.spoken)" }
                 let prompt = "I found \(candidates.count) messages: " + options.joined(separator: "; ") + ". Which one?"
@@ -393,7 +408,7 @@ public actor PlanRunner {
             ctx.draft = nil
             ctx.hasDraft = false
             ctx.reviewedDraftVersion = nil
-        case .none, .uiActed, .scrolled, .lookupResult, .availability, .messageCandidates:
+        case .none, .uiActed, .scrolled, .lookupResult, .availability, .messageCandidates, .textChoice:
             break
         }
         ctx.updatedAt = now()
@@ -507,6 +522,10 @@ public actor PlanRunner {
                 return d.recipients.contains { $0.lowercased().contains(recipient.lowercased()) }
             }
             return true
+        case (.draftEdited, .draft(let d)):
+            // Same draft, re-read after the edit (FlowText verified the exact text).
+            if let ch = step.channel, d.channel != ch { return false }
+            return bindings.draft.map { $0.id == d.id } ?? false
         case (.draftShown, .reviewShown(let d)):
             if let ch = step.channel, d.channel != ch { return false }
             return bindings.draft.map { $0.id == d.id } ?? true
