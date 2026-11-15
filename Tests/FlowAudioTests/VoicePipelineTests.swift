@@ -2,6 +2,7 @@ import FlowAudio
 import FlowCore
 import FlowLLM
 import Foundation
+import Synchronization
 import Testing
 
 @Suite("Microphone permission gate")
@@ -111,6 +112,19 @@ struct VoicePipelineTests {
         let routed = try #require(await sink.received.first)
         #expect(routed.routedBy == .deterministic)
         #expect(routed.intent?.kind == .control)
+    }
+
+    @Test func controlPhrasesNotifyTheObserver() async throws {
+        let seen = Mutex<[ControlCommand]>([])
+        let transcriber = FakeTranscriber([
+            .event(.confirmed("stop", language: nil)), .pause(.milliseconds(60)),
+            .event(.confirmed("cancel", language: nil)),
+        ])
+        let pipeline = VoicePipeline(
+            transcriber: transcriber, permission: nil, classifier: FakeClassifier(), sink: MockActionConsumer(),
+            policy: fastPolicy, tickInterval: .milliseconds(5), onControl: { c in seen.withLock { $0.append(c) } })
+        try await pipeline.run()
+        #expect(seen.withLock { $0 } == [.stop, .cancel])
     }
 
     @Test(arguments: ["stop the music", "cancel my meeting", "please stop dictation now"])

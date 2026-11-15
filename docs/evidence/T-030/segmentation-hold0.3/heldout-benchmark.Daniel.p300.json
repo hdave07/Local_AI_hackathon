@@ -1,0 +1,679 @@
+{
+  "ambiguous" : [
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "id" : "HA01",
+      "utterance" : "open that"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "resize_window",
+          "args" : {
+            "change" : "taller",
+            "window" : "active"
+          }
+        },
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "id" : "HA02",
+      "utterance" : "make it taller"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "id" : "HA03",
+      "utterance" : "move it"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "id" : "HA04",
+      "utterance" : "reply"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Send it to him."
+      ],
+      "id" : "HA05",
+      "utterance" : "Send it to him."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "id" : "HA06",
+      "utterance" : "remove this"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        },
+        {
+          "action" : "query_calendar"
+        }
+      ],
+      "id" : "HA07",
+      "utterance" : "check the time"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "id" : "HA08",
+      "utterance" : "find it"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Put those two next to each other."
+      ],
+      "id" : "HA09",
+      "utterance" : "Put those two next to each other."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Change it to 5."
+      ],
+      "id" : "HA10",
+      "utterance" : "Change it to 5."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "id" : "HA11",
+      "utterance" : "write to her"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "id" : "HA12",
+      "utterance" : "shut it"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "id" : "HA13",
+      "utterance" : "do that again"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Make this sound nicer."
+      ],
+      "id" : "HA14",
+      "utterance" : "Make this sound nicer."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Mail"
+          }
+        }
+      ],
+      "id" : "HA15",
+      "utterance" : "email"
+    }
+  ],
+  "intent" : [
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Mail"
+          }
+        }
+      ],
+      "id" : "HI01",
+      "utterance" : "bring up mail"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Calendar"
+          }
+        }
+      ],
+      "id" : "HI02",
+      "utterance" : "go to calendar"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Safari"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Can you open Safari please?"
+      ],
+      "id" : "HI03",
+      "utterance" : "Can you open Safari please?"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Notes"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Shova, notes at"
+      ],
+      "id" : "HI04",
+      "utterance" : "Shova, notes at"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Finder"
+          }
+        }
+      ],
+      "id" : "HI05",
+      "utterance" : "open finder"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "tile_windows",
+          "args" : {
+            "left" : "Safari",
+            "right" : "Mail"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Put Safari on the left, and Mel on the right."
+      ],
+      "id" : "HI06",
+      "utterance" : "Put Safari on the left, and Mel on the right."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "tile_windows",
+          "args" : {
+            "left" : "Calendar",
+            "right" : "Notes"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Calendar and notes, side by side."
+      ],
+      "id" : "HI07",
+      "utterance" : "Calendar and notes, side by side."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "right_half",
+            "window" : "active"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Snap this window to the right."
+      ],
+      "id" : "HI08",
+      "utterance" : "Snap this window to the right."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "maximize",
+            "window" : "Notes"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Make the nodes, window full screen."
+      ],
+      "id" : "HI09",
+      "utterance" : "Make the nodes, window full screen."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "center",
+            "window" : "active"
+          }
+        }
+      ],
+      "id" : "HI10",
+      "utterance" : "center this window"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "resize_window",
+          "args" : {
+            "change" : "larger",
+            "window" : "Mail"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Make the male window bigger."
+      ],
+      "id" : "HI11",
+      "utterance" : "Make the male window bigger."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "scroll",
+          "args" : {
+            "direction" : "up"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Scroll up a bit."
+      ],
+      "id" : "HI12",
+      "utterance" : "Scroll up a bit."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "scroll",
+          "args" : {
+            "direction" : "bottom"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Go to the bottom of the page."
+      ],
+      "id" : "HI13",
+      "utterance" : "Go to the bottom of the page."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "click_element",
+          "contains" : {
+            "label" : "archive"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Press the archive button."
+      ],
+      "id" : "HI14",
+      "utterance" : "Press the archive button."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "click_element",
+          "contains" : {
+            "label" : "forward"
+          }
+        }
+      ],
+      "id" : "HI15",
+      "utterance" : "click on forward"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "focus",
+          "contains" : {
+            "label" : "subject"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Put the cursor in the subject field."
+      ],
+      "id" : "HI16",
+      "utterance" : "Put the cursor in the subject field."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "insert_text",
+          "contains" : {
+            "text" : "see you soon"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Type C. You soon."
+      ],
+      "id" : "HI17",
+      "utterance" : "Type C. You soon."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "replace_text",
+          "contains" : {
+            "new" : "tuesday",
+            "old" : "monday"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Change Monday to Tuesday."
+      ],
+      "id" : "HI18",
+      "utterance" : "Change Monday to Tuesday."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "replace_text",
+          "contains" : {
+            "new" : "2:30",
+            "old" : "2 pm"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Replace 2 p.m. with 2.30 p.m."
+      ],
+      "id" : "HI19",
+      "tags" : [
+        "slots"
+      ],
+      "utterance" : "Replace 2 p.m. with 2.30 p.m."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "thanks for the update",
+            "recipient" : "priya"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Reply to Priya saying, thanks for the update."
+      ],
+      "id" : "HI20",
+      "tags" : [
+        "draft-content"
+      ],
+      "utterance" : "Reply to Priya saying, thanks for the update."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "meeting moved to 3:45",
+            "recipient" : "marco"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Send an email to Marco, that the meeting moved to 3.45."
+      ],
+      "id" : "HI21",
+      "tags" : [
+        "draft-content",
+        "slots"
+      ],
+      "utterance" : "Send an email to Marco, that the meeting moved to 3.45."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "12th",
+            "recipient" : "dana"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Write an email to Dama, asking whether the 12th still works."
+      ],
+      "id" : "HI22",
+      "tags" : [
+        "draft-content",
+        "slots"
+      ],
+      "utterance" : "Write an email to Dama, asking whether the 12th still works."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "ten minutes late",
+            "recipient" : "lee"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Tell Liao, be ten minutes late."
+      ],
+      "id" : "HI23",
+      "tags" : [
+        "draft-content"
+      ],
+      "utterance" : "Tell Liao, be ten minutes late."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "priya"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Look for the email from Priyo about the invoice."
+      ],
+      "id" : "HI24",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Look for the email from Priyo about the invoice."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "marco"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Find the message from Marco"
+      ],
+      "id" : "HI25",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Find the message from Marco"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "nonEmpty" : [
+            "query"
+          ]
+        }
+      ],
+      "asrFinals" : [
+        "Open my latest email."
+      ],
+      "id" : "HI26",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Open my latest email."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "flight"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Search mail for flight confirmation"
+      ],
+      "id" : "HI27",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Search mail for flight confirmation"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "query_calendar",
+          "contains" : {
+            "time" : "thursday"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "What's on my calendar on Thursday?"
+      ],
+      "id" : "HI28",
+      "tags" : [
+        "calendar",
+        "slots"
+      ],
+      "utterance" : "What's on my calendar on Thursday?"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "query_calendar",
+          "contains" : {
+            "time" : "10"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Am I busy, at 10 a.m. tomorrow?"
+      ],
+      "id" : "HI29",
+      "tags" : [
+        "calendar",
+        "slots"
+      ],
+      "utterance" : "Am I busy, at 10 a.m. tomorrow?"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "request_send"
+        }
+      ],
+      "id" : "HI30",
+      "utterance" : "send the draft"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "request_review"
+        }
+      ],
+      "id" : "HI31",
+      "utterance" : "review my reply"
+    }
+  ],
+  "notes" : "ASR transcripts (Argmax 3.1.8, say voice Daniel, 180 wpm, pause 300 ms, hold 0.3 s) of heldout-benchmark. utterance = first final.",
+  "version" : 1
+}

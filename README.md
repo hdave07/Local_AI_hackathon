@@ -45,7 +45,7 @@ scripts/flow_voice.sh --once     # mic → Argmax → Bonsai → mock consumer (
 swift run flow-bench --runs 3 --out docs/evidence/T-002   # T-002 Bonsai benchmark
 ```
 
-No registry access? `FLOW_DISABLE_ARGMAX=1 swift build` builds everything except the Argmax adapter.
+No registry access? `FLOW_DISABLE_ARGMAX=1 swift build` builds everything except the Argmax adapter. Note: that mode removes `Package.resolved` locally (no dependencies to pin). Do not commit the deletion; restore it with `git checkout -- Package.resolved`.
 
 Modules (SwiftPM):
 - `FlowCore` — intents, typed action allowlist, risk tiers, errors, deterministic control router
@@ -53,11 +53,12 @@ Modules (SwiftPM):
 - `FlowWindow` — app launch/switch and window move/resize/tile/minimize/restore via Accessibility, verified re-reads, undo
 - `FlowAudio` — speech pipeline independent of any SDK: microphone consent, utterance endpointing (partial vs final), VAD, deterministic stop/cancel, routing to the classifier and an `IntentSink`
 - `FlowArgmax` — Argmax Pro `LiveTranscriber` adapter implementing `SpeechTranscribing`
+- `FlowRouting` — intent router: stop/cancel, deterministic fast path, task context and references, clarification with follow-up answers, Bonsai fallback with slot grounding (proposes intents; executes nothing)
 - `FlowApp` — SwiftUI shell: "Interpret" tab (classifier preview, nothing executed) and "Window Control" tab (typed window commands)
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
 - `flowctl` — command-line typed interface to FlowWindow and FlowAX
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
-- `flow-voice` / `flow-bench` — Track B developer harnesses (voice → typed intent; Bonsai benchmark). Neither executes actions.
+- `flow-voice` / `flow-bench` / `flow-speech-eval` — Track B developer harnesses (voice → typed intent; intent benchmark; synthesized-speech ASR and segmentation evaluation). None executes actions.
 
 ## Status
 
@@ -66,5 +67,6 @@ Modules (SwiftPM):
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results
+- T-030 voice-to-intent reliability: router, task context, clarification, ASR robustness, segmentation (see docs/evidence/T-030-voice-improvements.md)
 
 See [docs/evidence](docs/evidence) and [docs/adr](docs/adr).
