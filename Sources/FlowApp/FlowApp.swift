@@ -1,8 +1,13 @@
 import AppKit
+import FlowAudio
 import FlowAX
 import FlowCore
+import FlowExecutor
 import FlowLLM
 import FlowMail
+import FlowPlanner
+import FlowRouting
+import FlowSession
 import FlowWindow
 import SwiftUI
 
@@ -12,6 +17,7 @@ struct FlowApp: App {
     @State private var windowModel: WindowControlViewModel
     @State private var navigationModel: NavigationViewModel
     @State private var mailModel: MailViewModel
+    @State private var voiceModel: VoiceViewModel
 
     init() {
         // Composition root. Defaults match the verified local setup; the
@@ -42,6 +48,22 @@ struct FlowApp: App {
             backend: JXAMailBackend(), verifier: AXMailDisplayVerifier())))
 
         let client = LMStudioClient(configuration: configuration)
+
+        // Voice → TaskSession (router + planner) → real executor. The executor has its own
+        // controllers (separate undo history and numbered sets from the typed tabs), shares the
+        // frontmost-app tracker, and is restricted to the synthetic FlowTest mailbox.
+        var executorNavigation = UINavigator.Configuration()
+        executorNavigation.bringTargetToFront = true
+        let executor = MacPlanExecutor(
+            window: WindowController(backend: windowBackend),
+            navigator: UINavigator(backend: AXUIBackend(frontmost: { windowBackend.frontmostApp() }),
+                                   overlay: ScreenOverlay(), configuration: executorNavigation),
+            mail: MailController(backend: JXAMailBackend(), verifier: AXMailDisplayVerifier()),
+            configuration: ExecutorConfiguration(mailScope: .testMailbox("FlowTest")))
+        let session = TaskSession(store: IntentRouter(model: BonsaiIntentClassifier(client: client)), executor: executor)
+        let coordinator = VoiceSessionCoordinator(session: session, transcriber: nil, permission: SystemMicrophonePermission())
+        _voiceModel = State(initialValue: VoiceViewModel(coordinator: coordinator, executor: executor))
+
         _model = State(initialValue: ClassifierViewModel(
             classifier: BonsaiIntentClassifier(client: client),
             modelID: configuration.modelID,
@@ -60,6 +82,8 @@ struct FlowApp: App {
                     .tabItem { Label("UI Navigation", systemImage: "cursorarrow.click") }
                 MailView(model: mailModel)
                     .tabItem { Label("Mail", systemImage: "envelope") }
+                VoiceView(model: voiceModel)
+                    .tabItem { Label("Voice", systemImage: "mic") }
             }
                 .onAppear {
                     // Needed when launched as a bare SwiftPM executable (no .app bundle).

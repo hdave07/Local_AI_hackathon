@@ -57,9 +57,11 @@ Modules (SwiftPM):
 - `FlowArgmax` — Argmax Pro `LiveTranscriber` adapter implementing `SpeechTranscribing`
 - `FlowRouting` — intent router: stop/cancel, deterministic fast path, task context and references, clarification with follow-up answers, Bonsai fallback with slot grounding (proposes intents; executes nothing)
 - `FlowPlanner` — bounded multi-step planner (≤5 allowlisted steps), plan runner with pause/resume, bound single-use send approvals, at-most-once send ledger; channel-agnostic (Mail, Messages, WhatsApp, …); talks to macOS only through `PlanExecuting` (Track A)
-- `FlowApp` — SwiftUI shell with typed-command tabs: "Interpret" (classifier preview, nothing executed), "Window Control", "UI Navigation" and "Mail" (read-only)
+- `FlowApp` — SwiftUI shell with typed-command tabs: "Interpret" (classifier preview, nothing executed), "Window Control", "UI Navigation", "Mail" (read-only) and "Voice" (spoken or typed commands → plan → real executor)
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
 - `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
+- `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail); Mail limited to the FlowTest test mailbox; drafting/sending disabled
+- `FlowSession` — `VoiceSessionCoordinator`: Argmax utterances → TaskSession (router + planner) → executor, with stop/cancel priority and HUD status
 - `flowctl` — command-line typed interface to FlowWindow, FlowAX and FlowMail
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
 - `flow-voice` / `flow-bench` / `flow-speech-eval` / `flow-plan-demo` — Track B developer harnesses (voice → typed intent; intent benchmark; synthesized-speech ASR and segmentation evaluation; planner walkthrough against a mock executor). None executes actions.
@@ -70,6 +72,7 @@ Modules (SwiftPM):
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
 - T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
+- T-031 voice → plan → real executor in Flow.app (spoken "Open Notes" and Mail search/choose verified live; see docs/evidence/T-031-voice-executor-integration.md, ADR 0007)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results
 - T-026 bounded task planner, execution safety and task state against a mock executor (see docs/evidence/T-026-task-planner.md, ADR 0005)

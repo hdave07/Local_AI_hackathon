@@ -36,7 +36,8 @@ public struct TaskPlanner: Sendable {
     public func plan(_ utterance: String, context: ConversationContext) async -> PlanningOutcome {
         // Channel names ("email", "text", "whatsapp", or any catalog channel) also start clauses.
         let channelVerbs = Set(channels.catalog.channels.flatMap(\.spokenNames).filter { !$0.contains(" ") })
-        let clauses = Self.clauses(utterance, extraVerbs: channelVerbs)
+        // Filler-only clauses ("Um, open notes" splits into "Um" + "open notes") carry no command.
+        let clauses = Self.clauses(utterance, extraVerbs: channelVerbs).filter { !Self.isFillerOnly($0) }
         guard !clauses.isEmpty else { return .failure(.emptyInput) }
 
         var builder = Builder(context: context, catalog: channels.catalog)
@@ -69,6 +70,15 @@ public struct TaskPlanner: Sendable {
     }
 
     // MARK: - Clauses
+
+    /// The same disfluencies FlowRouting's cleaner removes (uh, um, erm, uhm).
+    static let fillers: Set<String> = ["uh", "um", "erm", "uhm"]
+
+    /// A clause made only of filler words, e.g. "Um" before a comma in recognizer output.
+    static func isFillerOnly(_ clause: String) -> Bool {
+        let words = clause.lowercased().components(separatedBy: CharacterSet.letters.inverted).filter { !$0.isEmpty }
+        return !words.isEmpty && words.allSatisfy { fillers.contains($0) }
+    }
 
     /// Words that start a new command clause.
     static let commandVerbs: Set<String> = [

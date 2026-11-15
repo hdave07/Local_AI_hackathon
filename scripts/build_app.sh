@@ -62,6 +62,30 @@ APP="build/Flow.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/FlowApp" "$APP/Contents/MacOS/FlowApp"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+
+# Bundle dynamic dependencies the binary loads via @rpath (e.g. the Argmax SDK when linked).
+# Vendor frameworks keep their own signature; plain dylibs are signed with our identity.
+FRAMEWORKS="$APP/Contents/Frameworks"
+DEPS="$(otool -L "$APP/Contents/MacOS/FlowApp" | awk '/@rpath\//{print $1}')"
+if [[ -n "$DEPS" ]]; then
+  mkdir -p "$FRAMEWORKS"
+  for dep in $DEPS; do
+    rel="${dep#@rpath/}"
+    top="${rel%%/*}"
+    if [[ ! -e "$BIN_DIR/$top" ]]; then
+      echo "error: dependency $top not found in $BIN_DIR" >&2
+      exit 1
+    fi
+    rm -rf "${FRAMEWORKS:?}/$top"
+    ditto "$BIN_DIR/$top" "$FRAMEWORKS/$top"
+    if [[ "$top" == *.dylib ]]; then
+      codesign --force --sign "$IDENTITY" "$FRAMEWORKS/$top"
+    fi
+    echo "Bundled $top"
+  done
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/FlowApp"
+fi
+
 codesign --force --sign "$IDENTITY" --identifier "$BUNDLE_ID" "$APP"
 codesign --verify --strict "$APP"
 

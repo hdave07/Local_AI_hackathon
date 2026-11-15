@@ -82,6 +82,8 @@ public enum NavigationError: Error, Sendable, Equatable {
     case noActiveNumbers
     case numberOutOfRange(Int, count: Int)
     case notPressable(String)
+    /// Send/delete-like controls are never pressed by generic navigation (ADR 0004).
+    case consequentialControl(String)
     case notFocusable(String)
     case notScrollable(String)
     case atScrollLimit(String)
@@ -102,6 +104,8 @@ public enum NavigationError: Error, Sendable, Equatable {
         case .noActiveNumbers: "There are no numbers showing. Say “show numbers” first."
         case .numberOutOfRange(let n, let count): "There's no number \(n); choose 1 to \(count)."
         case .notPressable(let name): "\(name) can't be clicked through Accessibility."
+        case .consequentialControl(let name):
+            "\(name) could send or delete something, so I won't press it directly. Use the review-and-confirm flow."
         case .notFocusable(let name): "\(name) can't take keyboard focus."
         case .notScrollable(let name): "\(name) can't be scrolled."
         case .atScrollLimit(let edge): "Already at the \(edge)."
@@ -112,7 +116,7 @@ public enum NavigationError: Error, Sendable, Equatable {
     /// Unsupported (honest capability limit) vs failed.
     var isCapabilityLimit: Bool {
         switch self {
-        case .inaccessibleApp, .notPressable, .notFocusable, .notScrollable: true
+        case .inaccessibleApp, .notPressable, .consequentialControl, .notFocusable, .notScrollable: true
         default: false
         }
     }

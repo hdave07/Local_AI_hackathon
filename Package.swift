@@ -23,7 +23,16 @@ var products: [Product] = [
     .library(name: "FlowAX", targets: ["FlowAX"]),
     .executable(name: "flow-nav-fixture", targets: ["FlowNavFixture"]),
     .library(name: "FlowMail", targets: ["FlowMail"]),
+    .library(name: "FlowExecutor", targets: ["FlowExecutor"]),
+    .library(name: "FlowSession", targets: ["FlowSession"]),
 ]
+
+// Flow.app links the Argmax transcriber only when the Argmax SDK is available.
+var flowAppDependencies: [Target.Dependency] = [
+    "FlowCore", "FlowLLM", "FlowWindow", "FlowAX", "FlowMail", "FlowAudio", "FlowRouting", "FlowPlanner",
+    "FlowExecutor", "FlowSession",
+]
+if argmaxEnabled { flowAppDependencies.append("FlowArgmax") }
 
 var targets: [Target] = [
     // Shared contracts: intents, typed actions, risk, errors, utterances. No I/O.
@@ -52,7 +61,12 @@ var targets: [Target] = [
     // Track B — planner walkthrough against the mock executor (no macOS actions).
     .executableTarget(name: "FlowPlanDemoCLI", dependencies: ["FlowCore", "FlowLLM", "FlowRouting", "FlowPlanner"]),
     // SwiftUI shell. Composition root for FlowLLM, FlowWindow and FlowAX.
-    .executableTarget(name: "FlowApp", dependencies: ["FlowCore", "FlowLLM", "FlowWindow", "FlowAX", "FlowMail"]),
+    // Track A — real `PlanExecuting` adapter: FlowWindow, FlowAX and FlowMail behind the planner contract
+    // (ADR 0005). Drafting, sending and deleting are not enabled.
+    .target(name: "FlowExecutor", dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail"]),
+    // Voice-session coordinator: finalized utterances → TaskSession (router + planner state) → executor.
+    .target(name: "FlowSession", dependencies: ["FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner"]),
+    .executableTarget(name: "FlowApp", dependencies: flowAppDependencies),
     // Typed command-line interface to FlowWindow and FlowAX for manual and scripted testing.
     .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
     // Track B — T-002 benchmark harness: fixtures → Bonsai via LM Studio → CSV + summary. Executes nothing.
@@ -62,6 +76,10 @@ var targets: [Target] = [
     .testTarget(name: "FlowWindowTests", dependencies: ["FlowCore", "FlowWindow"]),
     .testTarget(name: "FlowAXTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
     .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
+    .testTarget(name: "FlowExecutorTests",
+                dependencies: ["FlowExecutor", "FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowLLM"]),
+    .testTarget(name: "FlowSessionTests",
+                dependencies: ["FlowSession", "FlowExecutor", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
     .testTarget(name: "FlowBenchTests", dependencies: ["FlowBenchCLI", "FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowRoutingTests", dependencies: ["FlowRouting", "FlowCore", "FlowLLM"]),

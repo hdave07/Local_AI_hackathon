@@ -56,6 +56,13 @@ public enum MailCommandParser {
         }
     }
 
+    /// Search criteria from free text without a verb ("Sarah's email about tomorrow",
+    /// "the message from Priya with subject budget"). Used by the plan executor for the
+    /// planner's verbatim `read_message` query.
+    public static func criteria(from text: String) throws(MailParseError) -> MailQuery {
+        try query(try tokenize(text))
+    }
+
     /// Parses criteria: possessive sender ("Sarah's email"), from/about/subject/in mailbox.
     static func query(_ input: [String]) throws(MailParseError) -> MailQuery {
         var tokens = input
