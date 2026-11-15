@@ -271,9 +271,19 @@ struct GuardTests {
     }
 
     @Test func droppedTimeWordIsNotRouted() async throws {
-        let model = FakeModel(["is anything booked at four tomorrow": .success(modelIntent(.queryCalendar(timeExpression: "tomorrow")))])
-        let d = await route("is anything booked at four tomorrow", model: model)
+        // Reaches the model; its answer dropped "four", so the guard asks instead.
+        let u = "got something booked around four tomorrow"
+        let model = FakeModel([u: .success(modelIntent(.queryCalendar(timeExpression: "tomorrow")))])
+        let d = await route(u, model: model)
         #expect(try d.outcome.get().kind == .clarification)
+        #expect(d.stage == .guarded)
+    }
+
+    @Test func calendarRuleKeepsTheTimeWord() async throws {
+        // T-024: the deterministic calendar rule answers this itself and keeps "four".
+        let d = await route("is anything booked at four tomorrow", model: FakeModel())
+        #expect(try d.outcome.get().action == .queryCalendar(timeExpression: "at four tomorrow"))
+        #expect(d.stage == .fastPath)
     }
 
     @Test func groundedModelAnswerPasses() async throws {
@@ -640,5 +650,58 @@ struct LiveReplySessionRegressionTests {
     @Test(arguments: ["never mind", "Never mind.", "forget it"])
     func neverMindIsCancel(utterance: String) {
         #expect(DeterministicRouter.route(utterance)?.control == .cancel)
+    }
+}
+
+@Suite("Calendar follow-ups (voice session 2026-11-15)")
+struct CalendarFollowUpTests {
+    @Test(arguments: [
+        ("No, I mean like do I have anything at four?", "at four"),
+        ("Don't have anything at four", "at four"),
+        ("I mean, am I free tomorrow afternoon?", "tomorrow afternoon"),
+        ("Yeah do I have anything at 4 today", "at 4 today"),
+    ])
+    func spokenLeadInsStillRoute(utterance: String, time: String) async throws {
+        let model = FakeModel()
+        let d = await route(utterance, model: model)
+        #expect(try d.outcome.get().action == .queryCalendar(timeExpression: time))
+        #expect(model.calls.isEmpty)
+    }
+
+    @Test func modelCalendarQuestionIsAnsweredByABareDay() async throws {
+        // The model asks its own question; Flow asks instead and remembers it.
+        let u = "got anything going on around four"
+        let model = FakeModel([u: .success(modelIntent(nil, kind: .clarification))])
+        let router = IntentRouter(model: model)
+        let q = await router.route(u)
+        #expect(try q.outcome.get().summary == "Which day or time should I check?")
+        let a = await router.route("Uh, today.")
+        #expect(try a.outcome.get().action == .queryCalendar(timeExpression: "today"))
+    }
+
+    @Test func missingTimeQuestionIsAnswered() async throws {
+        let router = IntentRouter(model: FakeModel())
+        let q = await router.route("Do I have anything")
+        #expect(try q.outcome.get().kind == .clarification)
+        let a = await router.route("tomorrow at 4")
+        #expect(try a.outcome.get().action == .queryCalendar(timeExpression: "tomorrow at 4"))
+    }
+
+    @Test(arguments: [("What about Friday?", "Friday"), ("and at five?", "at five"), ("Today", "Today"), ("how about tomorrow afternoon", "tomorrow afternoon")])
+    func bareTimeContinuesACalendarQuestion(utterance: String, time: String) async throws {
+        let model = FakeModel()
+        let router = IntentRouter(model: model)
+        _ = await router.route("Do I have anything at four?")
+        let d = await router.route(utterance)
+        #expect(try d.outcome.get().action == .queryCalendar(timeExpression: time))
+        #expect(model.calls.isEmpty)
+    }
+
+    @Test func bareTimeWithoutCalendarContextIsNotACalendarQuery() async throws {
+        let model = FakeModel()
+        let router = IntentRouter(model: model)
+        _ = await router.route("open notes")
+        let d = await router.route("tomorrow")
+        #expect((try? d.outcome.get().action) != .queryCalendar(timeExpression: "tomorrow"))
     }
 }

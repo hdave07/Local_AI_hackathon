@@ -112,6 +112,7 @@ struct ActionSignature: Equatable {
         case .createDraft(let r, let c): args = ["recipient": r, "content": c]
         case .readMessage(let q): args = ["query": q]
         case .queryCalendar(let t): args = ["time": t]
+        case .showCalendar(let d): args = ["date": d]
         case .requestReview, .requestSend: args = [:]
         }
     }

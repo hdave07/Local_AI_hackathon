@@ -24,13 +24,15 @@ var products: [Product] = [
     .executable(name: "flow-nav-fixture", targets: ["FlowNavFixture"]),
     .library(name: "FlowMail", targets: ["FlowMail"]),
     .library(name: "FlowExecutor", targets: ["FlowExecutor"]),
+    .library(name: "FlowCalendar", targets: ["FlowCalendar"]),
+    .executable(name: "flow-calendar-livecheck", targets: ["FlowCalendarLiveCheck"]),
     .library(name: "FlowSession", targets: ["FlowSession"]),
 ]
 
 // Flow.app links the Argmax transcriber only when the Argmax SDK is available.
 var flowAppDependencies: [Target.Dependency] = [
     "FlowCore", "FlowLLM", "FlowWindow", "FlowAX", "FlowMail", "FlowAudio", "FlowRouting", "FlowPlanner",
-    "FlowExecutor", "FlowSession",
+    "FlowExecutor", "FlowSession", "FlowCalendar",
 ]
 if argmaxEnabled { flowAppDependencies.append("FlowArgmax") }
 
@@ -63,7 +65,12 @@ var targets: [Target] = [
     // SwiftUI shell. Composition root for FlowLLM, FlowWindow and FlowAX.
     // Track A — real `PlanExecuting` adapter: FlowWindow, FlowAX and FlowMail behind the planner contract
     // (ADR 0005). Drafting, sending and deleting are not enabled.
-    .target(name: "FlowExecutor", dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail"]),
+    // Track A — read-only Calendar (T-024): EventKit events, availability, optional "show the day".
+    .target(name: "FlowCalendar", dependencies: ["FlowCore", "FlowMail"]),
+    // Live EventKit check (app bundle, see scripts/run_calendar_livecheck.sh): FlowTest calendar only.
+    .executableTarget(name: "FlowCalendarLiveCheck", dependencies: ["FlowCalendar"]),
+    .target(name: "FlowExecutor",
+            dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowCalendar"]),
     // Voice-session coordinator: finalized utterances → TaskSession (router + planner state) → executor.
     .target(name: "FlowSession", dependencies: ["FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner"]),
     .executableTarget(name: "FlowApp", dependencies: flowAppDependencies),
@@ -77,7 +84,9 @@ var targets: [Target] = [
     .testTarget(name: "FlowAXTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
     .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
     .testTarget(name: "FlowExecutorTests",
-                dependencies: ["FlowExecutor", "FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowLLM"]),
+                dependencies: ["FlowExecutor", "FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowLLM",
+                               "FlowCalendar"]),
+    .testTarget(name: "FlowCalendarTests", dependencies: ["FlowCalendar", "FlowCore"]),
     .testTarget(name: "FlowSessionTests",
                 dependencies: ["FlowSession", "FlowExecutor", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),

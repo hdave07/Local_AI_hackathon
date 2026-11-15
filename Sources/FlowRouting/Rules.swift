@@ -135,8 +135,10 @@ enum Rules {
     static let searchMail = Rx(#"(?:find|search for|look for|look up|show(?: me)?|open|pull up|get|read|bring up|go to)\s+((?:(?:the|my|an?)\s+)?(?:(?:latest|last|newest|most recent|recent|new|unread|first)\s+)?(?:email|e-mail|mail|message|messages|emails)\b.*)"#)
     static let searchMailPossessive = Rx(#"(?:find|search for|look for|look up|show(?: me)?|open|pull up|get|read)\s+((?:the\s+)?([a-z][a-z.-]*)'s\s+(?:(?:latest|last|newest|most recent|recent|new|unread)\s+)?(?:email|e-mail|mail|message)s?\b.*)"#)
 
+    // Showing a day in Calendar (navigation, read-only): "show me tomorrow on my calendar".
+    static let showCalendarDay = Rx(#"(?:show|open|bring up|pull up|go to|display|take me to)\s+(?:me\s+)?(?:(?:my|the)\s+)?(?:calendar\s+(?:for|on|to|at)\s+(.+)|(?!what\b)(.+?)\s+(?:on|in)\s+(?:my\s+|the\s+)?calendar)"#)
     // Calendar queries.
-    static let calendar = Rx(#"(?:do i have (?:anything|something|any meetings?|any events?|any plans|plans|a meeting|meetings)|am i (?:free|busy|available)|what(?:'s| is) on my (?:calendar|schedule)|what do i have(?: on)?|check my (?:calendar|schedule)|is there anything on my (?:calendar|schedule)|what(?:'s| is) my schedule)(?:\s+(.+))?"#)
+    static let calendar = Rx(#"(?:(?:check|see|tell me|find out)\s+(?:whether|if)\s+)?(?:(?:do i|don't i|don't|do) have (?:anything|something|any meetings?|any events?|any plans|plans|a meeting|meetings)(?:\s+(?:scheduled|planned|booked|on))?|i have (?:anything|something|any meetings?|any events?|any plans|plans)(?:\s+(?:scheduled|planned|booked|on))?|am i (?:free|busy|available)|i(?:'m| am) (?:free|busy|available)|is (?:anything|something|there anything|there something) (?:scheduled|planned|booked|on my (?:calendar|schedule))|what(?:'s| is) on my (?:calendar|schedule)|what do i have(?: on)?|check my (?:calendar|schedule)|is there anything on my (?:calendar|schedule)|what(?:'s| is) my schedule)(?:\s+(.+))?"#)
 
     // Drafting: verb + single-word name + optional connector + content (verbatim).
     /// "reply to X", "write to X", "send an email to X" need "to"; "email X", "message X", "answer X" do not.
@@ -221,9 +223,12 @@ enum Rules {
         if let m = searchMail.match(s), let q = m[0] {
             return hit(.direct, .readMessage(query: strip(q)), "Find “\(strip(q))”")
         }
+        if let m = showCalendarDay.match(s), let day = (m[0] ?? m[1])?.trimmingCharacters(in: .whitespaces), !day.isEmpty {
+            return hit(.direct, .showCalendar(dateExpression: day), "Show \(day) in Calendar")
+        }
         if let m = calendar.match(s) {
             guard let time = m[0]?.trimmingCharacters(in: .whitespaces), !time.isEmpty else {
-                return RuleHit(intent: Make.ask("Which day or time should I check?"), stage: .clarify)
+                return RuleHit(intent: Make.ask("Which day or time should I check?"), stage: .clarify, pending: .calendarTime)
             }
             return hit(.direct, .queryCalendar(timeExpression: time), "Check calendar \(time)")
         }
@@ -324,6 +329,10 @@ enum Rules {
     }
 
     static func references(_ s: String, _ ctx: ConversationContext) -> RuleHit? {
+        // Calendar follow-up: right after a calendar question, a bare time continues it.
+        if ctx.calendarTopic, let time = calendarTimeOnly(s) {
+            return RuleHit(intent: Make.intent(.direct, .queryCalendar(timeExpression: time), "Check calendar \(time)"), stage: .context)
+        }
         if let hit = replyToNamedEmail(s, ctx) { return hit }
         if ctx.draft != nil || ctx.hasDraft {
             if draftReference.match(s) != nil {
@@ -468,6 +477,8 @@ enum Rules {
             }
             if !Set(w).isDisjoint(with: ["no", "nope", "keep"]) { return Make.intent(kind, otherwise, "Kept as heard") }
             return nil
+        case .calendarTime:
+            return calendarTimeOnly(s).map { hit(.direct, .queryCalendar(timeExpression: $0), "Check calendar \($0)").intent }
         case .plan:
             return nil  // answered by the plan runner
         case .draftContent(let recipient):
@@ -484,6 +495,23 @@ enum Rules {
     }
 
     // MARK: Helpers
+
+    private static let timeLead = Rx(#"(?:(?:and|but|what|how)\s+)?(?:about\s+)?(?:for\s+)?(.+?)\??"#)
+    private static let timeConnectors: Set<String> = [
+        "at", "on", "in", "the", "this", "next", "around", "about", "by", "from", "to", "between", "of", "and", "o", "clock",
+        "oclock", "am", "pm", "day", "after", "later", "early", "late",
+    ]
+
+    /// The utterance is only a time ("today", "at four", "what about Friday afternoon?"): returns
+    /// it without the lead-in, else nil. At least one real time word is required.
+    static func calendarTimeOnly(_ s: String) -> String? {
+        let time = (timeLead.match(s).flatMap { $0[0] } ?? s).trimmingCharacters(in: .whitespaces)
+        let tokens = Words.tokens(time)
+        guard !tokens.isEmpty, tokens.count <= 8, tokens.contains(where: Guard.isTimeWord),
+              tokens.allSatisfy({ Guard.isTimeWord($0) || timeConnectors.contains($0) })
+        else { return nil }
+        return time
+    }
 
     static func hit(_ kind: IntentKind, _ action: FlowAction, _ summary: String) -> RuleHit {
         RuleHit(intent: Make.intent(kind, action, summary), stage: .fastPath)

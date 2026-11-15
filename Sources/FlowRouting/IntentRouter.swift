@@ -62,6 +62,12 @@ public struct IntentRouterCore: Sendable {
         let trace = await model.classifyTraced(s)
         switch trace.outcome {
         case .success(let intent):
+            // The model asked its own question about something calendar-shaped ("Which day are
+            // you asking about?"): ask Flow's question instead, so the answer is understood.
+            if intent.kind == .clarification, intent.action == nil, Guard.soundsLikeCalendar(s) {
+                return RoutingDecision(outcome: .success(Make.ask("Which day or time should I check?")), stage: .guarded, trace: trace,
+                                       pending: .calendarTime)
+            }
             if let hit = Guard.check(intent, utterance: s, context: context) {
                 return RoutingDecision(outcome: .success(hit.intent), stage: hit.stage, trace: trace, pending: hit.pending)
             }

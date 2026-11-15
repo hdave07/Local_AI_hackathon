@@ -100,3 +100,48 @@ public struct SelectedWindow: Sendable, Equatable {
         self.windowID = windowID
     }
 }
+
+/// A verified calendar availability answer (T-024), structured for the planner.
+public struct AvailabilityAnswer: Sendable, Equatable {
+    public enum Status: String, Sendable, Equatable {
+        case busy, tentative
+        case freeInCheckedCalendars = "free_in_checked_calendars"
+        case unknown
+    }
+
+    public struct Event: Sendable, Equatable {
+        public let title: String
+        public let start: Date
+        public let end: Date
+        public let isAllDay: Bool
+        /// busy, tentative, canceled, declined or marked_free.
+        public let effect: String
+        public let calendar: String
+
+        public init(title: String, start: Date, end: Date, isAllDay: Bool, effect: String, calendar: String) {
+            self.title = title
+            self.start = start
+            self.end = end
+            self.isAllDay = isAllDay
+            self.effect = effect
+            self.calendar = calendar
+        }
+    }
+
+    public let status: Status
+    public let start: Date
+    public let end: Date
+    public let events: [Event]
+    public let calendarsChecked: [String]
+    /// The sentence shown or spoken to the user.
+    public let answer: String
+
+    public init(status: Status, start: Date, end: Date, events: [Event], calendarsChecked: [String], answer: String) {
+        self.status = status
+        self.start = start
+        self.end = end
+        self.events = events
+        self.calendarsChecked = calendarsChecked
+        self.answer = answer
+    }
+}

@@ -20,6 +20,9 @@ public struct ConversationContext: Sendable, Equatable {
     public var lastEditedText: String?
     /// An unanswered clarification question.
     public var pending: PendingQuestion?
+    /// The last proposed action was about the calendar, so a bare time ("what about Friday?",
+    /// "and at five?") continues it.
+    public var calendarTopic: Bool = false
 
     // Verified state, written only from executor results (FlowPlanner). Proposal-level
     // fields above remain for single-intent routing.
@@ -80,6 +83,10 @@ public struct ConversationContext: Sendable, Equatable {
     /// Update from a delivered (proposed) action.
     public mutating func record(_ action: FlowAction, now: Date) {
         switch action {
+        case .queryCalendar, .showCalendar: calendarTopic = true
+        default: calendarTopic = false
+        }
+        switch action {
         case .activateApp(let app):
             activeApp = app
         case .moveWindow(.app(let app), _), .resizeWindow(.app(let app), _):
@@ -98,6 +105,8 @@ public struct ConversationContext: Sendable, Equatable {
             activeApp = .mail
         case .queryCalendar:
             break
+        case .showCalendar:
+            activeApp = .calendar
         case .insertText(let text):
             lastEditedText = text
         case .replaceText(_, let new):
@@ -141,6 +150,8 @@ public enum PendingQuestion: Sendable, Equatable {
     case textToReplace(replacement: String)
     /// Yes → `proposed`, no → `otherwise` (e.g. "Did you mean 3:30?").
     case confirm(proposed: FlowAction, otherwise: FlowAction, kind: IntentKind)
+    /// "Which day or time should I check?" The answer is a time expression.
+    case calendarTime
     /// A paused plan is waiting for this answer (FlowPlanner resolves it, not the router).
     case plan(prompt: String, options: [String])
     /// "What should the reply say?" for a reply to the open message; the answer is the content.

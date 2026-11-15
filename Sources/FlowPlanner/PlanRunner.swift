@@ -277,6 +277,7 @@ public actor PlanRunner {
             done.insert(step.id)
             log(.stepCompleted(stepID: step.id, summary: step.summary))
             if case .lookupResult(let answer) = result.observation { spoken.append(answer) }
+            if case .availability(let a) = result.observation { spoken.append(a.answer) }
             if case .reviewShown = result.observation { spoken.append("Here's the draft. Say “send it” when you're ready.") }
             if case .sent(_, let queued) = result.observation { spoken.append(queued ? "Queued to send." : "Sent.") }
             return true
@@ -362,6 +363,12 @@ public actor PlanRunner {
     /// Writes a verified observation into the shared task context.
     private func apply(_ observation: Observation) async {
         var ctx = await store.context
+        // A verified calendar answer (or day shown) makes a bare "what about Friday?" a calendar follow-up.
+        switch observation {
+        case .availability: ctx.calendarTopic = true
+        case .uiActed(let label) where label.hasPrefix("Calendar:"): ctx.calendarTopic = true
+        default: ctx.calendarTopic = false
+        }
         switch observation {
         case .appActive(let app):
             ctx.activeApp = app
@@ -386,7 +393,7 @@ public actor PlanRunner {
             ctx.draft = nil
             ctx.hasDraft = false
             ctx.reviewedDraftVersion = nil
-        case .none, .uiActed, .scrolled, .lookupResult, .messageCandidates:
+        case .none, .uiActed, .scrolled, .lookupResult, .availability, .messageCandidates:
             break
         }
         ctx.updatedAt = now()
@@ -481,7 +488,8 @@ public actor PlanRunner {
         switch (step.expectation, observation) {
         case (.appFrontmost(let app), .appActive(let seen)):
             return app == seen
-        case (.windowChanged, .window), (.uiActed, .uiActed), (.scrolled, .scrolled), (.lookupAnswered, .lookupResult):
+        case (.windowChanged, .window), (.uiActed, .uiActed), (.scrolled, .scrolled), (.lookupAnswered, .lookupResult),
+             (.lookupAnswered, .availability):
             return true
         case (.messageOpened(let query), .messageOpened(let m)):
             if let ch = step.channel, m.channel != ch { return false }
