@@ -98,6 +98,10 @@ public enum ExecutionErrorCode: String, Sendable, Equatable {
     case draftChanged = "draft_changed"
     /// The approval does not match the live draft.
     case approvalInvalid = "approval_invalid"
+    /// The channel would address the draft to someone other than the verified recipient.
+    case recipientMismatch = "recipient_mismatch"
+    /// A draft for this target is already open; a second one was not created.
+    case draftAlreadyOpen = "draft_already_open"
     case unknown
 }
 

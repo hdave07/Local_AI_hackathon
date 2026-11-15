@@ -536,3 +536,109 @@ struct OpenMessageReferenceTests {
         #expect(try await route("show it to me").outcome.get().kind == .clarification)
     }
 }
+
+/// T-023A: replies to the executor-verified open message.
+@Suite("Replies to the open message")
+struct ReplyToOpenMessageTests {
+    static func context(people: [String] = ["Sarah Chen"]) -> ConversationContext {
+        var c = ConversationContext.empty
+        c.selectedMessage = MessageRef(channel: .mail, id: "m1", sender: "Sarah Chen", senderAddress: "sarah.chen@example.invalid",
+                                       subject: "[FlowTest] Meeting tomorrow", epoch: 1)
+        c.openMessage = "[FlowTest] Meeting tomorrow"
+        for p in people.reversed() { c.notePerson(p) }
+        return c
+    }
+
+    @Test(arguments: ["Reply saying I can meet at 3", "reply to it saying I can meet at 3", "reply to this email saying I can meet at 3"])
+    func replyWithContent(utterance: String) async throws {
+        let d = await route(utterance, Self.context())
+        #expect(try d.outcome.get().action == .createDraft(recipient: "Sarah Chen", content: "I can meet at 3"))
+    }
+
+    @Test func recipientComesFromTheOpenMessageNotRecentPeople() async throws {
+        // Two recent people would make "reply" a guess; the verified open message decides.
+        let d = await route("reply saying I can meet at 3", Self.context(people: ["Priya Patel", "Sarah Chen"]))
+        #expect(try d.outcome.get().action == .createDraft(recipient: "Sarah Chen", content: "I can meet at 3"))
+    }
+
+    @Test(arguments: ["reply to it", "can you reply to it?", "I want to reply to this email.", "reply"])
+    func replyWithoutContentAsks(utterance: String) async throws {
+        let d = await route(utterance, Self.context())
+        let intent = try d.outcome.get()
+        #expect(intent.kind == .clarification)
+        #expect(intent.summary == "What should the reply to Sarah Chen say?")
+        #expect(d.pending == .draftContent(recipient: "Sarah Chen"))
+    }
+
+    @Test(arguments: [
+        ("I can meet at 3", "I can meet at 3"),
+        ("say I can meet at 3", "I can meet at 3"),
+        ("tell her that I can meet at 3", "I can meet at 3"),
+        ("sounds good, see you then", "sounds good, see you then"),
+    ])
+    func contentAnswer(answer: String, content: String) async throws {
+        var c = Self.context()
+        c.pending = .draftContent(recipient: "Sarah Chen")
+        let d = await route(answer, c)
+        #expect(try d.outcome.get().action == .createDraft(recipient: "Sarah Chen", content: content))
+    }
+
+    @Test func dismissingTheQuestionWritesNothing() async throws {
+        var c = Self.context()
+        c.pending = .draftContent(recipient: "Sarah Chen")
+        let intent = try await route("never mind", c).outcome.get()
+        #expect(intent.action == nil)
+        #expect(intent.control == .cancel, "“never mind” cancels, like “cancel”")
+        let other = try await route("no reply", c).outcome.get()
+        #expect(other.action == nil)
+        #expect(other.kind == .unsupported)
+    }
+
+    @Test func withoutAnOpenMessageReplyStillAsksWho() async throws {
+        let d = await route("reply saying hi", .empty)
+        #expect(try d.outcome.get().kind == .clarification)
+        #expect(d.pending != .draftContent(recipient: "Sarah Chen"))
+    }
+}
+
+/// Regressions from the live T-023A voice session (2026-11-14).
+@Suite("Live reply session regressions")
+struct LiveReplySessionRegressionTests {
+    static var open: ConversationContext { ReplyToOpenMessageTests.context() }
+    static var withDraft: ConversationContext {
+        var d = open
+        d.draft = DraftSnapshot(channel: .mail, id: "d1", recipients: ["sarah.chen@example.invalid"], subject: "Re: x",
+                                body: "I can meet at 3:30", version: 1, inReplyTo: "m1")
+        d.hasDraft = true
+        return d
+    }
+
+    @Test(arguments: ["Can you reply to Sarah's email that I can meet at 3:30?", "reply to Sarah's email saying I can meet at 3:30",
+                      "reply to her email saying I can meet at 3:30", "Actually, reply to that email: I can meet at 3:30"])
+    func replyToNamedEmailKeepsOnlyTheContent(utterance: String) async throws {
+        let d = await route(utterance, Self.open)
+        #expect(try d.outcome.get().action == .createDraft(recipient: "Sarah Chen", content: "I can meet at 3:30"))
+    }
+
+    @Test func dictatedQuestionMarkIsKeptWhenItIsTheContent() async throws {
+        let d = await route("reply saying can we meet at 3:30?", Self.open)
+        #expect(try d.outcome.get().action == .createDraft(recipient: "Sarah Chen", content: "can we meet at 3:30?"))
+    }
+
+    @Test(arguments: ["Actually, never mind. Can you delete that reply?", "delete that reply", "discard the draft", "close the draft"])
+    func discardingTheDraftIsAClearRefusal(utterance: String) async throws {
+        let intent = try await route(utterance, Self.withDraft).outcome.get()
+        #expect(intent.action == nil)
+        #expect(intent.summary.contains("hasn't been sent"))
+    }
+
+    @Test(arguments: ["That reply that we just drafted", "what does the draft say", "show me the reply"])
+    func draftReferencesShowTheDraft(utterance: String) async throws {
+        #expect(try await route(utterance, Self.withDraft).outcome.get().action == .requestReview)
+    }
+
+    @Test(arguments: ["never mind", "Never mind.", "forget it"])
+    func neverMindIsCancel(utterance: String) {
+        #expect(DeterministicRouter.route(utterance)?.control == .cancel)
+    }
+}

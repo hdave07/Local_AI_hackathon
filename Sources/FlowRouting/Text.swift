@@ -10,6 +10,8 @@ enum Cleaner {
     private static let wake = Rx(#"(?:hey\s+)?flow[,.!]?\s+(.+)"#)
     private static let polite = Rx(#"(?:(?:ok|okay|hey)[,]?\s+)?(?:(?:can|could|would|will)\s+you\s+(?:please\s+)?|please\s+)(.+?)"#)
     private static let politeTail = Rx(#"(.+?)[,]?\s+please"#)
+    /// "I want to reply to this email", "I'd like to open Notes".
+    private static let wanting = Rx(#"i(?:\s+(?:want|need|would like)|'d\s+like|\s+wanna)\s+(?:to\s+)?(.+?)"#)
 
     static func clean(_ raw: String) -> String {
         var s = raw.replacingOccurrences(of: "’", with: "'")
@@ -17,10 +19,18 @@ enum Cleaner {
         s = collapse(s)
         s = s.trimmingCharacters(in: CharacterSet(charactersIn: ".!?").union(.whitespaces))
         if let m = wake.match(s), let rest = m[0] { s = rest }
+        // Discourse openers before a command ("Actually, never mind. Can you …", "Sorry, …").
+        // A standalone "never mind" is kept: it is a command in its own right.
+        while let r = s.range(of: #"^(?:actually|never ?mind|sorry|wait|oh|ok(?:ay)?|so|well|hmm|no)\s*[,.!;]?\s+(?=\S)"#,
+                              options: [.regularExpression, .caseInsensitive]),
+              s[r.upperBound...].split(separator: " ").count >= 2 {
+            s = String(s[r.upperBound...])
+        }
         // Fillers anywhere ("uh", "um", "erm"), with an optional trailing comma.
         s = s.replacingOccurrences(of: #"\b(?:uh|um|erm|uhm)\b,?\s*"#, with: "", options: [.regularExpression, .caseInsensitive])
         s = collapse(s)
         if let m = polite.match(s), let rest = m[0] { s = rest }
+        if let m = wanting.match(s), let rest = m[0] { s = rest }
         if let m = politeTail.match(s), let rest = m[0] { s = rest }
         return s.trimmingCharacters(in: CharacterSet(charactersIn: ".!?,").union(.whitespaces))
     }
@@ -38,6 +48,9 @@ enum Cleaner {
     /// "?" or "!" ending the raw utterance: meaningful in dictated content, unlike ASR's final ".".
     static func terminalMark(_ raw: String) -> String {
         let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // "Can you reply … at 3:30?": the question mark belongs to the request, not the content.
+        if t.range(of: #"^(?:(?:actually|never ?mind|sorry|ok(?:ay)?|so)\W+)*(?:can|could|would|will)\s+you\b"#,
+                   options: [.regularExpression, .caseInsensitive]) != nil { return "" }
         if t.hasSuffix("?") { return "?" }
         if t.hasSuffix("!") { return "!" }
         return ""

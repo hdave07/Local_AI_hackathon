@@ -30,8 +30,12 @@ public actor TaskSession {
     public func handle(_ utterance: String) async -> SessionReply {
         // 1. stop / cancel always win, without any model call (spec 02 §3).
         if let control = DeterministicRouter.route(utterance), control.control == .stop || control.control == .cancel {
+            let hadQuestion = await store.context.pending != nil
             var say = await runner.cancel()
-            if say.isEmpty { say = ["Nothing to stop."] }
+            // Also drop an open router question ("What should the reply say?"), so the next
+            // utterance is a new command, not an answer.
+            await store.cancelPendingQuestion()
+            if say.isEmpty { say = [hadQuestion ? "Okay, never mind." : "Nothing to stop."] }
             return await reply(say, plan: nil)
         }
 

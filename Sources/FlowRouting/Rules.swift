@@ -296,7 +296,40 @@ enum Rules {
     static let changePronoun = Rx(#"(?:change|replace|make|turn)\s+(?:it|that|this)\s+(?:to|with|into)\s+(.+)"#)
     static let barePronounCommand = Rx(#"(?:reply|respond|answer|write back)"#)
 
+    /// "reply to Sarah's email saying …", "reply to her message that …", "reply to that email: …".
+    static let replyToEmail = Rx(#"(?:reply|respond|answer|write back)\s+to\s+(?:([a-z][a-z.-]*)(?:'s|s')|her|his|their|that|this|the|my)\s+(?:latest\s+|last\s+)?(?:email|e-mail|message|mail|note)(?:\s+about\s+.+?)?"# + explicitConnector + #"(.+)"#)
+    /// "delete/discard/close that reply" while a draft is open.
+    static let discardDraft = Rx(#"(?:delete|discard|remove|trash|throw away|get rid of|close|scrap)\s+(?:that|the|this|my|our)\s+(?:reply|draft|response|email|message)(?:\s+(?:that\s+)?(?:we|you|i)\s+(?:just\s+)?(?:drafted|wrote|made|created))?"#)
+    /// "the reply we just drafted", "what does the draft say": the current draft.
+    static let draftReference = Rx(#"(?:(?:the|that|this|my|our)\s+(?:reply|draft|response)(?:\s+(?:that|which)\s+(?:we|you|i)\s+(?:just\s+)?(?:drafted|wrote|made|created))?|what does (?:it|the draft|the reply|my reply) say|what(?:'s| is) in (?:it|the draft|the reply))"#)
+
+    /// Asked to delete/discard/close the open draft: say plainly what state it is in. Runs
+    /// before the generic "not supported" rule.
+    static func draftDiscard(_ s: String, _ ctx: ConversationContext) -> RuleHit? {
+        guard ctx.draft != nil || ctx.hasDraft, discardDraft.match(s) != nil else { return nil }
+        return RuleHit(intent: Intent(kind: .unsupported, action: nil,
+                                      summary: "I can't delete or discard drafts. The reply is still open in Mail and hasn't been sent; you can close it there.",
+                                      source: .deterministic), stage: .clarify)
+    }
+
+    /// Reply to a named person's email when that email is the verified open message.
+    static func replyToNamedEmail(_ s: String, _ ctx: ConversationContext) -> RuleHit? {
+        guard let m = replyToEmail.match(s), let content = m[1] else { return nil }
+        guard let open = ctx.selectedMessage else { return nil }  // the planner finds the email first
+        if let name = m[0]?.lowercased() {
+            let sender = (open.sender + " " + (open.senderAddress ?? "")).lowercased()
+            guard sender.contains(name) else { return nil }
+        }
+        return replyToOpen(ctx, content: content)
+    }
+
     static func references(_ s: String, _ ctx: ConversationContext) -> RuleHit? {
+        if let hit = replyToNamedEmail(s, ctx) { return hit }
+        if ctx.draft != nil || ctx.hasDraft {
+            if draftReference.match(s) != nil {
+                return RuleHit(intent: Make.intent(.direct, .requestReview, "Show the current draft"), stage: .context)
+            }
+        }
         if openPronoun.match(s) != nil {
             guard let app = ctx.activeApp else {
                 return RuleHit(intent: Make.ask(Make.whichApp), stage: .clarify, pending: .app(then: .activate))
@@ -328,7 +361,7 @@ enum Rules {
             return person(ctx, then: .draft(content: m[1] ?? ""), verb: "write to")
         }
         if let m = replyCurrent.match(s) {
-            return person(ctx, then: .draft(content: m[0] ?? ""), verb: "reply to")
+            return replyToOpen(ctx, content: m[0] ?? "") ?? person(ctx, then: .draft(content: m[0] ?? ""), verb: "reply to")
         }
         if reviewPronoun.match(s) != nil {
             guard ctx.hasDraft || ctx.draft != nil else {
@@ -337,10 +370,10 @@ enum Rules {
             return RuleHit(intent: Make.intent(.direct, .requestReview, "Review the current draft"), stage: .context)
         }
         if let m = replyThat.match(s) {
-            return person(ctx, then: .draft(content: m[0] ?? ""), verb: "reply to")
+            return replyToOpen(ctx, content: m[0] ?? "") ?? person(ctx, then: .draft(content: m[0] ?? ""), verb: "reply to")
         }
         if barePronounCommand.match(s) != nil {
-            return person(ctx, then: .draft(content: ""), verb: "reply to")
+            return replyToOpen(ctx, content: "") ?? person(ctx, then: .draft(content: ""), verb: "reply to")
         }
         if let m = searchPronoun.match(s), let rest = m[1] {
             return person(ctx, then: .search(rest: rest), verb: "search for")
@@ -359,6 +392,23 @@ enum Rules {
     }
 
     /// Resolve a person reference: exactly one recent person, else ask.
+    /// A reply to the message the executor verified as open: its sender is the recipient
+    /// (never guessed from recent people). Without content, ask for it.
+    static func replyToOpen(_ ctx: ConversationContext, content: String) -> RuleHit? {
+        guard let message = ctx.selectedMessage else { return nil }
+        let name = message.sender
+        let text = content.trimmingCharacters(in: .whitespaces)
+        if text.isEmpty {
+            return RuleHit(intent: Make.ask("What should the reply to \(name) say?"), stage: .clarify,
+                           pending: .draftContent(recipient: name))
+        }
+        return RuleHit(intent: Make.intent(.task, .createDraft(recipient: name, content: text), "Draft a reply to \(name): “\(text)”"),
+                       stage: .context)
+    }
+
+    static let contentLead = Rx(#"(?:(?:just\s+)?(?:say|saying|write|tell (?:her|him|them))(?:\s+that)?|it should say(?:\s+that)?|that)\s+(.+)"#)
+    static let dismiss = Rx(#"(?:never ?mind|forget it|no reply|don't reply|do not reply|nothing)"#)
+
     static func person(_ ctx: ConversationContext, then: PendingQuestion.PersonFollowUp, verb: String) -> RuleHit {
         switch ctx.recentPeople.count {
         case 1:
@@ -420,6 +470,13 @@ enum Rules {
             return nil
         case .plan:
             return nil  // answered by the plan runner
+        case .draftContent(let recipient):
+            if dismiss.match(s) != nil {
+                return Intent(kind: .unsupported, action: nil, summary: "Okay, I won't write a reply.", source: .deterministic)
+            }
+            let content = (contentLead.match(s).flatMap { $0[0] } ?? s).trimmingCharacters(in: .whitespaces)
+            guard !content.isEmpty, !Words.contentTokens(content).isEmpty else { return nil }
+            return Make.intent(.task, .createDraft(recipient: recipient, content: content), "Draft a reply to \(recipient): “\(content)”")
         case .textToReplace(let replacement):
             guard !lower.isEmpty, !Words.contentTokens(s).isEmpty else { return nil }
             return Make.intent(.edit, .replaceText(old: s, new: replacement), "Replace “\(s)” with “\(replacement)”")

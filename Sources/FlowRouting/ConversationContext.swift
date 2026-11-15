@@ -143,6 +143,8 @@ public enum PendingQuestion: Sendable, Equatable {
     case confirm(proposed: FlowAction, otherwise: FlowAction, kind: IntentKind)
     /// A paused plan is waiting for this answer (FlowPlanner resolves it, not the router).
     case plan(prompt: String, options: [String])
+    /// "What should the reply say?" for a reply to the open message; the answer is the content.
+    case draftContent(recipient: String)
 
     public enum AppFollowUp: Sendable, Equatable {
         case activate
