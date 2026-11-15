@@ -493,3 +493,42 @@ struct NarrowingTests {
         #expect(await session.store.context.selectedMessage?.id == "m4", "second of the narrowed list")
     }
 }
+
+/// T-023A planning: trailing review requests and dictated reply content.
+@Suite("Reply planning")
+struct ReplyPlanningTests {
+    static func context() -> ConversationContext {
+        var c = ConversationContext.empty
+        c.selectedMessage = MessageRef(channel: .mail, id: "m1", sender: "Sarah Chen", senderAddress: "sarah.chen@example.invalid",
+                                       subject: "Meeting tomorrow", epoch: 1)
+        c.openMessage = "Meeting tomorrow"
+        c.notePerson("Sarah Chen")
+        c.activeApp = .mail
+        return c
+    }
+
+    @Test func trailingReviewIsSplitOffTheContent() async {
+        let planner = TaskPlanner(router: IntentRouter(model: FillerTestModel()).core)
+        guard case .plan(let p) = await planner.plan("Reply saying I can meet at 3 and show it to me", context: Self.context()) else {
+            Issue.record("no plan"); return
+        }
+        #expect(p.steps.map(\.action) == [.createDraft(recipient: "Sarah Chen", content: "I can meet at 3"), .requestReview])
+        #expect(p.steps[0].repliesToSelectedMessage)
+    }
+
+    @Test func splitTrailingReviewOnlyAtTheEnd() {
+        #expect(TaskPlanner.splitTrailingReview("Reply saying I'll show it to you tomorrow").1 == false)
+        #expect(TaskPlanner.splitTrailingReview("reply saying ok, and then show me the draft").0 == "reply saying ok")
+    }
+
+    @Test func dictatedAnswerIsOneReplyClause() async {
+        var c = Self.context()
+        c.pending = .draftContent(recipient: "Sarah Chen")
+        let planner = TaskPlanner(router: IntentRouter(model: FillerTestModel()).core)
+        guard case .plan(let p) = await planner.plan("Sounds good, let me know if 3 works", context: c) else {
+            Issue.record("no plan"); return
+        }
+        #expect(p.steps.map(\.action) == [.createDraft(recipient: "Sarah Chen", content: "Sounds good, let me know if 3 works")])
+        #expect(p.steps[0].repliesToSelectedMessage, "threaded although the answer has no reply word")
+    }
+}

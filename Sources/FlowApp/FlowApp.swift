@@ -52,13 +52,16 @@ struct FlowApp: App {
         // Voice → TaskSession (router + planner) → real executor. The executor has its own
         // controllers (separate undo history and numbered sets from the typed tabs), shares the
         // frontmost-app tracker, and is restricted to the synthetic FlowTest mailbox.
+        let executorMail = JXAMailBackend()
         var executorNavigation = UINavigator.Configuration()
         executorNavigation.bringTargetToFront = true
         let executor = MacPlanExecutor(
             window: WindowController(backend: windowBackend),
             navigator: UINavigator(backend: AXUIBackend(frontmost: { windowBackend.frontmostApp() }),
                                    overlay: ScreenOverlay(), configuration: executorNavigation),
-            mail: MailController(backend: JXAMailBackend(), verifier: AXMailDisplayVerifier()),
+            mail: MailController(backend: executorMail, verifier: AXMailDisplayVerifier()),
+            // Reply drafts (T-023A): created, verified on screen and shown for review; never sent.
+            drafts: MailDraftController(mail: executorMail, backend: executorMail, inspector: AXMailComposeInspector()),
             configuration: ExecutorConfiguration(mailScope: .testMailbox("FlowTest")))
         let session = TaskSession(store: IntentRouter(model: BonsaiIntentClassifier(client: client)), executor: executor)
         let coordinator = VoiceSessionCoordinator(session: session, transcriber: nil, permission: SystemMicrophonePermission())

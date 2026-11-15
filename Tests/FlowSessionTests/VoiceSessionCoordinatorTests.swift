@@ -39,7 +39,7 @@ struct VoiceSessionCoordinatorTests {
     @Test func spokenOpenNotesIsPlannedAndExecuted() async throws {
         let rig = Rig()
         #expect(await rig.listen())
-        #expect(await rig.coordinator.status.listen == .listening)
+        #expect(await eventually { await rig.coordinator.status.listen == .listening })
         rig.mic.say("Open Notes")
         let turns = await rig.turns(1)
         let turn = try #require(turns.first)

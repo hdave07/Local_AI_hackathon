@@ -15,9 +15,11 @@ struct Rig {
     let windows = FakeWindowBackend()
     let ui = mailLikeBackend()
     let mail = FakeMailBackend()
+    let draftBackend: FakeDraftBackend
+    let compose: FakeComposeInspector
     let executor: MacPlanExecutor
 
-    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest")) {
+    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest"), drafting: Bool = false) {
         for app in [KnownApp.notes, .mail] {
             windows.openCreatesWindowFor[app.bundleIdentifier] = CGRect(x: 100, y: 100, width: 800, height: 600)
         }
@@ -26,8 +28,14 @@ struct Rig {
         mail.add("Sarah Okafor", "sarah.okafor@example.invalid", "[FlowTest] Lunch on Friday?", mailbox: "Import/FlowTest", account: nil, daysAgo: 2)
         mail.add("Priya Patel", "priya.patel@example.invalid", "[FlowTest] Project budget review", mailbox: "Import/FlowTest", account: nil, daysAgo: 3)
         mail.add("Sarah Real", "sarah@real.example", "Private inbox message", mailbox: "INBOX", account: "Work")
+        draftBackend = FakeDraftBackend(mail: mail)
+        compose = FakeComposeInspector(backend: draftBackend)
+        var dc = MailDraftController.Configuration()
+        dc.verifyTimeout = .milliseconds(30)
+        dc.pollInterval = .milliseconds(5)
+        let drafts = drafting ? MailDraftController(mail: mail, backend: draftBackend, inspector: compose, configuration: dc) : nil
         executor = MacPlanExecutor(window: makeController(windows), navigator: makeNavigator(ui), mail: makeMail(mail),
-                                   configuration: ExecutorConfiguration(mailScope: scope))
+                                   drafts: drafts, configuration: ExecutorConfiguration(mailScope: scope))
     }
 
     func run(_ action: FlowAction, channel: MessageChannel? = nil, bindings: StepBindings = StepBindings()) async -> ExecutionResult {

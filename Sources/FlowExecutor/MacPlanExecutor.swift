@@ -42,10 +42,11 @@ public struct ExecutionLogEntry: Sendable, Equatable {
 public final class MacPlanExecutor: PlanExecuting {
     private let engine: ExecutorEngine
 
+    /// - Parameter drafts: reply drafting (T-023A). `nil` keeps drafting unsupported.
     @MainActor
-    public init(window: WindowController, navigator: UINavigator, mail: MailController,
+    public init(window: WindowController, navigator: UINavigator, mail: MailController, drafts: MailDraftController? = nil,
                 configuration: ExecutorConfiguration = ExecutorConfiguration()) {
-        engine = ExecutorEngine(window: window, navigator: navigator, mail: mail, configuration: configuration)
+        engine = ExecutorEngine(window: window, navigator: navigator, mail: mail, drafts: drafts, configuration: configuration)
     }
 
     public func execute(_ request: ExecutionRequest) async -> ExecutionResult {
@@ -61,15 +62,18 @@ final class ExecutorEngine {
     let window: WindowController
     let navigator: UINavigator
     let mail: MailController
+    let drafts: MailDraftController?
     let configuration: ExecutorConfiguration
     private(set) var log: [ExecutionLogEntry] = []
     /// Message candidates belong to one search; a newer search makes older choices stale.
     private(set) var searchEpoch = 0
 
-    init(window: WindowController, navigator: UINavigator, mail: MailController, configuration: ExecutorConfiguration) {
+    init(window: WindowController, navigator: UINavigator, mail: MailController, drafts: MailDraftController?,
+         configuration: ExecutorConfiguration) {
         self.window = window
         self.navigator = navigator
         self.mail = mail
+        self.drafts = drafts
         self.configuration = configuration
     }
 
@@ -89,8 +93,12 @@ final class ExecutorEngine {
             result = await readMessage(query, request)
         case .queryCalendar:
             result = Self.unsupported("Checking the calendar isn't available yet.")
-        case .createDraft, .insertText, .replaceText, .requestReview:
-            result = Self.unsupported("Writing or editing messages isn't enabled yet. Nothing was changed.")
+        case .createDraft(_, let content):
+            result = await createReply(content, request)
+        case .requestReview:
+            result = await review(request)
+        case .insertText, .replaceText:
+            result = Self.unsupported("Editing drafts by voice isn't enabled yet. Nothing was changed.")
         case .requestSend:
             result = Self.unsupported("Sending is disabled in this version. Nothing was sent.")
         }
@@ -215,6 +223,70 @@ final class ExecutorEngine {
         }
     }
 
+    // MARK: Reply drafts (FlowMail, never sent)
+
+    private func createReply(_ content: String, _ request: ExecutionRequest) async -> ExecutionResult {
+        guard let drafts else { return Self.unsupported("Writing replies isn't enabled. Nothing was changed.") }
+        guard (request.channel ?? .mail) == .mail else {
+            return Self.unsupported("Only Mail replies are supported; \(request.channel!.rawValue) isn't connected.")
+        }
+        guard let pick = request.bindings.message else {
+            return Self.unsupported("I can only write replies to an email you've opened. Find the email first.")
+        }
+        guard pick.channel == .mail, let ref = MailRefCodec.decode(pick.id) else {
+            return ExecutionResult(status: .failed, error: .staleTarget, userMessage: "I lost track of that email; find it again.")
+        }
+        guard scopeAllows(ref) else { return outOfScope() }
+        let text = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "What should the reply say?")
+        }
+        // At most one draft per plan step, whatever the outcome of an earlier attempt.
+        let key = "\(request.planID.uuidString)#\(request.stepID)"
+        let r = await drafts.createReply(to: ref, content: text, key: key)
+        return draftResult(r, inReplyTo: pick.id, presented: false)
+    }
+
+    private func review(_ request: ExecutionRequest) async -> ExecutionResult {
+        guard let drafts else { return Self.unsupported("Reviewing drafts isn't enabled.") }
+        guard let bound = request.bindings.draft else {
+            return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "There's no draft to show.")
+        }
+        guard bound.channel == .mail, drafts.state(bound.id) != nil else {
+            return ExecutionResult(status: .failed, error: .targetNotFound, userMessage: "I don't have that draft open.")
+        }
+        let r = await drafts.refresh(bound.id, present: true)
+        return draftResult(r, inReplyTo: bound.inReplyTo, presented: true)
+    }
+
+    private func draftResult(_ r: MailDraftResult, inReplyTo: String?, presented: Bool) -> ExecutionResult {
+        let snapshot = r.draft.map {
+            DraftSnapshot(channel: .mail, id: $0.id, recipients: $0.recipients, subject: $0.subject, body: $0.body,
+                          version: $0.version, inReplyTo: inReplyTo)
+        }
+        switch r.status {
+        case .completed:
+            guard let snapshot else { return ExecutionResult(status: .unverified, userMessage: r.userMessage) }
+            return ExecutionResult(status: .completed, observation: presented ? .reviewShown(snapshot) : .draft(snapshot),
+                                   userMessage: r.userMessage)
+        case .unverified:
+            // The draft may exist; never retried automatically (content step), never duplicated (step key).
+            return ExecutionResult(status: .unverified, userMessage: r.userMessage)
+        default:
+            let code: ExecutionErrorCode
+            switch r.error {
+            case .recipientMismatch: code = .recipientMismatch
+            case .draftAlreadyOpen, .draftAmbiguous: code = .draftAlreadyOpen
+            case .messageGone, .referenceChanged: code = .staleTarget
+            case .draftGone, .unknownDraft: code = .targetNotFound
+            case .automationDenied, .automationNotDetermined: code = .permissionDenied
+            case .timedOut: code = .timeout
+            default: code = .unknown
+            }
+            return ExecutionResult(status: r.status == .unsupported ? .unsupported : .failed, error: code, userMessage: r.userMessage)
+        }
+    }
+
     private func opened(_ r: MailResult) -> ExecutionResult {
         switch r.status {
         case .completed:
@@ -305,8 +377,8 @@ final class ExecutorEngine {
         case .scrolled: "scrolled"
         case .messageCandidates(let c): "\(c.count) candidate messages"
         case .messageOpened(let m): "opened: \(m.spoken)"
-        case .draft: "draft"
-        case .reviewShown: "review shown"
+        case .draft(let d): "draft \(d.id.suffix(8)) v\(d.version) to \(d.recipients.joined(separator: ", "))"
+        case .reviewShown(let d): "review shown: draft \(d.id.suffix(8)) v\(d.version)"
         case .lookupResult: "lookup answered"
         case .sent: "sent"
         }

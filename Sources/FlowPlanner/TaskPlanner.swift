@@ -36,8 +36,16 @@ public struct TaskPlanner: Sendable {
     public func plan(_ utterance: String, context: ConversationContext) async -> PlanningOutcome {
         // Channel names ("email", "text", "whatsapp", or any catalog channel) also start clauses.
         let channelVerbs = Set(channels.catalog.channels.flatMap(\.spokenNames).filter { !$0.contains(" ") })
+        // Answering "What should the reply say?": the whole utterance is dictated content, never
+        // split into commands, and the draft stays a reply to the open message.
+        var answeringReply = false
+        if case .draftContent = context.pending { answeringReply = true }
+        // "…, and show it to me" at the end asks for a review; it is not part of the content.
+        let (spoken, wantsReview) = Self.splitTrailingReview(utterance)
+        let body = answeringReply ? spoken : Self.expandReplyToEmail(spoken, context: context)
         // Filler-only clauses ("Um, open notes" splits into "Um" + "open notes") carry no command.
-        let clauses = Self.clauses(utterance, extraVerbs: channelVerbs).filter { !Self.isFillerOnly($0) }
+        var clauses = answeringReply ? [body] : Self.clauses(body, extraVerbs: channelVerbs).filter { !Self.isFillerOnly($0) }
+        if wantsReview { clauses.append("show it to me") }
         guard !clauses.isEmpty else { return .failure(.emptyInput) }
 
         var builder = Builder(context: context, catalog: channels.catalog)
@@ -58,7 +66,8 @@ public struct TaskPlanner: Sendable {
                 return .declined(intent)
             default:
                 guard let action = intent.action else { return .declined(intent) }
-                builder.add(action, clause: raw, spokenChannel: resolved.channel, summary: intent.summary)
+                builder.add(action, clause: raw, spokenChannel: resolved.channel, summary: intent.summary,
+                            forceReply: answeringReply && Capability(action) == .compose)
             }
             if builder.steps.count > Plan.maxSteps {
                 return .clarification(
@@ -70,6 +79,37 @@ public struct TaskPlanner: Sendable {
     }
 
     // MARK: - Clauses
+
+    static let trailingReview = try! NSRegularExpression(
+        pattern: #"\s*[,;]?\s+(?:and\s+)?(?:then\s+)?(?:show|let me see|read back|display)\s+(?:me\s+)?(?:it|that|the draft|the reply|my reply)(?:\s+to me)?(?:\s+first)?\s*[.!?]?\s*$"#,
+        options: .caseInsensitive)
+
+    /// Splits a trailing review request ("…, and show it to me") off the utterance.
+    static func splitTrailingReview(_ utterance: String) -> (String, Bool) {
+        let ns = utterance as NSString
+        guard let m = trailingReview.firstMatch(in: utterance, range: NSRange(location: 0, length: ns.length)), m.range.location > 0
+        else { return (utterance, false) }
+        return (ns.substring(to: m.range.location), true)
+    }
+
+    static let replyToNamedEmail = try! NSRegularExpression(
+        pattern: #"^(?:.*?\b)?(?:reply|respond|answer|write back)\s+to\s+([A-Za-z][A-Za-z.-]*)(?:'s|’s|s')\s+((?:latest\s+|last\s+)?(?:email|e-mail|message|mail|note)(?:\s+about\s+.+?)?)(?:\s*[,:]\s*|\s+(?:saying|that|to say|with)\s+)(.+)$"#,
+        options: .caseInsensitive)
+
+    /// "reply to Sarah's email saying X" when Sarah's email is not the open message becomes
+    /// "find Sarah's email, reply saying X": find (and ask which, if several), then reply.
+    static func expandReplyToEmail(_ utterance: String, context: ConversationContext) -> String {
+        let ns = utterance as NSString
+        guard let m = replyToNamedEmail.firstMatch(in: utterance, range: NSRange(location: 0, length: ns.length)) else { return utterance }
+        let name = ns.substring(with: m.range(at: 1))
+        if let open = context.selectedMessage,
+           (open.sender + " " + (open.senderAddress ?? "")).lowercased().contains(name.lowercased()) {
+            return utterance  // already open: the router replies to it directly
+        }
+        let what = ns.substring(with: m.range(at: 2))
+        let content = ns.substring(with: m.range(at: 3))
+        return "find \(name)'s \(what), reply saying \(content)"
+    }
 
     /// The same disfluencies FlowRouting's cleaner removes (uh, um, erm, uhm).
     static let fillers: Set<String> = ["uh", "um", "erm", "uhm"]
@@ -167,7 +207,8 @@ public struct TaskPlanner: Sendable {
             spoken ?? continuing ?? catalog.defaultChannel
         }
 
-        mutating func add(_ action: FlowAction, clause: String, spokenChannel: MessageChannel?, summary: String) {
+        mutating func add(_ action: FlowAction, clause: String, spokenChannel: MessageChannel?, summary: String,
+                          forceReply: Bool = false) {
             switch Capability(action) {
             case .activate:
                 if case .activateApp(let app) = action { _ = append(action, expectation: .appFrontmost(app), summary: summary) }
@@ -196,7 +237,7 @@ public struct TaskPlanner: Sendable {
             case .compose:
                 guard case .createDraft(let recipient, let content) = action else { return }
                 let continuing = messageStep?.channel ?? real.selectedMessage?.channel
-                if Self.isReply(clause), messageStep != nil || real.selectedMessage != nil {
+                if Self.isReply(clause) || forceReply, messageStep != nil || real.selectedMessage != nil {
                     // A reply stays in the channel of the message it answers.
                     let ch = spokenChannel ?? continuing ?? catalog.defaultChannel
                     let deps = messageStep.map { [$0.id] } ?? []

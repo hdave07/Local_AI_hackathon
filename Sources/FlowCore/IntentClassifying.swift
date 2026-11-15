@@ -18,7 +18,7 @@ public enum DeterministicRouter {
         let command: ControlCommand?
         switch body {
         case ["stop"]: command = .stop
-        case ["cancel"]: command = .cancel
+        case ["cancel"], ["never", "mind"], ["nevermind"], ["forget", "it"]: command = .cancel
         case ["stop", "dictation"]: command = .stopDictation
         default: command = nil
         }

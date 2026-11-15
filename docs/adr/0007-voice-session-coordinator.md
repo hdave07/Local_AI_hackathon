@@ -68,3 +68,9 @@ Safety additions:
 - The executor answers ADR 0005 Q2 (Mail identity and epochs, see ADR 0006) and Q3: the verbatim query is parsed deterministically, and the structured-filter proposal stands.
 - Still open from ADR 0005: generic choice observation (§4); FlowAX numbered choices can't yet resume a plan. Drafting, review and send wait for T-023 and an explicit decision to enable them.
 - ADR 0005 Q5: the coordinator returns `say` text for the HUD; spoken output (TTS) isn't wired yet.
+
+## Addendum — T-023A reply drafts (`feature/mail-reply-drafts`)
+- **Executor:** `create_draft` (replies to the bound, verified message only) and `request_review` go to `FlowMail.MailDraftController`. `insert/replace_text` and `request_send` stay `unsupported`. New `ExecutionErrorCode`s: `recipient_mismatch`, `draft_already_open`.
+- **Router:** new `PendingQuestion.draftContent(recipient:)`. Replies to the open message take the recipient from `ctx.selectedMessage` (never guessed). Draft references, draft-discard refusals, discourse openers, and "never mind" → cancel (FlowCore `DeterministicRouter`).
+- **TaskSession:** stop/cancel also drops an open router question.
+- **Planner:** trailing "and show it to me" becomes a review step; dictated reply answers are one clause and stay threaded; "reply to X's email saying …" with X's email not open expands to find → reply.

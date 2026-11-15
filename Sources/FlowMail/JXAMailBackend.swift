@@ -8,7 +8,7 @@ import Foundation
 /// `osascript`), read-only. Every request is one JSON argument; the script never
 /// evaluates caller-supplied text as code.
 @MainActor
-public final class JXAMailBackend: MailBackend {
+public final class JXAMailBackend: MailBackend, MailDraftBackend {
     public nonisolated static let bundleID = "com.apple.mail"
     private let runner: ScriptRunning
     private let timeout: Duration
@@ -111,6 +111,48 @@ public final class JXAMailBackend: MailBackend {
         let reply: ContentReply = try await call(["op": "content", "ref": Self.encode(ref)])
         return reply.content
     }
+
+    // MARK: Drafts (no send, save or delete)
+
+    public func createReplyDraft(_ ref: MailMessageRef, recipient: String, content: String) async throws(MailError) -> ReplyCreation {
+        let reply: ReplyDraftReply = try await call(["op": "replyDraft", "ref": Self.encode(ref), "recipient": recipient, "content": content])
+        if let existing = reply.existing {
+            return .existing(subject: reply.subject, drafts: existing.map { OpenDraftInfo(to: $0.to, cc: $0.cc, bcc: $0.bcc) })
+        }
+        if reply.mismatch == true { return .mismatch(to: reply.to ?? [], cc: reply.cc ?? [], bcc: reply.bcc ?? []) }
+        return .created(subject: reply.subject, to: reply.to ?? [], cc: reply.cc ?? [], bcc: reply.bcc ?? [],
+                        contentSet: reply.contentSet ?? false, windowShown: reply.window != nil)
+    }
+
+    public func openDrafts(subject: String) async throws(MailError) -> [OpenDraftInfo] {
+        let reply: DraftsReply = try await call(["op": "drafts", "subject": subject])
+        return reply.drafts.map { OpenDraftInfo(to: $0.to, cc: $0.cc, bcc: $0.bcc) }
+    }
+
+    public func showDraft(subject: String) async throws(MailError) -> Int {
+        let reply: ShowReply = try await call(["op": "showDraft", "subject": subject])
+        return reply.count
+    }
+
+    struct AddressLists: Decodable {
+        let to: [String]
+        let cc: [String]
+        let bcc: [String]
+    }
+
+    struct ReplyDraftReply: Decodable {
+        let subject: String
+        let existing: [AddressLists]?
+        let mismatch: Bool?
+        let to: [String]?
+        let cc: [String]?
+        let bcc: [String]?
+        let contentSet: Bool?
+        let window: String?
+    }
+
+    struct DraftsReply: Decodable { let drafts: [AddressLists] }
+    struct ShowReply: Decodable { let count: Int }
 
     // MARK: Transport
 
@@ -315,6 +357,53 @@ public final class JXAMailBackend: MailBackend {
         }
         return JSON.stringify({ frontWindow: front, read: m.readStatus() });
       }
+      // ---- Reply drafts. There is no send, save or delete operation in this script. ----
+      const addrs = list => list.map(x => { try { return (x.address() || '').toLowerCase(); } catch (e) { return ''; } });
+      const openWithSubject = subject => Mail.outgoingMessages().filter(o => { try { return o.subject() === subject; } catch (e) { return false; } });
+      const lists = o => ({ to: addrs(o.toRecipients()), cc: addrs(o.ccRecipients()), bcc: addrs(o.bccRecipients()) });
+
+      if (req.op === 'replyDraft') {
+        const m = messageAt(req.ref);
+        if (!m) return fail('gone');
+        const original = m.subject() || '';
+        const expectedSubject = /^re:/i.test(original) ? original : 'Re: ' + original;
+        const open = openWithSubject(expectedSubject);
+        if (open.length > 0) return JSON.stringify({ subject: expectedSubject, existing: open.map(lists) });
+        // Hidden first: recipients are checked before anything is shown. Reply-all is off.
+        const r = Mail.reply(m, { openingWindow: false, replyToAll: false });
+        const l = lists(r);
+        const want = String(req.recipient || '').toLowerCase();
+        if (l.to.length !== 1 || l.to[0] !== want || l.cc.length || l.bcc.length) {
+          try { r.close({ saving: 'no' }); } catch (e) {}  // never shown, never saved
+          return JSON.stringify({ subject: expectedSubject, mismatch: true, to: l.to, cc: l.cc, bcc: l.bcc });
+        }
+        r.content = req.content;
+        const set = String(r.content() || '');
+        r.visible = true;
+        Mail.activate();
+        const subject = r.subject();
+        let shown = null;
+        for (let i = 0; i < 30 && !shown; i++) {
+          delay(0.1);
+          try { const w = Mail.windows().filter(w => w.visible() && w.name() === subject); if (w.length) shown = w[0].name(); } catch (e) {}
+        }
+        return JSON.stringify({ subject: subject, to: l.to, cc: l.cc, bcc: l.bcc,
+                                contentSet: set.replace(/\s+/g, ' ').indexOf(String(req.content).trim().replace(/\s+/g, ' ')) >= 0,
+                                window: shown });
+      }
+
+      if (req.op === 'drafts') return JSON.stringify({ drafts: openWithSubject(req.subject).map(lists) });
+
+      if (req.op === 'showDraft') {
+        const open = openWithSubject(req.subject);
+        if (open.length !== 1) return JSON.stringify({ count: open.length });
+        open[0].visible = true;
+        try { const w = Mail.windows().filter(w => w.visible() && w.name() === req.subject); if (w.length === 1) w[0].index = 1; } catch (e) {}
+        Mail.activate();
+        delay(0.3);
+        return JSON.stringify({ count: 1 });
+      }
+
       return fail('unknownOp');
     }
     """#

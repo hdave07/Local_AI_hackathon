@@ -174,6 +174,18 @@ public enum MailError: Error, Sendable, Equatable {
     case noActiveMessage
     /// Scripting failed; only the numeric code is kept (stderr can contain message text).
     case scriptFailure(code: Int)
+    /// Mail would address the reply to someone else (e.g. a Reply-To header, or extra Cc).
+    case recipientMismatch(expected: String, actual: [String])
+    /// A reply to this message is already open with different content; not duplicated.
+    case draftAlreadyOpen
+    /// The draft is no longer open in Mail (sent, saved and closed, or discarded by the user).
+    case draftGone
+    /// Several open drafts match; Flow will not guess which one is meant.
+    case draftAmbiguous(Int)
+    case noReplyAddress
+    case emptyContent
+    /// A draft id Flow did not create.
+    case unknownDraft
 
     public var userMessage: String {
         switch self {
@@ -194,6 +206,14 @@ public enum MailError: Error, Sendable, Equatable {
         case .numberOutOfRange(let n, let count): "There's no number \(n); choose 1 to \(count)."
         case .noActiveMessage: "No message is open in Flow yet. Open one first."
         case .scriptFailure(let code): "Mail reported an error (\(code))."
+        case .recipientMismatch(let expected, let actual):
+            "Mail would address this reply to \(actual.joined(separator: ", ")), not only \(expected), so I didn't create it."
+        case .draftAlreadyOpen: "A reply to this message is already open. Review or close it first; I didn't create another."
+        case .draftGone: "That draft isn't open in Mail any more."
+        case .draftAmbiguous(let n): "\(n) open drafts look like this one, so I won't guess which to use."
+        case .noReplyAddress: "That message has no sender address to reply to."
+        case .emptyContent: "What should the reply say?"
+        case .unknownDraft: "I don't know that draft."
         }
     }
 
