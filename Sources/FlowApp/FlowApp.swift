@@ -23,6 +23,7 @@ struct FlowApp: App {
     @State private var mailModel: MailViewModel
     @State private var voiceModel: VoiceViewModel
     @State private var hudController: HUDPanelController?
+    @State private var menuBarMascot: MenuBarMascotController?
 
     init() {
         // Composition root. Defaults match the verified local setup; the
@@ -141,6 +142,9 @@ struct FlowApp: App {
                     NSApplication.shared.setActivationPolicy(.regular)
                     NSApplication.shared.activate()
                     hudController?.install()
+                    if menuBarMascot == nil, let hud = hudController?.model {
+                        menuBarMascot = MenuBarMascotController(model: hud)
+                    }
                 }
         }
         .windowResizability(.contentMinSize)
