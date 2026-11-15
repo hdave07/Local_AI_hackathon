@@ -1,0 +1,376 @@
+{
+  "contextual" : [
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Notes"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Open it."
+      ],
+      "context" : {
+        "app" : "Notes"
+      },
+      "id" : "C01",
+      "utterance" : "Open it."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Mail"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Switch to it."
+      ],
+      "context" : {
+        "app" : "Mail"
+      },
+      "id" : "C02",
+      "utterance" : "Switch to it."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "recipient" : "sarah"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Reply to her."
+      ],
+      "context" : {
+        "people" : [
+          "Sarah"
+        ]
+      },
+      "id" : "C03",
+      "utterance" : "Reply to her."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "sounds good",
+            "recipient" : "marco"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Reply to him saying sounds good."
+      ],
+      "context" : {
+        "people" : [
+          "Marco"
+        ]
+      },
+      "id" : "C04",
+      "utterance" : "Reply to him saying sounds good."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "friday works",
+            "recipient" : "dana"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Emailed them that Friday works."
+      ],
+      "context" : {
+        "people" : [
+          "Dana"
+        ]
+      },
+      "id" : "C05",
+      "utterance" : "Emailed them that Friday works."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "paid",
+            "recipient" : "priya"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Reply to that email saying it's paid."
+      ],
+      "context" : {
+        "message" : "invoice from priya",
+        "people" : [
+          "Priya"
+        ]
+      },
+      "id" : "C06",
+      "utterance" : "Reply to that email saying it's paid."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Reply to her."
+      ],
+      "context" : {
+
+      },
+      "id" : "C07",
+      "tags" : [
+        "negative"
+      ],
+      "utterance" : "Reply to her."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Open it."
+      ],
+      "context" : {
+
+      },
+      "id" : "C08",
+      "tags" : [
+        "negative"
+      ],
+      "utterance" : "Open it."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "maximize",
+            "window" : "Calendar"
+          }
+        },
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "maximize",
+            "window" : "active"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Maximize it"
+      ],
+      "context" : {
+        "app" : "Calendar"
+      },
+      "id" : "C09",
+      "utterance" : "Maximize it"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "left_half",
+            "window" : "Safari"
+          }
+        },
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "left_half",
+            "window" : "active"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Put that window on the left."
+      ],
+      "context" : {
+        "app" : "Safari"
+      },
+      "id" : "C10",
+      "utterance" : "Put that window on the left."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "request_send"
+        }
+      ],
+      "asrFinals" : [
+        "Send it"
+      ],
+      "context" : {
+        "draft" : true,
+        "people" : [
+          "Sarah"
+        ]
+      },
+      "id" : "C11",
+      "utterance" : "Send it"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Reply to her."
+      ],
+      "context" : {
+        "people" : [
+          "Sarah",
+          "Sam"
+        ]
+      },
+      "id" : "C12",
+      "tags" : [
+        "negative"
+      ],
+      "utterance" : "Reply to her."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "replace_text",
+          "args" : {
+            "new" : "4 pm",
+            "old" : "3 pm"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Change that to 4 p.m."
+      ],
+      "context" : {
+        "lastEdited" : "3 pm"
+      },
+      "id" : "C13",
+      "utterance" : "Change that to 4 p.m."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Mail"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Open mail"
+      ],
+      "context" : {
+        "app" : "Notes"
+      },
+      "id" : "C14",
+      "tags" : [
+        "negative"
+      ],
+      "utterance" : "Open mail"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "agree",
+            "recipient" : "john"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Reply to John that I agree."
+      ],
+      "context" : {
+        "people" : [
+          "Sarah"
+        ]
+      },
+      "id" : "C15",
+      "tags" : [
+        "negative"
+      ],
+      "utterance" : "Reply to John that I agree."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Change that to 4 p.m."
+      ],
+      "context" : {
+
+      },
+      "id" : "C16",
+      "tags" : [
+        "negative"
+      ],
+      "utterance" : "Change that to 4 p.m."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "lee"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Find her last email."
+      ],
+      "context" : {
+        "people" : [
+          "Lee"
+        ]
+      },
+      "id" : "C17",
+      "utterance" : "Find her last email."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Close it"
+      ],
+      "context" : {
+        "app" : "Mail"
+      },
+      "id" : "C18",
+      "tags" : [
+        "negative"
+      ],
+      "utterance" : "Close it"
+    }
+  ],
+  "notes" : "ASR transcripts (Argmax 3.1.8, say voice Samantha, 180 wpm, pause 0 ms, hold 0.3 s) of context-benchmark. utterance = first final.",
+  "version" : 1
+}

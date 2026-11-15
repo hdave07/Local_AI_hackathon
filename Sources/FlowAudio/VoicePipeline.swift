@@ -77,13 +77,16 @@ public actor VoicePipeline {
     private let classifier: any IntentClassifying
     private let sink: any IntentSink
     private let tickInterval: Duration
+    private let onControl: (@Sendable (ControlCommand) async -> Void)?
     private let now: @Sendable () -> TimeInterval
     private var assembler: UtteranceAssembler
     private var inFlight: [UUID: Task<Void, Never>] = [:]
     private var tail: Task<Void, Never>?
 
-    /// - Parameter permission: microphone consent provider; pass `nil` only when the
-    ///   transcriber reads a file or synthetic input rather than a microphone.
+    /// - Parameters:
+    ///   - permission: microphone consent provider; pass `nil` only when the transcriber
+    ///     reads a file or synthetic input rather than a microphone.
+    ///   - onControl: called for every control phrase (after pending commands are cancelled).
     public init(
         transcriber: any SpeechTranscribing,
         permission: (any MicrophonePermissionProviding)?,
@@ -92,6 +95,7 @@ public actor VoicePipeline {
         policy: EndpointPolicy = EndpointPolicy(),
         sessionID: UUID = UUID(),
         tickInterval: Duration = .milliseconds(50),
+        onControl: (@Sendable (ControlCommand) async -> Void)? = nil,
         now: @escaping @Sendable () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }
     ) {
         self.transcriber = transcriber
@@ -101,6 +105,7 @@ public actor VoicePipeline {
         self.assembler = UtteranceAssembler(policy: policy)
         self.sessionID = sessionID
         self.tickInterval = tickInterval
+        self.onControl = onControl
         self.now = now
         (events, eventsContinuation) = AsyncStream.makeStream(bufferingPolicy: .unbounded)
     }
@@ -196,6 +201,8 @@ public actor VoicePipeline {
             if control.control == .stop || control.control == .cancel {
                 cancelPendingCommands()
             }
+            // Lets stateful classifiers (e.g. the intent router) drop open questions.
+            if let command = control.control { await onControl?(command) }
             let routed = RoutedUtterance(
                 utterance: utterance, outcome: .success(control), routedBy: .deterministic,
                 routingLatency: ContinuousClock.now - started)
@@ -222,7 +229,9 @@ public actor VoicePipeline {
             // A stop that arrived while the model was answering wins over its result.
             if Task.isCancelled { outcome = .failure(.cancelled) }
             let routed = RoutedUtterance(
-                utterance: utterance, outcome: outcome, routedBy: .model,
+                utterance: utterance, outcome: outcome,
+                // A classifier may answer deterministically (fast path, context, clarification).
+                routedBy: (try? outcome.get())?.source == .deterministic ? .deterministic : .model,
                 routingLatency: ContinuousClock.now - started)
             await self?.finish(routed)
         }

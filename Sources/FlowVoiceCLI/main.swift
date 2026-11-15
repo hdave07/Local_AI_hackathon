@@ -16,6 +16,7 @@ import FlowArgmax
 import FlowAudio
 import FlowCore
 import FlowLLM
+import FlowRouting
 import Foundation
 
 struct Options {
@@ -26,6 +27,7 @@ struct Options {
     var model: String?
     var mode: String?
     var verbose = false
+    var router = true
 
     static func parse(_ args: [String]) -> Options {
         var o = Options()
@@ -39,8 +41,9 @@ struct Options {
             case "--model": o.model = it.next()
             case "--mode": o.mode = it.next()
             case "--verbose": o.verbose = true
+            case "--no-router": o.router = false
             case "-h", "--help":
-                print("usage: flow-voice [--file PATH] [--fast] [--once] [--max-seconds N] [--model NAME] [--mode always|voice|battery] [--verbose]")
+                print("usage: flow-voice [--file PATH] [--fast] [--once] [--max-seconds N] [--model NAME] [--mode always|voice|battery] [--no-router] [--verbose]")
                 exit(0)
             default:
                 FileHandle.standardError.write(Data("unknown option \(arg)\n".utf8))
@@ -64,7 +67,7 @@ func describe(_ routed: RoutedUtterance) -> String {
     case .success(let intent):
         let what = intent.action.map { "\($0.type.rawValue) → \($0.targetDescription) [risk \($0.risk.rawValue)]" }
             ?? intent.control.map { "control: \($0.rawValue)" } ?? intent.kind.rawValue
-        return "\(what) via \(routed.routedBy == .model ? "Bonsai" : "deterministic") in \(ms) ms"
+        return "\(what) via \(routed.routedBy == .model ? "Bonsai" : "deterministic") in \(ms) ms — \(intent.summary)"
     case .failure(let error):
         return "REJECTED: \(error.userMessage) (\(error)) after \(ms) ms"
     }
@@ -83,7 +86,10 @@ do {
     print("Invalid model configuration: \(error.userMessage)")
     exit(1)
 }
-let classifier = BonsaiIntentClassifier(client: LMStudioClient(configuration: lmConfig))
+let bonsai = BonsaiIntentClassifier(client: LMStudioClient(configuration: lmConfig))
+// Default: intent router (control → follow-up → context → fast path → Bonsai + guards).
+let router = IntentRouter(model: bonsai)
+let classifier: any IntentClassifying = options.router ? router : bonsai
 
 // Speech.
 let input: ArgmaxSettings.Input = options.file.map { .file($0, realtime: options.realtime, trailingSilence: 3.0) }
@@ -110,7 +116,8 @@ let pipeline = VoicePipeline(
     transcriber: transcriber,
     permission: settings.usesMicrophone ? SystemMicrophonePermission() : nil,
     classifier: classifier,
-    sink: sink)
+    sink: sink,
+    onControl: { _ in await router.cancelPendingQuestion() })
 
 line("flow-voice: Argmax SDK \(ArgmaxTranscriberInfo.sdkVersion), model \(settings.model), LLM \(lmConfig.modelID)")
 line(settings.usesMicrophone ? "input: default microphone — speak a command (e.g. “Open Notes”)" : "input: \(options.file!.path)")

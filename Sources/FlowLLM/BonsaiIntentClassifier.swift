@@ -11,10 +11,13 @@ public struct BonsaiIntentClassifier: IntentClassifying {
 
     private let client: LMStudioClient
     private let maxAttempts: Int
+    /// System prompt sent with every request (default `IntentSchema.systemPrompt`).
+    public let systemPrompt: String
 
-    public init(client: LMStudioClient, maxAttempts: Int = 2) {
+    public init(client: LMStudioClient, maxAttempts: Int = 2, systemPrompt: String = IntentSchema.systemPrompt) {
         self.client = client
         self.maxAttempts = max(1, maxAttempts)
+        self.systemPrompt = systemPrompt
     }
 
     public var modelID: String { client.configuration.modelID }
@@ -37,7 +40,7 @@ public struct BonsaiIntentClassifier: IntentClassifying {
         }
 
         let messages = [
-            ChatMessage(role: .system, content: IntentSchema.systemPrompt),
+            ChatMessage(role: .system, content: systemPrompt),
             ChatMessage(role: .user, content: input),
         ]
 
@@ -71,9 +74,20 @@ public struct ClassificationTrace: Sendable {
         public let rawContent: String?
         public let error: ClassificationError?
         public let latency: Duration
+
+        public init(rawContent: String?, error: ClassificationError?, latency: Duration) {
+            self.rawContent = rawContent
+            self.error = error
+            self.latency = latency
+        }
     }
 
     public let outcome: Result<Intent, ClassificationError>
     /// Empty when no model call was needed (input checks or deterministic control phrase).
     public let attempts: [Attempt]
+
+    public init(outcome: Result<Intent, ClassificationError>, attempts: [Attempt]) {
+        self.outcome = outcome
+        self.attempts = attempts
+    }
 }
