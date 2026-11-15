@@ -64,6 +64,8 @@ public final class WindowController {
                 return try await setMinimized(selector, true, command)
             case .restore(let selector):
                 return try await setMinimized(selector, false, command)
+            case .close(let selector):
+                return try await close(selector, command)
             case .undo:
                 return try await undo()
             }
@@ -257,6 +259,43 @@ public final class WindowController {
         }
         return result(command, .completed, targets: [window], before: [window.frame], observed: [observed], undo: token,
                       message: "\(minimize ? "Minimized" : "Restored") \(window.displayName).")
+    }
+
+    // MARK: Close
+
+    /// Presses the window's close button and verifies it went away. If the app asks to save
+    /// changes, Flow stops there: the sheet is the user's decision (never "Don't Save").
+    /// Closing is not undoable and never quits the app.
+    private func close(_ selector: WindowSelector, _ command: WindowCommand) async throws(WindowError) -> WindowActionResult {
+        let window = try resolve(selector, minimized: false)
+        try backend.close(window.id)
+        var gone = false
+        var sheet = false
+        _ = await waitUntil(configuration.settleTimeout) {
+            if backend.hasSheet(window.id) { sheet = true; return true }
+            do throws(WindowError) {
+                _ = try backend.state(of: window.id)
+                return false
+            } catch {
+                gone = error == .windowGone
+                return gone
+            }
+        }
+        // A window that has left the app's window list is closed even if its element lingers.
+        if !gone, !sheet, let app = backend.runningApp(bundleID: window.app.bundleID),
+           let remaining = try? backend.windows(of: app), !remaining.contains(where: { $0.id == window.id }) {
+            gone = true
+        }
+        if gone {
+            return result(command, .completed, targets: [window], before: [window.frame],
+                          message: "Closed \(window.displayName). \(window.app.name) is still open.")
+        }
+        if sheet {
+            return result(command, .partiallyCompleted, targets: [window], observed: [window],
+                          message: "\(window.app.name) is asking whether to save changes. I didn't answer it; that's up to you.")
+        }
+        return result(command, .unverified, targets: [window], observed: [window],
+                      message: "I pressed close, but \(window.displayName) is still open.")
     }
 
     // MARK: Undo

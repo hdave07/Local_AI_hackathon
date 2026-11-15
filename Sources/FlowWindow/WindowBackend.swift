@@ -20,8 +20,17 @@ public protocol WindowBackend: AnyObject {
     func setSize(_ id: WindowID, _ size: CGSize) throws(WindowError)
     func setMinimized(_ id: WindowID, _ minimized: Bool) throws(WindowError)
     func raise(_ id: WindowID) throws(WindowError)
+    /// Presses the window's own close button (never quits the app, never answers a sheet).
+    func close(_ id: WindowID) throws(WindowError)
+    /// The window shows a sheet (e.g. "Do you want to save changes?").
+    func hasSheet(_ id: WindowID) -> Bool
     /// Usable area of the primary display (excludes menu bar and Dock), AX coordinates.
     func usableScreenFrame() -> CGRect?
     /// On-screen window bounds for a process from the window server, AX-compatible coordinates.
     func windowServerFrames(pid: pid_t) -> [CGRect]
+}
+
+public extension WindowBackend {
+    func close(_ id: WindowID) throws(WindowError) { throw .axFailure(operation: "closing the window", code: -1) }
+    func hasSheet(_ id: WindowID) -> Bool { false }
 }

@@ -115,6 +115,8 @@ struct ActionSignature: Equatable {
         case .showCalendar(let d): args = ["date": d]
         case .requestReview, .requestSend: args = [:]
         case .editText(let command): args = ["command": command]
+        case .minimizeWindow(let w), .restoreWindow(let w), .closeWindow(let w): args = ["window": w.signature]
+        case .listWindows: args = [:]
         }
     }
 

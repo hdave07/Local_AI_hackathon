@@ -137,6 +137,29 @@ public final class AXWindowBackend: WindowBackend {
         guard error == .success else { throw map(error, "raising the window") }
     }
 
+    public func close(_ id: WindowID) throws(WindowError) {
+        guard let entry = entries[id] else { throw .windowGone }
+        var button: CFTypeRef?
+        let error = AXUIElementCopyAttributeValue(entry.element, kAXCloseButtonAttribute as CFString, &button)
+        guard error == .success, let button, CFGetTypeID(button) == AXUIElementGetTypeID() else {
+            throw error == .invalidUIElement ? .windowGone : .axFailure(operation: "finding the close button", code: error.rawValue)
+        }
+        let press = AXUIElementPerformAction(button as! AXUIElement, kAXPressAction as CFString)
+        guard press == .success else { throw map(press, "closing the window") }
+    }
+
+    public func hasSheet(_ id: WindowID) -> Bool {
+        guard let entry = entries[id] else { return false }
+        var children: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(entry.element, kAXChildrenAttribute as CFString, &children) == .success,
+              let list = children as? [AXUIElement] else { return false }
+        return list.contains { child in
+            var role: CFTypeRef?
+            return AXUIElementCopyAttributeValue(child, kAXRoleAttribute as CFString, &role) == .success
+                && (role as? String) == kAXSheetRole
+        }
+    }
+
     // MARK: Screen and window server
 
     public func usableScreenFrame() -> CGRect? {

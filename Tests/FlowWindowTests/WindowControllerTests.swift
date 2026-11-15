@@ -210,7 +210,7 @@ struct WindowControllerTests {
         let id = backend.addWindow(.notes, "Notes", original)
         let controller = makeController(backend)
         _ = await controller.perform(.move(.app(.notes), .leftHalf))
-        backend.close(id)
+        backend.simulateUserClose(id)
         #expect(await controller.perform(.undo).error == .windowGone)
     }
 

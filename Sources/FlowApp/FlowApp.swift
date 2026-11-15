@@ -4,12 +4,14 @@ import FlowAX
 import FlowCalendar
 import FlowCore
 import FlowExecutor
+import FlowHUD
 import FlowLLM
 import FlowMail
 import FlowMailSend
 import FlowPlanner
 import FlowRouting
 import FlowSession
+import FlowSpeech
 import FlowWindow
 import SwiftUI
 
@@ -20,6 +22,7 @@ struct FlowApp: App {
     @State private var navigationModel: NavigationViewModel
     @State private var mailModel: MailViewModel
     @State private var voiceModel: VoiceViewModel
+    @State private var hudController: HUDPanelController?
 
     init() {
         // Composition root. Defaults match the verified local setup; the
@@ -76,7 +79,25 @@ struct FlowApp: App {
             configuration: ExecutorConfiguration(mailScope: .testMailbox("FlowTest")))
         let session = TaskSession(store: IntentRouter(model: BonsaiIntentClassifier(client: client)), executor: executor)
         let coordinator = VoiceSessionCoordinator(session: session, transcriber: nil, permission: SystemMicrophonePermission())
-        _voiceModel = State(initialValue: VoiceViewModel(coordinator: coordinator, executor: executor))
+
+        // Floating HUD (ADR 0011): fed by the same coordinator events as the Voice tab, and by
+        // spoken-feedback events. FLOW_HUD=off disables it.
+        let hud: HUDModel? = env["FLOW_HUD"]?.lowercased() == "off" ? nil : HUDModel()
+        // Spoken feedback (ADR 0008 decision 3): speaks questions, confirmations and failures;
+        // drops Flow's own speech picked up by the microphone. FLOW_SPOKEN_FEEDBACK=off disables it.
+        let feedback: SpokenFeedback? = env["FLOW_SPOKEN_FEEDBACK"]?.lowercased() == "off"
+            ? nil : SpokenFeedback(output: SystemSpeechOutput())
+        let voice = VoiceViewModel(coordinator: coordinator, executor: executor, hud: hud, feedback: feedback)
+        _voiceModel = State(initialValue: voice)
+        if let hud {
+            hud.onToggleListening = { [weak voice] in
+                guard let voice else { return }
+                Task { voice.isListening ? await voice.stopListening() : await voice.startListening() }
+            }
+            hud.onSubmit = { [weak voice] text in voice?.say(text) }
+            hud.onStopSpeaking = { Task { await feedback?.stopSpeaking() } }
+            _hudController = State(initialValue: HUDPanelController(model: hud))
+        }
 
         _model = State(initialValue: ClassifierViewModel(
             classifier: BonsaiIntentClassifier(client: client),
@@ -119,8 +140,15 @@ struct FlowApp: App {
                     // Needed when launched as a bare SwiftPM executable (no .app bundle).
                     NSApplication.shared.setActivationPolicy(.regular)
                     NSApplication.shared.activate()
+                    hudController?.install()
                 }
         }
         .windowResizability(.contentMinSize)
+        .commands {
+            CommandMenu("HUD") {
+                Button("Show Flow HUD") { hudController?.model.show() }.keyboardShortcut("h", modifiers: [.command, .option])
+                Button("Hide Flow HUD") { hudController?.model.hide() }
+            }
+        }
     }
 }

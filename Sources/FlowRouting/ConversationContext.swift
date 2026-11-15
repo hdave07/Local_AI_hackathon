@@ -9,7 +9,11 @@ import Foundation
 /// utterance, and every reference it resolves must be unique; otherwise the router asks.
 public struct ConversationContext: Sendable, Equatable {
     /// App most recently activated or targeted.
-    public var activeApp: KnownApp?
+    public var activeApp: KnownApp? {
+        didSet { if let oldValue, oldValue != activeApp { previousApp = oldValue } }
+    }
+    /// The app that was active before `activeApp` ("go back").
+    public var previousApp: KnownApp?
     /// People in the recent conversation, most recent first (deduplicated, at most 3).
     public var recentPeople: [String]
     /// Description/query of the message currently open, if any.
@@ -19,7 +23,12 @@ public struct ConversationContext: Sendable, Equatable {
     /// Text Flow last inserted or replaced (target for "change that to …").
     public var lastEditedText: String?
     /// An unanswered clarification question.
-    public var pending: PendingQuestion?
+    public var pending: PendingQuestion? {
+        didSet { if pending == nil { pendingPrompt = nil } }
+    }
+    /// The words of the open router question ("What should the reply say?"), to repeat it
+    /// after an unrelated quick command such as "switch to Mail".
+    public var pendingPrompt: String?
     /// The last proposed action was about the calendar, so a bare time ("what about Friday?",
     /// "and at five?") continues it.
     public var calendarTopic: Bool = false
@@ -117,6 +126,10 @@ public struct ConversationContext: Sendable, Equatable {
             break
         case .editText:
             break  // the edited draft's verified state arrives from the executor (`draft`)
+        case .restoreWindow(.app(let app)):
+            activeApp = app
+        case .minimizeWindow, .restoreWindow, .closeWindow, .listWindows:
+            break
         }
         updatedAt = now
     }

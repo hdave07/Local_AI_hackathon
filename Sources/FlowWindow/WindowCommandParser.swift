@@ -28,7 +28,7 @@ public enum WindowCommandParser {
     public static let usage = """
         activate <app> · move <app|active> ["title"] <left_half|right_half|maximize|center> · \
         resize <app|active> <wider|narrower|taller|shorter|larger|smaller> · tile <app> <app> · \
-        minimize <app|active> · restore <app|active> · undo · list <app>   (apps: mail, calendar, notes, finder, safari)
+        minimize <app|active> · restore <app|active> · close <app|active> · undo · list <app>   (apps: mail, calendar, notes, finder, safari)
         """
 
     public static func parse(_ input: String) throws(CommandParseError) -> TypedCommand {
@@ -76,6 +76,10 @@ public enum WindowCommandParser {
         case "restore", "unminimize":
             guard words.count == 1 else { throw CommandParseError(message: "Usage: restore <app|active>") }
             return .window(.restore(try selector(words[0], title)))
+
+        case "close":
+            guard words.count == 1 else { throw CommandParseError(message: "Usage: close <app|active>") }
+            return .window(.close(try selector(words[0], title)))
 
         default:
             throw CommandParseError(message: "Unknown command “\(verb)”. \(usage)")

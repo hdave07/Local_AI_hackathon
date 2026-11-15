@@ -51,7 +51,7 @@ final class FakeWindowBackend: WindowBackend {
 
     /// Simulates the user (not Flow) changing a window.
     func userSetFrame(_ id: WindowID, _ frame: CGRect) { windows[id] = windows[id]!.with(frame: frame) }
-    func close(_ id: WindowID) { windows[id] = nil; order.removeAll { $0 == id } }
+    func simulateUserClose(_ id: WindowID) { windows[id] = nil; order.removeAll { $0 == id } }
 
     // MARK: WindowBackend
 
@@ -105,6 +105,25 @@ final class FakeWindowBackend: WindowBackend {
         if dropMinimizeRequests > 0 { dropMinimizeRequests -= 1; return }
         windows[id] = w.with(minimized: minimized)
     }
+
+    /// Windows whose app asks "save changes?" when closed (a sheet appears; the window stays).
+    var unsaved: Set<WindowID> = []
+    /// Windows that ignore the close button.
+    var refusesClose: Set<WindowID> = []
+    private(set) var sheets: Set<WindowID> = []
+    private(set) var closeRequests = 0
+
+    func close(_ id: WindowID) throws(WindowError) {
+        guard windows[id] != nil else { throw .windowGone }
+        closeRequests += 1
+        mutations += 1
+        if unsaved.contains(id) { sheets.insert(id); return }
+        if refusesClose.contains(id) { return }
+        windows[id] = nil
+        order.removeAll { $0 == id }
+    }
+
+    func hasSheet(_ id: WindowID) -> Bool { sheets.contains(id) }
 
     func raise(_ id: WindowID) throws(WindowError) {
         guard windows[id] != nil else { throw .windowGone }

@@ -82,6 +82,8 @@ public enum WindowCommand: Sendable, Equatable {
     case tile(left: KnownApp, right: KnownApp)
     case minimize(WindowSelector)
     case restore(WindowSelector)
+    /// Closes one window. Never quits the app; a "save changes?" sheet is left for the user.
+    case close(WindowSelector)
     case undo
 
     /// Bridge from the shared FlowCore action contract (read-only use of FlowCore).
@@ -92,6 +94,9 @@ public enum WindowCommand: Sendable, Equatable {
         case .moveWindow(let target, let position): self = .move(WindowSelector(target), position)
         case .resizeWindow(let target, let change): self = .resize(WindowSelector(target), change)
         case .tileWindows(let left, let right): self = .tile(left: left, right: right)
+        case .minimizeWindow(let target): self = .minimize(WindowSelector(target))
+        case .restoreWindow(let target): self = .restore(WindowSelector(target))
+        case .closeWindow(let target): self = .close(WindowSelector(target))
         default: return nil
         }
     }
@@ -104,6 +109,7 @@ public enum WindowCommand: Sendable, Equatable {
         case .tile: "tile"
         case .minimize: "minimize"
         case .restore: "restore"
+        case .close: "close"
         case .undo: "undo"
         }
     }
