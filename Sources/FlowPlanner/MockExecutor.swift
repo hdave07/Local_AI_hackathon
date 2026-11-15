@@ -92,6 +92,8 @@ public actor MockExecutor: PlanExecuting {
             return ExecutionResult(status: .completed, observation: .uiActed(label: label))
         case .scroll:
             return ExecutionResult(status: .completed, observation: .scrolled)
+        case .showCalendar(let d):
+            return ExecutionResult(status: .completed, observation: .uiActed(label: "Calendar: \(d)"))
         case .queryCalendar:
             return ExecutionResult(status: .completed, observation: .lookupResult(answer: world.calendarAnswer))
 

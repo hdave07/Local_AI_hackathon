@@ -142,6 +142,9 @@ public enum IntentValidator {
         case .queryCalendar:
             return .queryCalendar(timeExpression: try text(target, field: "target", max: maxLabelLength))
 
+        case .showCalendar:
+            return .showCalendar(dateExpression: try text(target, field: "target", max: maxLabelLength))
+
         case .requestReview:
             return .requestReview
 

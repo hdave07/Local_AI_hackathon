@@ -83,6 +83,8 @@ public enum Observation: Sendable, Equatable {
     case reviewShown(DraftSnapshot)
     /// Answer of a lookup (e.g. calendar availability).
     case lookupResult(answer: String)
+    /// A verified calendar availability answer with its evidence (T-024).
+    case availability(AvailabilityAnswer)
     /// The channel accepted the message for sending (queued or sent). Delivery is not implied.
     case sent(draftID: String, queued: Bool)
 }

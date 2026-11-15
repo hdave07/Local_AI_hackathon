@@ -1,4 +1,5 @@
 import FlowAudio
+import FlowCalendar
 import FlowExecutor
 import FlowSession
 import Foundation
@@ -29,10 +30,12 @@ final class VoiceViewModel {
     init(coordinator: VoiceSessionCoordinator, executor: MacPlanExecutor) {
         self.coordinator = coordinator
         self.executor = executor
+        let mail: String
         switch executor.configuration.mailScope {
-        case .testMailbox(let name): mailScopeDescription = "Mail: \(name) mailbox only (test mode)"
-        case .inbox: mailScopeDescription = "Mail: Inbox"
+        case .testMailbox(let name): mail = "Mail: \(name) mailbox only (test mode)"
+        case .inbox: mail = "Mail: Inbox"
         }
+        mailScopeDescription = mail + " · Calendar: " + (executor.calendarScope?.description ?? "off")
         keySource = ArgmaxKeyStore.load().source
         listener = Task { [weak self, coordinator] in
             for await event in coordinator.events { self?.apply(event) }

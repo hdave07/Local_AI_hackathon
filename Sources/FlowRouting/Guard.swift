@@ -119,13 +119,20 @@ enum Guard {
                 return ask("Do you want to check your calendar?")
             }
             guard grounded(time, extras: timeExtras), Words.tokens(time).contains(where: isTimeWord) else {
-                return ask("Which day or time should I check?")
+                return ask("Which day or time should I check?", .calendarTime)
             }
             // Completeness: every spoken time word must survive (V2 once turned
             // "anything at four tomorrow" into "tomorrow", silently dropping the hour).
             let kept = Set(Words.tokens(time))
             let dropped = spoken.filter { isTimeWord($0) && !kept.contains($0) }
-            return dropped.isEmpty ? nil : ask("Which day or time should I check?")
+            return dropped.isEmpty ? nil : ask("Which day or time should I check?", .calendarTime)
+        case .showCalendar(let day):
+            // Showing a day is navigation: it needs the calendar mentioned and a spoken day.
+            if spoken.isDisjoint(with: calendarNouns) { return ask("Do you want to see your calendar?") }
+            guard grounded(day, extras: timeExtras), Words.tokens(day).contains(where: isTimeWord) else {
+                return ask("Which day should I show?")
+            }
+            return nil
         case .requestSend:
             return spoken.contains("send") ? nil : ask("Do you want to send the current draft?")
         case .requestReview:
@@ -141,6 +148,14 @@ enum Guard {
     ]
 
     /// Tokens are already normalized (number words → digits, "12th" → "12").
+    /// Asks about the schedule and mentions no mail ("do I have anything at four", "am I busy").
+    static func soundsLikeCalendar(_ utterance: String) -> Bool {
+        let w = Set(Words.tokens(utterance))
+        guard w.isDisjoint(with: mailNouns) else { return false }
+        let vague = !w.isDisjoint(with: ["anything", "something"])
+        return !w.isDisjoint(with: calendarNouns) || (vague && (w.contains("have") || w.contains(where: isTimeWord)))
+    }
+
     static func isTimeWord(_ token: String) -> Bool {
         timeVocabulary.contains(token) || (!token.isEmpty && token.allSatisfy(\.isNumber))
     }
@@ -209,7 +224,7 @@ enum Guard {
         case "replace_text": q = "Which text should I change, and to what?"
         case "create_draft": q = "Who should the message go to, and what should it say?"
         case "read_message": q = "Which email should I look for?"
-        case "query_calendar": q = "Which day or time should I check?"
+        case "query_calendar": return RuleHit(intent: Make.ask("Which day or time should I check?"), stage: .guarded, pending: .calendarTime)
         default: q = "I didn't catch that. Could you say it another way?"
         }
         return RuleHit(intent: Make.ask(q), stage: .guarded)

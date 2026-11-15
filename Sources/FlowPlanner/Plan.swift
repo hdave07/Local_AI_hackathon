@@ -127,6 +127,7 @@ public enum Capability: String, Sendable, Equatable {
         case .requestReview: self = .review
         case .requestSend: self = .send
         case .queryCalendar: self = .lookup
+        case .showCalendar: self = .interact
         }
     }
 
