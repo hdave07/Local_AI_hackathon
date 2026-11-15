@@ -115,7 +115,7 @@ final class ExecutorEngine {
             result = await arrange(request.action)
         case .listWindows:
             result = listOpenWindows()
-        case .clickElement, .focus, .scroll:
+        case .clickElement, .focus, .scroll, .showNumbers, .hideNumbers, .chooseNumber:
             result = await navigate(request.action)
         case .readMessage(let query):
             result = await readMessage(query, request)
@@ -163,12 +163,12 @@ final class ExecutorEngine {
         case .completed:
             if case .close = command, let closed = r.targets.first {
                 // The closed window no longer exists; report which one it was.
-                let selected = SelectedWindow(app: KnownApp.allCases.first { $0.bundleIdentifier == closed.appBundleID },
+                let selected = SelectedWindow(app: KnownApp(name: closed.appName, bundleIdentifier: closed.appBundleID),
                                               title: closed.title.isEmpty ? nil : closed.title, windowID: closed.id.description)
                 return ExecutionResult(status: .completed, observation: .window(selected), userMessage: r.userMessage)
             }
             guard let w = r.observed.first else { return ExecutionResult(status: .unverified, userMessage: r.userMessage) }
-            let selected = SelectedWindow(app: KnownApp.allCases.first { $0.bundleIdentifier == w.app.bundleID },
+            let selected = SelectedWindow(app: KnownApp(name: w.app.name, bundleIdentifier: w.app.bundleID),
                                           title: w.title.isEmpty ? nil : w.title, windowID: w.id.description)
             return ExecutionResult(status: .completed, observation: .window(selected), userMessage: r.userMessage)
         case .partiallyCompleted:
@@ -185,30 +185,23 @@ final class ExecutorEngine {
         }
     }
 
-    /// "Show me my open windows": standard windows of the apps Flow can control (read-only).
+    /// "Show me my open windows": standard windows of every running app (read-only).
     private func listOpenWindows() -> ExecutionResult {
-        var parts: [String] = []
-        var denied = false
-        for app in KnownApp.allCases {
-            do throws(WindowError) {
-                let windows = try window.listWindows(app)
-                guard !windows.isEmpty else { continue }
-                let names = windows.prefix(4).map { w -> String in
-                    let title = w.title.isEmpty ? "untitled" : String(w.title.prefix(40))
-                    return w.isMinimized ? "\(title) (minimized)" : title
-                }
-                let more = windows.count > 4 ? " and \(windows.count - 4) more" : ""
-                parts.append("\(app.rawValue): \(names.joined(separator: ", "))\(more)")
-            } catch {
-                if error == .accessibilityNotTrusted { denied = true; break }
+        let all: [(app: AppHandle, windows: [WindowState])]
+        do throws(WindowError) {
+            all = try window.listAllWindows()
+        } catch {
+            return ExecutionResult(status: .failed, error: .permissionDenied, userMessage: error.userMessage)
+        }
+        let parts = all.sorted { $0.app.name < $1.app.name }.map { entry -> String in
+            let names = entry.windows.prefix(3).map { w -> String in
+                let title = w.title.isEmpty ? "untitled" : String(w.title.prefix(40))
+                return w.isMinimized ? "\(title) (minimized)" : title
             }
+            let more = entry.windows.count > 3 ? " and \(entry.windows.count - 3) more" : ""
+            return "\(entry.app.name): \(names.joined(separator: ", "))\(more)"
         }
-        if denied {
-            return ExecutionResult(status: .failed, error: .permissionDenied, userMessage: WindowError.accessibilityNotTrusted.userMessage)
-        }
-        let answer = parts.isEmpty
-            ? "None of the apps I can control (Mail, Calendar, Notes, Finder, Safari) has an open window."
-            : "Open windows — " + parts.joined(separator: ". ") + "."
+        let answer = parts.isEmpty ? "No app has an open window." : "Open windows — " + parts.joined(separator: ". ") + "."
         return ExecutionResult(status: .completed, observation: .lookupResult(answer: answer), retrySafe: true,
                                userMessage: "listed windows of \(parts.count) app(s)")
     }
@@ -221,6 +214,15 @@ final class ExecutorEngine {
         switch r.status {
         case .completed:
             if case .scroll = action { return ExecutionResult(status: .completed, observation: .scrolled, userMessage: r.userMessage) }
+            if case .showNumbers = action {
+                // Numbers are drawn on screen; say how many and how to pick (labels are listed in the HUD).
+                let options = r.clarification?.options ?? []
+                let list = options.prefix(12).map { "\($0.number) \($0.element.displayName)" }.joined(separator: ", ")
+                let answer = options.isEmpty ? r.userMessage
+                    : "\(r.userMessage) Say “click number” and a number. \(list)\(options.count > 12 ? ", …" : "")."
+                return ExecutionResult(status: .completed, observation: .lookupResult(answer: answer), retrySafe: true,
+                                       userMessage: r.userMessage)
+            }
             return ExecutionResult(status: .completed, observation: .uiActed(label: r.target?.label ?? ""), userMessage: r.userMessage)
         case .needsClarification:
             // The numbered overlay is shown; the planner has no generic choice observation yet (ADR 0005 §4).

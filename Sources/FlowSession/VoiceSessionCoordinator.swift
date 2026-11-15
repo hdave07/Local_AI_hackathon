@@ -105,6 +105,10 @@ public actor VoiceSessionCoordinator: IntentSink {
     private var hook: (any VoiceSessionHook)?
     /// When the recognizer first reported speech for the utterance being heard.
     private var heardFrom: Date?
+    /// Set when the user asked to stop listening: anything the recognizer still delivers is dropped.
+    private var stopRequested = false
+    /// How long to wait for the recognizer to wind down before cutting it off.
+    public var stopTimeout: Duration = .seconds(3)
 
     public init(session: TaskSession, transcriber: (any SpeechTranscribing)?, permission: (any MicrophonePermissionProviding)?,
                 policy: EndpointPolicy = EndpointPolicy()) {
@@ -138,6 +142,7 @@ public actor VoiceSessionCoordinator: IntentSink {
             return
         }
         let store = await session.store
+        stopRequested = false
         let pipeline = VoicePipeline(
             transcriber: transcriber, permission: permission, classifier: PassThroughClassifier(), sink: self,
             policy: policy, onControl: { command in
@@ -158,16 +163,35 @@ public actor VoiceSessionCoordinator: IntentSink {
         }
     }
 
-    /// Stops capture. A complete stable utterance in progress is still handled.
+    /// Stops capture now: the HUD shows "not listening" immediately, and nothing the recognizer
+    /// still delivers afterwards is acted on. A recognizer that doesn't wind down within
+    /// `stopTimeout` is cut off.
     public func stopListening() async {
-        await pipeline?.stop()
-        await runTask?.value
+        guard runTask != nil else { return }
+        stopRequested = true
+        setListen(.off)
+        let pipeline = self.pipeline, run = self.runTask
+        let stopping = Task { await pipeline?.stop() }
+        let finished = await withTaskGroup(of: Bool.self) { group in
+            group.addTask { await stopping.value; await run?.value; return true }
+            group.addTask { [stopTimeout] in try? await Task.sleep(for: stopTimeout); return false }
+            let first = await group.next() ?? false
+            group.cancelAll()
+            return first
+        }
+        if !finished { run?.cancel() }
+        if runTask == nil || !finished {
+            runTask = nil
+            self.pipeline = nil
+            forwardTask?.cancel()
+            setListen(.off)
+        }
     }
 
     private func pipelineEnded(_ error: AudioError?) {
         runTask = nil
         pipeline = nil
-        if let error, error != .cancelled {
+        if let error, error != .cancelled, !stopRequested {
             setListen(.failed(error.userMessage))
         } else {
             setListen(.off)
@@ -175,6 +199,7 @@ public actor VoiceSessionCoordinator: IntentSink {
     }
 
     private func forward(_ event: PipelineEvent) {
+        if stopRequested { return }  // winding down after "stop": show nothing more
         switch event {
         case .state(let s):
             switch s {
@@ -206,6 +231,7 @@ public actor VoiceSessionCoordinator: IntentSink {
         let text = routed.utterance.stableText
         let started = heardFrom
         heardFrom = nil
+        if stopRequested { return }
         if let hook, await !hook.admit(text, heardFrom: started, finalizedAt: Date()) { return }
         if Self.isStopOrCancel(text) {
             await interrupt(text, source: .voice)
@@ -252,6 +278,13 @@ public actor VoiceSessionCoordinator: IntentSink {
     @discardableResult
     private func interrupt(_ text: String, source: TurnSource) async -> SessionTurn {
         generation += 1
+        // "stop" also turns the microphone off ("cancel" / "never mind" keep listening). Not awaited
+        // here: this may be running inside the pipeline that is being stopped.
+        if DeterministicRouter.route(text)?.control == .stop, runTask != nil {
+            stopRequested = true
+            setListen(.off)
+            Task { [weak self] in await self?.stopListening() }
+        }
         return await handle(text, source: source)
     }
 

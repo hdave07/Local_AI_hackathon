@@ -125,6 +125,7 @@ final class FakeWindowBackend: WindowBackend {
     }
 
     func hasSheet(_ id: WindowID) -> Bool { sheets.contains(id) }
+    func regularRunningApps() -> [AppHandle] { Array(running.values) }
 
     func raise(_ id: WindowID) throws(WindowError) {
         guard windows[id] != nil else { throw .windowGone }

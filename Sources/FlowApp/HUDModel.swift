@@ -1,3 +1,4 @@
+import AppKit
 import FlowHUD
 import FlowSession
 import FlowSpeech
@@ -58,6 +59,15 @@ final class HUDModel {
         guard state.expectsResponse else { return }
         onSubmit?("cancel")
     }
+    func showMainWindow() {
+        NSApplication.shared.activate()
+        let main = NSApplication.shared.windows.first { $0.title == "Flow" || $0.identifier?.rawValue.contains("Flow") == true }
+        if let main { main.makeKeyAndOrderFront(nil) } else {
+            // The window was closed: a reopen event makes SwiftUI create it again.
+            NSWorkspace.shared.open(Bundle.main.bundleURL)
+        }
+    }
+    func quit() { NSApplication.shared.terminate(nil) }
     func cycleTextScale() {
         textScale = textScale >= 1.5 ? 1.0 : textScale + 0.25
     }

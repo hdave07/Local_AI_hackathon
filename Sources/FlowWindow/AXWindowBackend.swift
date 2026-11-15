@@ -148,6 +148,12 @@ public final class AXWindowBackend: WindowBackend {
         guard press == .success else { throw map(press, "closing the window") }
     }
 
+    public func regularRunningApps() -> [AppHandle] {
+        NSWorkspace.shared.runningApplications
+            .filter { $0.activationPolicy == .regular && $0.processIdentifier != getpid() && $0.bundleIdentifier != nil }
+            .map(Self.handle)
+    }
+
     public func hasSheet(_ id: WindowID) -> Bool {
         guard let entry = entries[id] else { return false }
         var children: CFTypeRef?

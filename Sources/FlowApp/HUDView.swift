@@ -30,6 +30,9 @@ struct HUDView: View {
                 Image(systemName: "questionmark.bubble.fill").foregroundStyle(.orange)
                     .accessibilityLabel("Flow is waiting for your answer")
             }
+            Button { model.toggleListening() } label: { Image(systemName: s.listening ? "stop.circle.fill" : "mic.fill") }
+                .buttonStyle(.borderless).foregroundStyle(s.listening ? .red : .green)
+                .accessibilityLabel(s.listening ? "Stop listening" : "Start listening")
             Button { model.setCollapsed(false) } label: { Image(systemName: "chevron.down.circle") }
                 .buttonStyle(.borderless).help("Expand").accessibilityLabel("Expand the Flow HUD")
         }
@@ -76,17 +79,24 @@ struct HUDView: View {
             Text(s.activity.label).font(font(13, .semibold))
             Spacer(minLength: 4)
             Button { model.toggleListening() } label: {
-                Image(systemName: s.listening ? "mic.slash.fill" : "mic.fill")
+                Label(s.listening ? "Stop listening" : "Listen", systemImage: s.listening ? "stop.circle.fill" : "mic.fill")
+                    .font(font(11, .semibold))
             }
-            .buttonStyle(.borderless).help(s.listening ? "Stop listening" : "Start listening")
+            .buttonStyle(.bordered).controlSize(.small).tint(s.listening ? .red : .green)
+            .help(s.listening ? "Stop listening (or say “stop”)" : "Start listening")
             .accessibilityLabel(s.listening ? "Stop listening" : "Start listening")
             Button { model.cycleTextScale() } label: { Image(systemName: "textformat.size") }
                 .buttonStyle(.borderless).help("Text size").accessibilityLabel("Change text size")
             Button { model.setCollapsed(true) } label: { Image(systemName: "chevron.up.circle") }
                 .buttonStyle(.borderless).help("Collapse").accessibilityLabel("Collapse the Flow HUD")
-            Button { model.hide() } label: { Image(systemName: "xmark.circle") }
-                .buttonStyle(.borderless).help("Hide the HUD (your task keeps going)")
-                .accessibilityLabel("Hide the Flow HUD. Your task keeps going.")
+            Menu {
+                Button("Show Flow window") { model.showMainWindow() }
+                Button("Hide this panel (⌥⌘H shows it again)") { model.hide() }
+                Divider()
+                Button("Quit Flow") { model.quit() }
+            } label: { Image(systemName: "ellipsis.circle") }
+                .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                .help("More").accessibilityLabel("More: show Flow window, hide panel, quit Flow")
         }
     }
 

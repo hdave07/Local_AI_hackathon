@@ -488,12 +488,17 @@ struct FlowAXCompatibilityTests {
         #expect(try await route("put the cursor in the subject field").outcome.get().action == .focus(label: "the subject field"))
     }
 
-    @Test(arguments: ["show numbers", "show numbers for buttons", "numbers", "hide numbers", "choose 3", "pick two", "number 4", "3", "seven"])
-    func overlayPhrasesNeverReachTheModel(utterance: String) async throws {
+    @Test(arguments: [
+        ("show numbers", FlowAction.showNumbers), ("show numbers for buttons", .showNumbers), ("numbers", .showNumbers),
+        ("hide numbers", .hideNumbers), ("choose 3", .chooseNumber(3)), ("pick two", .chooseNumber(2)), ("number 4", .chooseNumber(4)),
+        ("3", .chooseNumber(3)), ("seven", .chooseNumber(7)), ("click number three", .chooseNumber(3)),
+        ("show me what I can click", .showNumbers), ("show the available buttons", .showNumbers),
+    ])
+    func overlayPhrasesNeverReachTheModel(utterance: String, expected: FlowAction) async throws {
         let model = FakeModel()
         let d = await route(utterance, model: model)
         #expect(d.stage == .overlay)
-        #expect(try d.outcome.get().action == nil)
+        #expect(try d.outcome.get().action == expected)
         #expect(model.calls.isEmpty)
     }
 

@@ -116,7 +116,8 @@ struct ActionSignature: Equatable {
         case .requestReview, .requestSend: args = [:]
         case .editText(let command): args = ["command": command]
         case .minimizeWindow(let w), .restoreWindow(let w), .closeWindow(let w): args = ["window": w.signature]
-        case .listWindows: args = [:]
+        case .listWindows, .showNumbers, .hideNumbers: args = [:]
+        case .chooseNumber(let n): args = ["number": String(n)]
         }
     }
 

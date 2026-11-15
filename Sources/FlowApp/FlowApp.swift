@@ -28,6 +28,8 @@ struct FlowApp: App {
         // Composition root. Defaults match the verified local setup; the
         // FLOW_LMSTUDIO_URL / FLOW_MODEL_ID environment variables override them.
         let env = ProcessInfo.processInfo.environment
+        // Every installed app can be opened and controlled by name (read-only scan of Applications folders).
+        InstalledAppScanner.installDirectory()
         let baseURL = env["FLOW_LMSTUDIO_URL"].flatMap(URL.init(string:)) ?? LMStudioConfiguration.defaultBaseURL
         let modelID = env["FLOW_MODEL_ID"] ?? LMStudioConfiguration.defaultModelID
 

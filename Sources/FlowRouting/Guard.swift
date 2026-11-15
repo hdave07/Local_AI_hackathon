@@ -140,7 +140,7 @@ enum Guard {
         case .editText:
             // Never produced by the model (not in its schema); if it ever appears, refuse.
             return ask("What should I change in the draft?")
-        case .minimizeWindow, .restoreWindow, .closeWindow, .listWindows:
+        case .minimizeWindow, .restoreWindow, .closeWindow, .listWindows, .showNumbers, .hideNumbers, .chooseNumber:
             // Deterministic-only window actions: model output naming them is never trusted.
             return ask("Which window should I use?")
         }
@@ -207,7 +207,13 @@ enum Guard {
     }
 
     /// A validator rejection caused by a missing argument becomes a targeted question.
-    static func question(for error: ClassificationError, rawContent: String?) -> RuleHit? {
+    /// The model often proposes "open an app" with no app for speech that wasn't a command at all
+    /// (background talk, half sentences). Without any word about opening or switching, Flow says
+    /// it didn't catch a command instead of asking "Which app?".
+    static let openingWords: Set<String> = ["open", "launch", "start", "switch", "go", "bring", "show", "pull", "focus", "activate",
+                                            "run", "app", "application", "front", "back"]
+
+    static func question(for error: ClassificationError, rawContent: String?, utterance: String = "") -> RuleHit? {
         let action: String?
         switch error {
         case .unsupportedTarget(let a, let target) where target == "(empty)" || target.isEmpty:
@@ -218,6 +224,10 @@ enum Guard {
             return RuleHit(intent: Make.ask("I didn't catch what to do. Could you say it another way?"), stage: .guarded)
         default:
             return nil
+        }
+        if action == "activate_app", !utterance.isEmpty, Set(Words.tokens(utterance)).isDisjoint(with: openingWords) {
+            return RuleHit(intent: Make.ask("I didn't catch a command. Try something like “open Notes” or “find Sarah's email”."),
+                           stage: .guarded)
         }
         let q: String
         switch action {

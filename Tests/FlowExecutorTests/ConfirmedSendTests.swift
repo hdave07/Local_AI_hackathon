@@ -76,8 +76,8 @@ struct ConfirmedSendTests {
         #expect(f.rig.draftBackend.log.filter { $0 == "show" }.count >= 1, "the live draft was re-read and shown before asking")
 
         let cancel = await f.session.handle("Actually, never mind.")
-        guard case .stopped(_, let reason) = cancel.state else { Issue.record("state \(cancel.state)"); return }
-        #expect(reason == SendWording.declined)
+        guard case .cancelled = cancel.state else { Issue.record("state \(cancel.state)"); return }
+        #expect(cancel.say == [SendWording.declined])
         #expect(f.transport.sendCalls == 0 && f.sender.dispatchCount == 0)
         #expect(f.rig.draftBackend.open.count == 1, "the draft is still open, unsent")
         // A late "yes" after cancelling authorizes nothing.

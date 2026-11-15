@@ -68,7 +68,7 @@ struct AppWindowRoutingTests {
     @Test func closingAnUnknownThingIsExplained() async throws {
         let intent = try await route("close the spaceship").outcome.get()
         #expect(intent.action == nil)
-        #expect(intent.summary.contains("close windows"))
+        #expect(intent.summary.contains("which window"))
     }
 
     @Test func closingTheDraftIsStillTheDraftRule() async throws {

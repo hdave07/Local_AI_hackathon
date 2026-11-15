@@ -10,7 +10,7 @@ public final class WindowController {
     public struct Configuration: Sendable {
         public var tolerance: CGFloat = 2
         public var settleTimeout: Duration = .milliseconds(1500)
-        public var activationTimeout: Duration = .seconds(3)
+        public var activationTimeout: Duration = .seconds(12)
         public var pollInterval: Duration = .milliseconds(50)
         public var resizeStep = WindowGeometry.defaultStep
         public var maxUndoDepth = 20
@@ -46,6 +46,15 @@ public final class WindowController {
         guard backend.isAccessibilityTrusted() else { throw .accessibilityNotTrusted }
         guard let handle = backend.runningApp(bundleID: app.bundleIdentifier) else { throw .appNotRunning(app.rawValue) }
         return try backend.windows(of: handle).filter(\.isStandard)
+    }
+
+    /// Standard windows of every running app (for "show me my open windows"), app by app.
+    public func listAllWindows() throws(WindowError) -> [(app: AppHandle, windows: [WindowState])] {
+        guard backend.isAccessibilityTrusted() else { throw .accessibilityNotTrusted }
+        return backend.regularRunningApps().compactMap { app in
+            guard let ws = try? backend.windows(of: app).filter(\.isStandard), !ws.isEmpty else { return nil }
+            return (app, ws)
+        }
     }
 
     public func perform(_ command: WindowCommand) async -> WindowActionResult {
