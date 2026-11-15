@@ -38,8 +38,8 @@ struct ConfirmedSendTests {
         let session: TaskSession
         let clock = Clock()
 
-        init(_ mode: MailSendMode? = .live, model: Model = Model()) {
-            rig = Rig(drafting: true, sending: mode)
+        init(_ mode: MailSendMode? = .live, model: Model = Model(), editing: Bool = false) {
+            rig = Rig(drafting: true, editing: editing, sending: mode)
             store = IntentRouter(model: model)
             let clock = self.clock
             session = TaskSession(store: store, executor: rig.executor, now: { clock.now() })
@@ -275,6 +275,25 @@ struct ConfirmedSendTests {
         guard case .stopped(_, let reason) = r.state else { Issue.record("state \(r.state)"); return }
         #expect(reason.contains("disabled"))
         #expect(f.transport.sendCalls == 0)
+    }
+
+    /// T-023B + T-023C: a voice edit during the confirmation abandons it; the old approval can
+    /// never send the edited text, and the new text needs its own review and yes.
+    @Test func voiceEditDuringConfirmationNeedsANewYes() async {
+        let f = Flow(.live, editing: true)
+        #expect(await f.draftReply())
+        guard case .awaitingConfirmation = await f.askToSend().state else { Issue.record("no confirmation"); return }
+        let edit = await f.session.handle("Actually, change 3:30 to 4.")
+        #expect(!edit.state.isPaused, "the edit replaced the confirmation")
+        #expect(f.rig.draftBackend.open.first?.body == "I can meet at 4")
+        _ = await f.session.handle("yes")
+        #expect(f.transport.sendCalls == 0, "a yes after the edit has nothing to approve")
+        let again = await f.askToSend()
+        guard case .awaitingConfirmation = again.state else { Issue.record("state \(again.state)"); return }
+        #expect(again.say.last?.contains("“I can meet at 4”") == true)
+        _ = await f.session.handle("Yes, send it.")
+        #expect(f.transport.sendCalls == 1)
+        #expect(f.transport.sent.first?.body == "I can meet at 4")
     }
 
     // MARK: Bypass attempts

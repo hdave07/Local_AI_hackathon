@@ -55,6 +55,9 @@ public enum ConfirmationReply: Sendable, Equatable {
         "actually", "nah",
     ]
     static let vague: Set<String> = ["sure", "okay", "ok", "go", "ahead", "fine", "alright", "right", "correct", "confirm", "send", "it", "do"]
+    static let editWords: Set<String> = [
+        "change", "replace", "add", "also", "instead", "make", "remove", "delete", "undo", "fix", "rewrite", "insert", "append",
+    ]
     static let readWords: Set<String> = ["read", "repeat", "again", "say", "what", "show", "review"]
 
     public static func parse(_ utterance: String) -> ConfirmationReply {
@@ -63,6 +66,9 @@ public enum ConfirmationReply: Sendable, Equatable {
             .filter { !$0.isEmpty }
         let w = Set(words)
         guard !w.isEmpty else { return .unclear }
+        // "Actually, change 3:30 to 4": an edit, not an answer. The caller abandons the
+        // confirmation and runs it; the edited draft needs a new review and yes.
+        if !w.isDisjoint(with: editWords) { return .unrelated }
         if !w.isDisjoint(with: negatives) { return .decline }
         if !w.isDisjoint(with: affirmatives), w.subtracting(affirmatives).isSubset(of: fillers) { return .approve }
         if !w.isDisjoint(with: readWords), w.isDisjoint(with: affirmatives) { return .readBack }

@@ -83,7 +83,7 @@ public enum EditCommandParser {
         }
 
         // Undo.
-        if match(#"^(?:undo|scratch that|take that back|revert)(?:\s+(?:that|it|this|the last|my last))?(?:\s+(?:change|edit|one))?$"#, lower) != nil {
+        if match(#"^(?:undo|scratch that|take that back|revert)(?:\s+(?:that|it|this|the|my))?(?:\s+last)?(?:\s+(?:change|edit|one))?$"#, lower) != nil {
             return .edit(.undo)
         }
 

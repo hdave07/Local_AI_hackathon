@@ -182,6 +182,8 @@ public enum MailError: Error, Sendable, Equatable {
     case draftGone
     /// Several open drafts match; Flow will not guess which one is meant.
     case draftAmbiguous(Int)
+    /// The draft text changed outside Flow since it was read; nothing was written.
+    case draftChanged
     case noReplyAddress
     case emptyContent
     /// A draft id Flow did not create.
@@ -211,6 +213,7 @@ public enum MailError: Error, Sendable, Equatable {
         case .draftAlreadyOpen: "A reply to this message is already open. Review or close it first; I didn't create another."
         case .draftGone: "That draft isn't open in Mail any more."
         case .draftAmbiguous(let n): "\(n) open drafts look like this one, so I won't guess which to use."
+        case .draftChanged: "The draft changed outside Flow, so I didn't change it. Say it again if you still want it."
         case .noReplyAddress: "That message has no sender address to reply to."
         case .emptyContent: "What should the reply say?"
         case .unknownDraft: "I don't know that draft."

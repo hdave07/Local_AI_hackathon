@@ -54,3 +54,10 @@ Branch `feature/confirmed-mail-sending` (from main `272224a`). Design and safety
 - **Content check before sending.** The send script compares Mail's scripted `content` digest between its own two calls. The body the user approved is the one Accessibility read on screen; the two are not compared to each other.
 - **Recipients.** Only To-only drafts can be sent. Drafts with any Cc/Bcc are refused, because `DraftSnapshot` doesn't separate To/Cc/Bcc.
 - **The live dry run against a real Mail draft was not run.** No draft was created in Mail for this milestone, and existing drafts were not touched. Next step: a Flow.app dry run with `FLOW_SEND_MODE=dry-run` on a fresh FlowTest reply.
+
+## After merging T-023B (voice draft editing) from main
+- **Conflicts resolved** in `MacPlanExecutor.swift`, `PlanRunner.swift` and the test rig. Both features were kept.
+- **No duplicate read-back.** The review read-back from T-023B is skipped when that review only precedes a send confirmation, because the confirmation reads the same verified draft.
+- **Bug fixed: an edit during a confirmation was lost.** "Actually, change 3:30 to 4" during a send confirmation was parsed as "no" (because of "actually"), so the edit was dropped. Edit instructions now abandon the confirmation and the edit runs.
+- **New test:** `voiceEditDuringConfirmationNeedsANewYes`. The old yes sends nothing; the new text is re-reviewed and needs its own yes, then is sent exactly once.
+- **Full suite:** passes.

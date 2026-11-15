@@ -150,6 +150,11 @@ public enum IntentValidator {
 
         case .requestSend:
             return .requestSend
+
+        case .editText:
+            // Deterministic-only (ADR 0010): the model's schema never offers it, and any
+            // output naming it is rejected rather than trusted.
+            throw .unsupportedAction(type.rawValue)
         }
     }
 

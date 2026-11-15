@@ -134,6 +134,35 @@ public final class JXAMailBackend: MailBackend, MailDraftBackend {
         return reply.count
     }
 
+    public func draftDetails(subject: String) async throws(MailError) -> [OpenDraftDetail] {
+        let reply: DetailsReply = try await call(["op": "draftDetails", "subject": subject])
+        return reply.drafts.map { OpenDraftDetail(to: $0.to, cc: $0.cc, bcc: $0.bcc, content: $0.content) }
+    }
+
+    public func setDraftContent(subject: String, to: [String], expected: String, new: String) async throws(MailError) -> DraftContentWrite {
+        let reply: SetContentReply = try await call(["op": "setDraftContent", "subject": subject, "to": to, "expected": expected, "content": new])
+        switch reply.result {
+        case "written": return .written(content: reply.content ?? "")
+        case "changed": return .changed
+        case "ambiguous": return .ambiguous(reply.count ?? 2)
+        default: return .notFound
+        }
+    }
+
+    struct DetailLists: Decodable {
+        let to: [String]
+        let cc: [String]
+        let bcc: [String]
+        let content: String
+    }
+
+    struct DetailsReply: Decodable { let drafts: [DetailLists] }
+    struct SetContentReply: Decodable {
+        let result: String
+        let content: String?
+        let count: Int?
+    }
+
     struct AddressLists: Decodable {
         let to: [String]
         let cc: [String]
@@ -393,6 +422,26 @@ public final class JXAMailBackend: MailBackend, MailDraftBackend {
       }
 
       if (req.op === 'drafts') return JSON.stringify({ drafts: openWithSubject(req.subject).map(lists) });
+
+      // T-023B. Exact text of open drafts with this subject (read-only).
+      if (req.op === 'draftDetails') {
+        return JSON.stringify({ drafts: openWithSubject(req.subject).map(o => {
+          const l = lists(o); l.content = String(o.content() || ''); return l; }) });
+      }
+
+      // T-023B. Compare-and-set of one draft's text. Only `content` is written: recipients,
+      // subject and headers are untouched; nothing is sent, saved or closed.
+      if (req.op === 'setDraftContent') {
+        const want = (req.to || []).map(a => String(a).toLowerCase());
+        const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+        const mine = openWithSubject(req.subject).filter(o => { const l = lists(o); return same(l.to, want) && !l.cc.length && !l.bcc.length; });
+        if (mine.length === 0) return JSON.stringify({ result: 'notFound' });
+        const exact = mine.filter(o => String(o.content() || '') === req.expected);
+        if (exact.length === 0) return JSON.stringify({ result: 'changed' });
+        if (exact.length > 1) return JSON.stringify({ result: 'ambiguous', count: exact.length });
+        exact[0].content = req.content;
+        return JSON.stringify({ result: 'written', content: String(exact[0].content() || '') });
+      }
 
       if (req.op === 'showDraft') {
         const open = openWithSubject(req.subject);

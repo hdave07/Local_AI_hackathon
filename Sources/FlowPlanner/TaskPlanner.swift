@@ -45,6 +45,8 @@ public struct TaskPlanner: Sendable {
         let body = answeringReply ? spoken : Self.expandReplyToEmail(spoken, context: context)
         // Filler-only clauses ("Um, open notes" splits into "Um" + "open notes") carry no command.
         var clauses = answeringReply ? [body] : Self.clauses(body, extraVerbs: channelVerbs).filter { !Self.isFillerOnly($0) }
+        // A discourse opener split off by its comma ("Actually, change 3:30 to 4") is not a command.
+        while clauses.count > 1, Self.isOpenerOnly(clauses[0]) { clauses.removeFirst() }
         if wantsReview { clauses.append("show it to me") }
         guard !clauses.isEmpty else { return .failure(.emptyInput) }
 
@@ -65,7 +67,12 @@ public struct TaskPlanner: Sendable {
             case .unsupported:
                 return .declined(intent)
             default:
-                guard let action = intent.action else { return .declined(intent) }
+                guard var action = intent.action else { return .declined(intent) }
+                // Clauses lose the utterance's final "." / "!" / "?"; text added to a draft keeps it.
+                if case .editText(let command) = action, raw == clauses.last, let mark = Self.terminalMark(utterance),
+                   !command.hasSuffix(mark) {
+                    action = .editText(command + mark)
+                }
                 builder.add(action, clause: raw, spokenChannel: resolved.channel, summary: intent.summary,
                             forceReply: answeringReply && Capability(action) == .compose)
             }
@@ -113,6 +120,18 @@ public struct TaskPlanner: Sendable {
 
     /// The same disfluencies FlowRouting's cleaner removes (uh, um, erm, uhm).
     static let fillers: Set<String> = ["uh", "um", "erm", "uhm"]
+
+    static func terminalMark(_ utterance: String) -> String? {
+        let t = utterance.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let last = t.last, ".!?".contains(last), !t.hasSuffix("..") else { return nil }
+        return String(last)
+    }
+    static let openers: Set<String> = ["actually", "sorry", "wait", "oh", "ok", "okay", "so", "well", "hmm", "yeah", "also"]
+
+    static func isOpenerOnly(_ clause: String) -> Bool {
+        let words = clause.lowercased().components(separatedBy: CharacterSet.letters.inverted).filter { !$0.isEmpty }
+        return !words.isEmpty && words.allSatisfy { openers.contains($0) || fillers.contains($0) }
+    }
 
     /// A clause made only of filler words, e.g. "Um" before a comma in recognizer output.
     static func isFillerOnly(_ clause: String) -> Bool {
@@ -257,6 +276,17 @@ public struct TaskPlanner: Sendable {
                 simulated.hasDraft = true
 
             case .editText:
+                if case .editText(let command) = action {
+                    // A FlowText command against the selected (verified) draft. It never runs
+                    // without one: the router only emits it when a draft is in context.
+                    let ch = draftStep?.channel ?? real.draft?.channel ?? catalog.defaultChannel
+                    let deps = draftStep.map { [$0.id] } ?? []
+                    let id = append(action, dependsOn: deps, preconditions: deps.isEmpty ? [.draftExists] : [],
+                                    expectation: .draftEdited, channel: ch, summary: "Edit the draft: “\(command)”")
+                    draftStep = (id, ch)
+                    reviewStep = nil
+                    return
+                }
                 let text: String
                 switch action {
                 case .insertText(let t): text = t

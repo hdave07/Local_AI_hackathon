@@ -10,7 +10,7 @@ public enum IntentSchema {
     public static let noAction = "none"
 
     public static var allowedActionNames: [String] {
-        ActionType.allCases.map(\.rawValue) + [noAction]
+        ActionType.modelEmittable.map(\.rawValue) + [noAction]
     }
 
     /// The schema, with `properties` in exactly `fields` order. Order matters: the

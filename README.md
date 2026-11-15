@@ -63,6 +63,7 @@ Modules (SwiftPM):
 - `FlowApp` — SwiftUI shell with typed-command tabs: "Interpret" (classifier preview, nothing executed), "Window Control", "UI Navigation", "Mail" (read-only) and "Voice" (spoken or typed commands → plan → real executor)
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
 - `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
+- `FlowText` — deterministic voice text editing (append, replace, delete, undo, occurrence questions, previews, dictation) over a versioned compare-and-set `TextBackend`; no model
 - `FlowCalendar` — read-only EventKit availability: time-expression parsing, busy/tentative/free-in-checked-calendars/unknown classification, configurable calendar scope, optional "show this day" in Calendar
 - `FlowMailSend` — confirmed Mail sending: re-checks the approved draft in Mail, dispatches at most once, classifies Sent / Outbox / not sent / unknown; disabled by default, dry-run mode records without sending
 - `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail, FlowCalendar, FlowMailSend); Mail limited to the FlowTest test mailbox; sending off unless `FLOW_SEND_MODE` is set
@@ -79,6 +80,8 @@ Modules (SwiftPM):
 - T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
 - T-023C confirmed Mail sending (explicit "yes, send it", bound to the exact draft version, at most once; disabled by default, dry-run available; real sending not yet verified live — see docs/evidence/T-023C-confirmed-sending.md, ADR 0010)
 - T-024 Calendar read (EventKit availability answers by voice or typing, "show me … on my calendar"; see docs/evidence/T-024-calendar.md, ADR 0008)
+- T-025 FlowText dictation and text-editing engine (simulated backends; see docs/evidence/T-025-text-editing.md, ADR 0009)
+- T-023B voice editing of Flow-created Mail reply drafts, duplicate compose-window fix (simulated Mail only; real-Mail editing is off by default until verified live; see docs/evidence/T-023B-mail-draft-editing.md, ADR 0010)
 - T-031 voice → plan → real executor in Flow.app (spoken "Open Notes" and Mail search/choose verified live; see docs/evidence/T-031-voice-executor-integration.md, ADR 0007)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results

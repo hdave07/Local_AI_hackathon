@@ -1,6 +1,7 @@
 import ApplicationServices
 import AppKit
 import FlowAX
+import FlowText
 import Foundation
 
 // MARK: - Types
@@ -51,14 +52,46 @@ public struct MailComposeView: Sendable, Equatable {
     public let cc: [String]
     public let subject: String
     public let body: String
+    /// Identity of the window element (`CFHash` of its `AXUIElement`), stable while the
+    /// window is open. Same-titled windows are told apart by it, never by title.
+    public let windowToken: Int?
 
-    public init(title: String, to: [String], cc: [String], subject: String, body: String) {
+    public init(title: String, to: [String], cc: [String], subject: String, body: String, windowToken: Int? = nil) {
         self.title = title
         self.to = to
         self.cc = cc
         self.subject = subject
         self.body = body
+        self.windowToken = windowToken
     }
+}
+
+/// An open draft as Mail's scripting interface reports it, including its exact text.
+public struct OpenDraftDetail: Sendable, Equatable {
+    public let to: [String]
+    public let cc: [String]
+    public let bcc: [String]
+    /// The draft's full plain text (`content` of the outgoing message), exactly.
+    public let content: String
+
+    public init(to: [String], cc: [String], bcc: [String], content: String) {
+        self.to = to
+        self.cc = cc
+        self.bcc = bcc
+        self.content = content
+    }
+}
+
+/// Outcome of a compare-and-set write of a draft's text.
+public enum DraftContentWrite: Sendable, Equatable {
+    /// Exactly one draft matched subject, recipients and the expected text; this is its text now.
+    case written(content: String)
+    /// A draft with that subject and those recipients exists, but its text is not the expected
+    /// text (changed outside Flow). Nothing was written.
+    case changed
+    case notFound
+    /// Several drafts match equally; nothing was written.
+    case ambiguous(Int)
 }
 
 /// Mail scripting operations for drafts. There is no send, save or delete operation.
@@ -71,6 +104,12 @@ public protocol MailDraftBackend: AnyObject {
     func openDrafts(subject: String) async throws(MailError) -> [OpenDraftInfo]
     /// Brings the single open draft with this subject to the front. Returns how many matched.
     func showDraft(subject: String) async throws(MailError) -> Int
+    /// Open drafts with this subject, with their exact text (T-023B).
+    func draftDetails(subject: String) async throws(MailError) -> [OpenDraftDetail]
+    /// Compare-and-set (T-023B): replaces the text of the one open draft with this subject and
+    /// exactly these To recipients (no Cc/Bcc) **only if** its text is still `expected`. Never
+    /// changes recipients or subject; never sends, saves or closes the draft.
+    func setDraftContent(subject: String, to: [String], expected: String, new: String) async throws(MailError) -> DraftContentWrite
 }
 
 @MainActor
@@ -162,7 +201,8 @@ public final class AXMailComposeInspector: MailComposeInspecting {
         let windows = (Self.attr(root, kAXWindowsAttribute) as? [AXUIElement]) ?? []
         return windows.compactMap { w in
             guard let title = Self.attr(w, kAXTitleAttribute) as? String, title == subject else { return nil }
-            return ComposeParser.parse(title: title, window: Self.node(w, depth: 0))
+            let v = ComposeParser.parse(title: title, window: Self.node(w, depth: 0))
+            return MailComposeView(title: v.title, to: v.to, cc: v.cc, subject: v.subject, body: v.body, windowToken: Int(bitPattern: UInt(CFHash(w))))
         }
     }
 
@@ -181,6 +221,32 @@ public final class AXMailComposeInspector: MailComposeInspecting {
 }
 
 // MARK: - Controller
+
+/// The editable part of a draft: what the user wrote, above the quoted original.
+public struct MailDraftText: Sendable, Equatable {
+    public let draftID: String
+    public let authored: String
+    /// The quoted original (with its separator), preserved by every edit.
+    public let quoted: String
+    public let version: Int
+}
+
+public struct MailDraftTextResult: Sendable, Equatable {
+    public let text: MailDraftText?
+    public let error: MailError?
+    public let evidence: [String]
+    public let userMessage: String
+}
+
+public struct MailDraftEditResult: Sendable, Equatable {
+    public let status: NavigationStatus
+    public let draft: MailDraftState?
+    /// The authored text read back after the write (nil if unknown).
+    public let authored: String?
+    public let error: MailError?
+    public let evidence: [String]
+    public let userMessage: String
+}
 
 public struct MailDraftResult: Sendable, Equatable {
     public let status: NavigationStatus
@@ -214,6 +280,10 @@ public final class MailDraftController {
     struct Entry {
         var state: MailDraftState
         let senderName: String
+        /// The compose window this draft was verified in (same-title windows are not it).
+        var windowToken: Int?
+        /// The exact text last read or written through scripting (edits compare against it).
+        var content: String?
     }
 
     let mail: MailBackend
@@ -287,6 +357,12 @@ public final class MailDraftController {
 
         case .created(let subject, let to, let cc, let bcc, let contentSet, let windowShown):
             let check = await waitForCompose(subject, expecting: text, senderName: original.senderName, sender: sender)
+            if let n = check.ambiguous {
+                // Registered (so this step never creates another), but not reported as Flow's draft.
+                _ = register(key: key, subject: subject, to: to, view: nil, ref: original.ref, senderName: original.senderName,
+                             fallbackBody: text)
+                return failure(.draftAmbiguous(n), evidence: ["Mail reply (reply-all off): To \(to), Cc \(cc), Bcc \(bcc)"] + check.notes)
+            }
             let state = register(key: key, subject: subject, to: to, view: check.view, ref: original.ref,
                                  senderName: original.senderName, fallbackBody: text)
             var evidence = ["revalidated original (same Message-ID, subject, sender)",
@@ -314,7 +390,16 @@ public final class MailDraftController {
             return failure(error)
         }
         guard !open.isEmpty else { entries[id] = nil; return failure(.draftGone) }
-        guard open.count == 1 else { return failure(.draftAmbiguous(open.count)) }
+        // Same subject is not the same draft: several open drafts must be told apart by
+        // recipients, then by their exact text. Equal candidates are ambiguous, never "the first".
+        var mine = open.count == 1 ? open : open.filter { $0.to + $0.cc + $0.bcc == entry.state.recipients }
+        if mine.count > 1 {
+            switch await liveDetail(entry) {
+            case .success(let d): mine = [OpenDraftInfo(to: d.to, cc: d.cc, bcc: d.bcc)]
+            case .failure(let e): return failure(e == .draftChanged ? .draftAmbiguous(mine.count) : e)
+            }
+        }
+        guard mine.count == 1 else { return failure(.draftAmbiguous(open.count)) }
         if present {
             do throws(MailError) {
                 let shown = try await backend.showDraft(subject: subject)
@@ -324,11 +409,29 @@ public final class MailDraftController {
             }
         }
         let views = await waitForVisible(subject)
-        guard views.count <= 1 else { return failure(.draftAmbiguous(views.count)) }
-        let view = views.first
         var evidence = prior
+        let view: MailComposeView?
+        switch Self.select(views, token: entry.windowToken, names: [entry.senderName] + entry.state.recipients, prefer: entry.state.body) {
+        case .one(let v):
+            view = v
+            if views.count > 1 { evidence.append("\(views.count) windows titled “\(subject)”; identified Flow's by window identity, recipients and text") }
+        case .ambiguous(let n):
+            return failure(.draftAmbiguous(n), evidence: ["\(n) compose windows titled “\(subject)” match equally; not guessing"])
+        case .none:
+            if views.isEmpty {
+                view = nil
+            } else if views.count == 1, entry.windowToken == nil {
+                view = views[0]  // the only window with this title, changed (e.g. recipients edited by hand)
+            } else if entry.windowToken != nil {
+                view = nil
+                evidence.append("Flow's compose window isn't open; \(views.count) other window(s) share its title and were not used")
+            } else {
+                return failure(.draftAmbiguous(views.count), evidence: ["\(views.count) compose windows titled “\(subject)”; none is clearly Flow's"])
+            }
+        }
+        if entry.windowToken == nil, let token = view?.windowToken { entry.windowToken = token; entries[id] = entry }
         let liveBody = view.map(\.body) ?? entry.state.body
-        let live = (recipients: open[0].to + open[0].cc + open[0].bcc, body: ComposeParser.normalize(liveBody))
+        let live = (recipients: mine[0].to + mine[0].cc + mine[0].bcc, body: ComposeParser.normalize(liveBody))
         let changed = live.recipients != entry.state.recipients || live.body != ComposeParser.normalize(entry.state.body)
             || (view.map { !entry.state.visibleRecipients.isEmpty && $0.to != entry.state.visibleRecipients } ?? false)
         if changed {
@@ -351,6 +454,122 @@ public final class MailDraftController {
         return MailDraftResult(status: status, draft: entry.state, error: nil, evidence: evidence, userMessage: message)
     }
 
+    // MARK: Editing (T-023B)
+
+    /// The draft's authored text (what the user wrote, above any quoted original), read
+    /// exactly through scripting, with the draft's current version. Any change since Flow
+    /// last read or wrote it, by anyone, bumps the version first.
+    public func editableText(_ id: String) async -> MailDraftTextResult {
+        let checked = await refresh(id, present: false)
+        guard checked.status == .completed, let state = checked.draft, var entry = entries[id] else {
+            return .init(text: nil, error: checked.error ?? .draftGone, evidence: checked.evidence, userMessage: checked.userMessage)
+        }
+        let detail: OpenDraftDetail
+        switch await liveDetail(entry) {
+        case .success(let d): detail = d
+        case .failure(let e): return .init(text: nil, error: e, evidence: checked.evidence, userMessage: e.userMessage)
+        }
+        var evidence = checked.evidence
+        if let known = entry.content, known != detail.content {
+            entry.state = MailDraftState(id: id, recipients: state.recipients, visibleRecipients: state.visibleRecipients, subject: state.subject,
+                                         body: state.body, version: state.version + 1, inReplyTo: state.inReplyTo)
+            evidence.append("draft text changed outside Flow; now version \(entry.state.version)")
+        }
+        entry.content = detail.content
+        entries[id] = entry
+        let parts = AuthoredText.split(detail.content)
+        return .init(text: MailDraftText(draftID: id, authored: parts.authored, quoted: parts.quoted, version: entry.state.version),
+                     error: nil, evidence: evidence, userMessage: "")
+    }
+
+    /// Replaces the authored text, only if the draft is still exactly `baseVersion` with
+    /// authored text `baseText`. The quoted original is kept byte for byte; recipients and
+    /// subject are never written. Success needs scripting to return the new text *and* the
+    /// draft's compose window (same identity, same recipients, no Cc) to show it.
+    public func replaceAuthored(_ id: String, baseVersion: Int, baseText: String, newText: String) async -> MailDraftEditResult {
+        let current = await editableText(id)
+        guard let base = current.text, var entry = entries[id] else {
+            return .init(status: .failed, draft: nil, authored: nil, error: current.error ?? .draftGone, evidence: current.evidence,
+                         userMessage: current.userMessage)
+        }
+        guard base.version == baseVersion, base.authored == baseText else {
+            return .init(status: .failed, draft: entry.state, authored: base.authored, error: .draftChanged, evidence: current.evidence,
+                         userMessage: MailError.draftChanged.userMessage)
+        }
+        if Task.isCancelled {
+            return .init(status: .failed, draft: entry.state, authored: base.authored, error: nil, evidence: current.evidence,
+                         userMessage: "Stopped before changing the draft.")
+        }
+        let expected = base.authored + base.quoted
+        let desired = newText + base.quoted
+        var evidence = current.evidence
+        let write: DraftContentWrite
+        do throws(MailError) {
+            write = try await backend.setDraftContent(subject: entry.state.subject, to: entry.state.recipients,
+                                                      expected: expected, new: desired)
+        } catch {
+            // Unknown outcome: the next read compares the live text and reports what happened.
+            entry.content = nil
+            entries[id] = entry
+            return .init(status: error == .timedOut ? .unverified : .failed, draft: entry.state, authored: nil, error: error,
+                         evidence: evidence + ["write: \(error)"],
+                         userMessage: error == .timedOut ? "Mail didn't answer in time. Say “what does the draft say?” to check." : error.userMessage)
+        }
+        switch write {
+        case .changed:
+            return .init(status: .failed, draft: entry.state, authored: base.authored, error: .draftChanged,
+                         evidence: evidence + ["compare-and-set refused: the text changed outside Flow"], userMessage: MailError.draftChanged.userMessage)
+        case .notFound:
+            entries[id] = nil
+            return .init(status: .failed, draft: nil, authored: nil, error: .draftGone, evidence: evidence, userMessage: MailError.draftGone.userMessage)
+        case .ambiguous(let n):
+            return .init(status: .failed, draft: entry.state, authored: base.authored, error: .draftAmbiguous(n),
+                         evidence: evidence + ["\(n) drafts match equally; nothing written"], userMessage: MailError.draftAmbiguous(n).userMessage)
+        case .written(let content):
+            evidence.append("compare-and-set write accepted (base version \(baseVersion))")
+            let readBack = AuthoredText.split(content)
+            let scriptOK = readBack.authored == newText && readBack.quoted == base.quoted
+            evidence.append("scripting read-back is exactly the new text, quote preserved: \(scriptOK)")
+            // On-screen proof: the same window shows the new text with unchanged recipients.
+            var view: MailComposeView?
+            if let inspector {
+                let want = ComposeParser.normalize(newText)
+                let deadline = ContinuousClock.now + configuration.verifyTimeout
+                repeat {
+                    let views = inspector.compose(titled: entry.state.subject)
+                    if case .one(let v) = Self.select(views, token: entry.windowToken, names: [entry.senderName] + entry.state.recipients),
+                       ComposeParser.normalize(v.body).contains(want) || want.isEmpty { view = v; break }
+                    try? await Task.sleep(for: configuration.pollInterval)
+                } while ContinuousClock.now < deadline
+            }
+            let recipientsOK = view.map { Self.recipientMatches($0, names: [entry.senderName] + entry.state.recipients) } ?? false
+            evidence.append(view == nil ? "compose window does not show the new text" : "compose window shows the new text; To \(view!.to), Cc \(view!.cc)")
+            entry.content = content
+            entry.state = MailDraftState(id: id, recipients: entry.state.recipients, visibleRecipients: view?.to ?? entry.state.visibleRecipients,
+                                         subject: entry.state.subject, body: ComposeParser.normalize(view?.body ?? content),
+                                         version: entry.state.version + 1, inReplyTo: entry.state.inReplyTo)
+            entries[id] = entry
+            let ok = scriptOK && view != nil && recipientsOK
+            return .init(status: ok ? .completed : .unverified, draft: entry.state, authored: readBack.authored, error: nil, evidence: evidence,
+                         userMessage: ok ? "The draft is updated, not sent." : "I changed the draft but couldn't confirm it on screen. Check it before sending.")
+        }
+    }
+
+    private func liveDetail(_ entry: Entry) async -> Result<OpenDraftDetail, MailError> {
+        let details: [OpenDraftDetail]
+        do throws(MailError) { details = try await backend.draftDetails(subject: entry.state.subject) } catch { return .failure(error) }
+        let mine = details.filter { $0.to + $0.cc + $0.bcc == entry.state.recipients }
+        if mine.count == 1 { return .success(mine[0]) }
+        if mine.count > 1 {
+            // Exact text last read or written by Flow; else the text last verified on screen.
+            let same = entry.content.map { known in mine.filter { $0.content == known } }
+                ?? mine.filter { ComposeParser.normalize($0.content) == ComposeParser.normalize(entry.state.body) }
+            if same.count == 1 { return .success(same[0]) }
+            return .failure(.draftAmbiguous(mine.count))
+        }
+        return .failure(mine.isEmpty ? (details.isEmpty ? .draftGone : .draftChanged) : .draftAmbiguous(mine.count))
+    }
+
     // MARK: Helpers
 
     private func register(key: String, subject: String, to: [String], view: MailComposeView?, ref: MailMessageRef,
@@ -358,39 +577,93 @@ public final class MailDraftController {
         let id = byKey[key] ?? "mail-draft-\(UUID().uuidString)"
         let state = MailDraftState(id: id, recipients: to, visibleRecipients: view?.to ?? [], subject: subject,
                                    body: ComposeParser.normalize(view?.body ?? fallbackBody), version: 1, inReplyTo: ref)
-        entries[id] = Entry(state: state, senderName: senderName)
+        entries[id] = Entry(state: state, senderName: senderName, windowToken: view?.windowToken)
         byKey[key] = id
         return state
     }
 
-    /// Polls Accessibility until the compose window shows exactly what was requested.
+    /// Polls Accessibility until exactly one compose window shows what was requested. Windows
+    /// are chosen by recipients and body, never by title alone; equal matches are ambiguous.
     private func waitForCompose(_ subject: String, expecting text: String, senderName: String, sender: String)
-        async -> (ok: Bool, view: MailComposeView?, notes: [String])
+        async -> (ok: Bool, view: MailComposeView?, notes: [String], ambiguous: Int?)
     {
-        guard let inspector else { return (false, nil, ["no Accessibility inspector: contents not verified on screen"]) }
+        guard let inspector else { return (false, nil, ["no Accessibility inspector: contents not verified on screen"], nil) }
         let want = ComposeParser.normalize(text)
+        let names = [senderName, sender]
         let deadline = ContinuousClock.now + configuration.verifyTimeout
         var views: [MailComposeView] = []
+        var selection = ComposeSelection.none
         repeat {
             views = inspector.compose(titled: subject)
-            if views.count == 1, Self.matches(views[0], text: want, senderName: senderName, sender: sender) { break }
+            selection = Self.select(views, token: nil, names: names, require: want)
+            if case .one = selection { break }
             try? await Task.sleep(for: configuration.pollInterval)
         } while ContinuousClock.now < deadline
-        guard views.count == 1, let v = views.first else {
-            return (false, nil, ["compose windows titled “\(subject)” on screen: \(views.count)"])
+        switch selection {
+        case .one(let v):
+            let notes = [
+                "on screen: To \(v.to), Cc \(v.cc), subject matches: \(v.subject == subject)",
+                "requested text visible in the body: true",
+                views.count > 1 ? "\(views.count) windows titled “\(subject)”; exactly one has these recipients and this text" : nil,
+            ].compactMap { $0 }
+            return (true, v, notes, nil)
+        case .ambiguous(let n):
+            return (false, nil, ["\(n) compose windows titled “\(subject)” match equally; not guessing which is Flow's"], n)
+        case .none:
+            guard views.count == 1, let v = views.first else {
+                return (false, nil, ["compose windows titled “\(subject)” on screen: \(views.count); none shows these recipients and this text"], nil)
+            }
+            let notes = [
+                "on screen: To \(v.to), Cc \(v.cc), subject matches: \(v.subject == subject)",
+                "requested text visible in the body: \(ComposeParser.normalize(v.body).contains(want))",
+            ]
+            return (false, v, notes, nil)
         }
-        let notes = [
-            "on screen: To \(v.to), Cc \(v.cc), subject matches: \(v.subject == subject)",
-            "requested text visible in the body: \(ComposeParser.normalize(v.body).contains(want))",
-        ]
-        return (Self.matches(v, text: want, senderName: senderName, sender: sender), v, notes)
+    }
+
+    public enum ComposeSelection: Sendable, Equatable {
+        case none
+        case one(MailComposeView)
+        case ambiguous(Int)
+    }
+
+    /// Chooses Flow's compose window among windows with the same title (pure, unit-tested).
+    /// 1. A known window identity (`token`) decides, whatever the window now shows.
+    /// 2. Otherwise only windows addressed to exactly the sender (one To token, no Cc) that
+    ///    show `require` count; if several remain, one whose body equals `prefer` wins.
+    /// 3. Several equal matches are `.ambiguous`: never guessed, never "the first one".
+    public static func select(_ views: [MailComposeView], token: Int?, names: [String], require: String? = nil,
+                              prefer: String? = nil) -> ComposeSelection {
+        if let token {
+            let same = views.filter { $0.windowToken == token }
+            if same.count == 1 { return .one(same[0]) }
+            if same.count > 1 { return .ambiguous(same.count) }
+        }
+        let want = require.map(ComposeParser.normalize)
+        let strict = views.filter { v in
+            recipientMatches(v, names: names) && (want.map { ComposeParser.normalize(v.body).contains($0) } ?? true)
+        }
+        if strict.count > 1, let prefer {
+            let p = ComposeParser.normalize(prefer)
+            let exact = strict.filter { ComposeParser.normalize($0.body) == p }
+            if exact.count == 1 { return .one(exact[0]) }
+        }
+        switch strict.count {
+        case 0: return .none
+        case 1: return .one(strict[0])
+        default: return .ambiguous(strict.count)
+        }
+    }
+
+    static func recipientMatches(_ v: MailComposeView, names: [String]) -> Bool {
+        guard v.to.count == 1, v.cc.isEmpty else { return false }
+        let token = v.to[0].lowercased()
+        let names = names.map { $0.lowercased() }.filter { !$0.isEmpty }
+        return names.contains { token == $0 || token.contains($0) || $0.contains(token) }
     }
 
     static func matches(_ v: MailComposeView, text: String, senderName: String, sender: String) -> Bool {
-        guard v.to.count == 1, v.cc.isEmpty, ComposeParser.normalize(v.body).contains(text) else { return false }
-        let token = v.to[0].lowercased()
-        let names = [senderName.lowercased(), sender.lowercased()].filter { !$0.isEmpty }
-        return names.contains { token == $0 || token.contains($0) || $0.contains(token) }
+        ComposeParser.normalize(v.body).contains(text) && recipientMatches(v, names: [senderName, sender])
     }
 
     private func waitForVisible(_ subject: String) async -> [MailComposeView] {

@@ -22,7 +22,8 @@ struct Rig {
     let sendTransport: FakeSendTransport
     let sender: MailSender?
 
-    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest"), drafting: Bool = false, sending: MailSendMode? = nil) {
+    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest"), drafting: Bool = false, editing: Bool = false,
+         sending: MailSendMode? = nil) {
         for app in [KnownApp.notes, .mail] {
             windows.openCreatesWindowFor[app.bundleIdentifier] = CGRect(x: 100, y: 100, width: 800, height: 600)
         }
@@ -44,7 +45,8 @@ struct Rig {
         sc.pollInterval = .milliseconds(5)
         sender = sending.map { MailSender(mode: $0, transport: transport, configuration: sc) }
         executor = MacPlanExecutor(window: makeController(windows), navigator: makeNavigator(ui), mail: makeMail(mail),
-                                   drafts: drafts, sender: sender, configuration: ExecutorConfiguration(mailScope: scope))
+                                   drafts: drafts, sender: sender,
+                                   configuration: ExecutorConfiguration(mailScope: scope, allowMailDraftEditing: editing))
     }
 
     func run(_ action: FlowAction, channel: MessageChannel? = nil, bindings: StepBindings = StepBindings()) async -> ExecutionResult {
