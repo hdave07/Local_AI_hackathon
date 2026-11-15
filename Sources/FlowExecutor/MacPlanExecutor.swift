@@ -1,4 +1,5 @@
 import FlowAX
+import FlowCalendar
 import FlowCore
 import FlowMail
 import FlowPlanner
@@ -43,10 +44,12 @@ public final class MacPlanExecutor: PlanExecuting {
     private let engine: ExecutorEngine
 
     /// - Parameter drafts: reply drafting (T-023A). `nil` keeps drafting unsupported.
+    /// - Parameter calendar: read-only calendar lookups (T-024). `nil` keeps them unsupported.
     @MainActor
     public init(window: WindowController, navigator: UINavigator, mail: MailController, drafts: MailDraftController? = nil,
-                configuration: ExecutorConfiguration = ExecutorConfiguration()) {
-        engine = ExecutorEngine(window: window, navigator: navigator, mail: mail, drafts: drafts, configuration: configuration)
+                calendar: CalendarController? = nil, configuration: ExecutorConfiguration = ExecutorConfiguration()) {
+        engine = ExecutorEngine(window: window, navigator: navigator, mail: mail, drafts: drafts, calendar: calendar,
+                                configuration: configuration)
     }
 
     public func execute(_ request: ExecutionRequest) async -> ExecutionResult {
@@ -55,6 +58,11 @@ public final class MacPlanExecutor: PlanExecuting {
 
     @MainActor public var log: [ExecutionLogEntry] { engine.log }
     @MainActor public var configuration: ExecutorConfiguration { engine.configuration }
+    @MainActor public var calendarScope: CalendarScope? { engine.calendar?.scope }
+    // Test hooks: reuse the same controllers in another executor configuration.
+    @MainActor var engineWindow: WindowController { engine.window }
+    @MainActor var engineNavigator: UINavigator { engine.navigator }
+    @MainActor var engineMail: MailController { engine.mail }
 }
 
 @MainActor
@@ -63,13 +71,15 @@ final class ExecutorEngine {
     let navigator: UINavigator
     let mail: MailController
     let drafts: MailDraftController?
+    let calendar: CalendarController?
     let configuration: ExecutorConfiguration
     private(set) var log: [ExecutionLogEntry] = []
     /// Message candidates belong to one search; a newer search makes older choices stale.
     private(set) var searchEpoch = 0
 
     init(window: WindowController, navigator: UINavigator, mail: MailController, drafts: MailDraftController?,
-         configuration: ExecutorConfiguration) {
+         calendar: CalendarController? = nil, configuration: ExecutorConfiguration) {
+        self.calendar = calendar
         self.window = window
         self.navigator = navigator
         self.mail = mail
@@ -91,8 +101,10 @@ final class ExecutorEngine {
             result = await navigate(request.action)
         case .readMessage(let query):
             result = await readMessage(query, request)
-        case .queryCalendar:
-            result = Self.unsupported("Checking the calendar isn't available yet.")
+        case .queryCalendar(let expression):
+            result = await checkCalendar(expression)
+        case .showCalendar(let expression):
+            result = await showCalendar(expression)
         case .createDraft(_, let content):
             result = await createReply(content, request)
         case .requestReview:
@@ -220,6 +232,45 @@ final class ExecutorEngine {
             return ExecutionResult(status: .failed, error: .targetNotFound, retrySafe: false, userMessage: found.userMessage)
         default:
             return Self.mailFailure(found)
+        }
+    }
+
+    // MARK: Calendar (FlowCalendar, read-only)
+
+    private func checkCalendar(_ expression: String) async -> ExecutionResult {
+        guard let calendar else { return Self.unsupported("Checking the calendar isn't enabled.") }
+        let r = await calendar.check(expression)
+        guard let report = r.report else { return Self.calendarFailure(r) }
+        let answer = AvailabilityAnswer(
+            status: AvailabilityAnswer.Status(rawValue: report.status.rawValue) ?? .unknown,
+            start: report.query.interval.start, end: report.query.interval.end,
+            events: report.findings.map {
+                AvailabilityAnswer.Event(title: $0.event.title, start: $0.event.start, end: $0.event.end, isAllDay: $0.event.isAllDay,
+                                         effect: $0.effect.rawValue, calendar: $0.event.calendarTitle)
+            },
+            calendarsChecked: report.calendarsChecked, answer: report.answer)
+        // The observation carries the answer to the user; the executor log keeps only the privacy-safe summary.
+        return ExecutionResult(status: .completed, observation: .availability(answer), retrySafe: true,
+                               userMessage: "calendar \(report.logSummary)")
+    }
+
+    private func showCalendar(_ expression: String) async -> ExecutionResult {
+        guard let calendar else { return Self.unsupported("Showing the calendar isn't enabled.") }
+        let r = await calendar.show(expression)
+        guard let day = r.shownDay else { return Self.calendarFailure(r) }
+        let label = "Calendar: " + TimeExpressionParser.describeDay(day, label: nil, calendar: .current)
+        return r.verified
+            ? ExecutionResult(status: .completed, observation: .uiActed(label: label), retrySafe: true, userMessage: r.userMessage)
+            : ExecutionResult(status: .unverified, retrySafe: true, userMessage: r.userMessage)
+    }
+
+    static func calendarFailure(_ r: CalendarResult) -> ExecutionResult {
+        switch r.error {
+        case .noAccess: ExecutionResult(status: .failed, error: .permissionDenied, userMessage: r.userMessage)
+        case .automationDenied: ExecutionResult(status: .failed, error: .permissionDenied, userMessage: r.userMessage)
+        case .calendarNotFound: ExecutionResult(status: .failed, error: .appUnavailable, userMessage: r.userMessage)
+        case .unrecognizedTime: ExecutionResult(status: .failed, error: .targetNotFound, userMessage: r.userMessage)
+        default: ExecutionResult(status: .failed, error: .unknown, retrySafe: true, userMessage: r.userMessage)
         }
     }
 
@@ -380,6 +431,7 @@ final class ExecutorEngine {
         case .draft(let d): "draft \(d.id.suffix(8)) v\(d.version) to \(d.recipients.joined(separator: ", "))"
         case .reviewShown(let d): "review shown: draft \(d.id.suffix(8)) v\(d.version)"
         case .lookupResult: "lookup answered"
+        case .availability(let a): "availability: \(a.status.rawValue), \(a.events.count) event(s), calendars \(a.calendarsChecked.count)"
         case .sent: "sent"
         }
     }

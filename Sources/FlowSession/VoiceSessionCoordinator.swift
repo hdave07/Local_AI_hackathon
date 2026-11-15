@@ -62,6 +62,18 @@ public enum CoordinatorEvent: Sendable, Equatable {
     case turn(SessionTurn)
 }
 
+/// Optional extension point for components layered on the voice session (e.g. spoken
+/// feedback, docs/adr/0008-spoken-feedback.md). Without a hook the coordinator behaves
+/// exactly as before.
+public protocol VoiceSessionHook: AnyObject, Sendable {
+    /// Called for every finalized *spoken* utterance before it is handled (typed input is
+    /// never gated). Return false to drop it, e.g. because it is Flow's own speech picked up
+    /// by the microphone. stop/cancel decisions stay with the hook; a dropped utterance runs nothing.
+    func admit(_ utterance: String, heardFrom: Date?, finalizedAt: Date) async -> Bool
+    /// Every coordinator event, in order. Must return quickly (do not block the coordinator).
+    func observe(_ event: CoordinatorEvent)
+}
+
 /// Voice-session coordinator: the glue between `VoicePipeline` (Argmax → finalized
 /// utterances) and `TaskSession` (FlowRouting context + FlowPlanner run state → executor).
 ///
@@ -90,6 +102,9 @@ public actor VoiceSessionCoordinator: IntentSink {
     /// Incremented by stop/cancel; queued commands from an older generation are dropped.
     private var generation = 0
     private var pending = 0
+    private var hook: (any VoiceSessionHook)?
+    /// When the recognizer first reported speech for the utterance being heard.
+    private var heardFrom: Date?
 
     public init(session: TaskSession, transcriber: (any SpeechTranscribing)?, permission: (any MicrophonePermissionProviding)?,
                 policy: EndpointPolicy = EndpointPolicy()) {
@@ -101,6 +116,11 @@ public actor VoiceSessionCoordinator: IntentSink {
     }
 
     public var isListening: Bool { runTask != nil }
+
+    /// Installs (or removes) the session hook. See `VoiceSessionHook`.
+    public func setHook(_ hook: (any VoiceSessionHook)?) {
+        self.hook = hook
+    }
 
     /// Installs a recognizer (e.g. once its license key is available). Ignored while listening.
     public func setTranscriber(_ transcriber: (any SpeechTranscribing)?) {
@@ -160,13 +180,17 @@ public actor VoiceSessionCoordinator: IntentSink {
             switch s {
             case .checkingPermission, .preparing: setListen(.starting)
             case .listening, .routing: setListen(.listening)
-            case .hearing(let partial): setListen(.hearing(partial.displayText))
+            case .hearing(let partial):
+                if heardFrom == nil { heardFrom = Date() }
+                setListen(.hearing(partial.displayText))
             case .idle, .stopped: break  // reported when the run ends
             case .failed(let error): setListen(.failed(error.userMessage))
             }
         case .partial(let partial):
+            if heardFrom == nil { heardFrom = Date() }
             setListen(.hearing(partial.displayText))
         case .incomplete(let partial):
+            heardFrom = nil
             emit(.incomplete(partial.displayText))
             if case .hearing = status.listen { setListen(.listening) }
         case .finalized(let utterance):
@@ -180,6 +204,9 @@ public actor VoiceSessionCoordinator: IntentSink {
 
     public func deliver(_ routed: RoutedUtterance) async {
         let text = routed.utterance.stableText
+        let started = heardFrom
+        heardFrom = nil
+        if let hook, await !hook.admit(text, heardFrom: started, finalizedAt: Date()) { return }
         if Self.isStopOrCancel(text) {
             await interrupt(text, source: .voice)
         } else {
@@ -278,7 +305,10 @@ public actor VoiceSessionCoordinator: IntentSink {
         emit(.status(status))
     }
 
-    private func emit(_ event: CoordinatorEvent) { continuation.yield(event) }
+    private func emit(_ event: CoordinatorEvent) {
+        continuation.yield(event)
+        hook?.observe(event)
+    }
 }
 
 /// Lets `VoicePipeline` deliver finalized utterances without routing them: `TaskSession`

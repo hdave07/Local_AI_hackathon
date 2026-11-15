@@ -1,6 +1,7 @@
 import AppKit
 import FlowAudio
 import FlowAX
+import FlowCalendar
 import FlowCore
 import FlowExecutor
 import FlowLLM
@@ -62,6 +63,11 @@ struct FlowApp: App {
             mail: MailController(backend: executorMail, verifier: AXMailDisplayVerifier()),
             // Reply drafts (T-023A): created, verified on screen and shown for review; never sent.
             drafts: MailDraftController(mail: executorMail, backend: executorMail, inspector: AXMailComposeInspector()),
+            // Read-only calendar (T-024). Development scope is the FlowTest calendar; FLOW_CALENDAR_SCOPE=all
+            // reads every calendar the user has authorized. Answers always name the calendars checked.
+            calendar: CalendarController(store: EventKitStore(),
+                                         scope: env["FLOW_CALENDAR_SCOPE"] == "all" ? .allAuthorized : .named(["FlowTest"]),
+                                         viewer: JXACalendarViewer()),
             configuration: ExecutorConfiguration(mailScope: .testMailbox("FlowTest")))
         let session = TaskSession(store: IntentRouter(model: BonsaiIntentClassifier(client: client)), executor: executor)
         let coordinator = VoiceSessionCoordinator(session: session, transcriber: nil, permission: SystemMicrophonePermission())

@@ -21,7 +21,7 @@ enum Cleaner {
         if let m = wake.match(s), let rest = m[0] { s = rest }
         // Discourse openers before a command ("Actually, never mind. Can you …", "Sorry, …").
         // A standalone "never mind" is kept: it is a command in its own right.
-        while let r = s.range(of: #"^(?:actually|never ?mind|sorry|wait|oh|ok(?:ay)?|so|well|hmm|no)\s*[,.!;]?\s+(?=\S)"#,
+        while let r = s.range(of: #"^(?:actually|never ?mind|sorry|wait|oh|ok(?:ay)?|so|well|hmm|no|i mean|i meant|like|yeah)\s*[,.!;]?\s+(?=\S)"#,
                               options: [.regularExpression, .caseInsensitive]),
               s[r.upperBound...].split(separator: " ").count >= 2 {
             s = String(s[r.upperBound...])

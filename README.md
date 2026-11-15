@@ -29,7 +29,10 @@ scripts/build_app.sh --open      # build and launch build/Flow.app
 swift build --product flow-nav-fixture && FLOW_LIVE_AX=1 swift test --filter FlowAXTests   # live navigation tests
 .build/debug/flowctl "mail find mail from sarah in mailbox FlowTest" "mail choose 2" "mail read it"   # typed Mail commands
 FLOW_LIVE_MAIL=1 swift test --filter FlowMailTests   # live Mail tests (import fixtures/mail/FlowTest.mbox into Mail first)
+scripts/run_calendar_livecheck.sh   # live EventKit check, FlowTest calendar only (import fixtures/calendar/FlowTest.ics into Calendar first)
 ```
+
+Calendar: Flow.app reads only the calendar named FlowTest by default; launch it with `FLOW_CALENDAR_SCOPE=all` to read every calendar you've authorized. Command-line processes (`swift test`) can't be granted calendar access, which is why the live check runs as a small app bundle.
 
 Window control needs Accessibility permission for whichever app runs it (Flow.app, or the terminal/IDE running `swift test` / `flowctl`).
 
@@ -60,7 +63,8 @@ Modules (SwiftPM):
 - `FlowApp` — SwiftUI shell with typed-command tabs: "Interpret" (classifier preview, nothing executed), "Window Control", "UI Navigation", "Mail" (read-only) and "Voice" (spoken or typed commands → plan → real executor)
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
 - `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
-- `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail); Mail limited to the FlowTest test mailbox; drafting/sending disabled
+- `FlowCalendar` — read-only EventKit availability: time-expression parsing, busy/tentative/free-in-checked-calendars/unknown classification, configurable calendar scope, optional "show this day" in Calendar
+- `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail, FlowCalendar); Mail limited to the FlowTest test mailbox; sending disabled
 - `FlowSession` — `VoiceSessionCoordinator`: Argmax utterances → TaskSession (router + planner) → executor, with stop/cancel priority and HUD status
 - `flowctl` — command-line typed interface to FlowWindow, FlowAX and FlowMail
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
@@ -72,6 +76,7 @@ Modules (SwiftPM):
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
 - T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
+- T-024 Calendar read (EventKit availability answers by voice or typing, "show me … on my calendar"; see docs/evidence/T-024-calendar.md, ADR 0008)
 - T-031 voice → plan → real executor in Flow.app (spoken "Open Notes" and Mail search/choose verified live; see docs/evidence/T-031-voice-executor-integration.md, ADR 0007)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results

@@ -15,6 +15,8 @@ public enum ActionType: String, Sendable, Codable, CaseIterable {
     case createDraft = "create_draft"
     case readMessage = "read_message"
     case queryCalendar = "query_calendar"
+    /// Show a day in the Calendar app (read-only navigation).
+    case showCalendar = "show_calendar"
     case requestReview = "request_review"
     case requestSend = "request_send"
 
@@ -142,6 +144,7 @@ public enum FlowAction: Sendable, Equatable {
     case createDraft(recipient: String, content: String)
     case readMessage(query: String)
     case queryCalendar(timeExpression: String)
+    case showCalendar(dateExpression: String)
     case requestReview
     case requestSend
 
@@ -159,6 +162,7 @@ public enum FlowAction: Sendable, Equatable {
         case .createDraft: .createDraft
         case .readMessage: .readMessage
         case .queryCalendar: .queryCalendar
+        case .showCalendar: .showCalendar
         case .requestReview: .requestReview
         case .requestSend: .requestSend
         }
@@ -168,7 +172,7 @@ public enum FlowAction: Sendable, Equatable {
     public var risk: RiskLevel {
         switch self {
         case .activateApp, .moveWindow, .resizeWindow, .tileWindows, .clickElement,
-            .scroll, .focus, .readMessage, .queryCalendar, .requestReview:
+            .scroll, .focus, .readMessage, .queryCalendar, .showCalendar, .requestReview:
             .low
         case .insertText, .replaceText, .createDraft:
             .content
@@ -192,6 +196,7 @@ public enum FlowAction: Sendable, Equatable {
             content.isEmpty ? "to \(recipient)" : "to \(recipient): “\(content)”"
         case .readMessage(let q): "“\(q)”"
         case .queryCalendar(let t): t
+        case .showCalendar(let d): d
         case .requestReview, .requestSend: "current draft"
         }
     }
