@@ -18,6 +18,8 @@ var products: [Product] = [
     .executable(name: "FlowApp", targets: ["FlowApp"]),
     .executable(name: "flowctl", targets: ["flowctl"]),
     .executable(name: "flow-bench", targets: ["FlowBenchCLI"]),
+    .library(name: "FlowAX", targets: ["FlowAX"]),
+    .executable(name: "flow-nav-fixture", targets: ["FlowNavFixture"]),
 ]
 
 var targets: [Target] = [
@@ -30,18 +32,24 @@ var targets: [Target] = [
     // Track B — speech pipeline contracts and logic, independent of any speech SDK:
     // microphone permission, utterance endpointing, VAD, control phrases, routing.
     .target(name: "FlowAudio", dependencies: ["FlowCore"]),
+    // Track A — generic UI navigation: AX inspection, deterministic target resolution,
+    // revalidated press/focus/select/scroll with verification, numbered overlay.
+    .target(name: "FlowAX", dependencies: ["FlowCore", "FlowWindow"]),
+    // Track A — deterministic AppKit app exercised by FlowAX live integration tests.
+    .executableTarget(name: "FlowNavFixture"),
     // Track B — intent router: control phrases, fast path, task context and references,
     // clarification, Bonsai fallback with slot grounding. Proposes intents; executes nothing.
     .target(name: "FlowRouting", dependencies: ["FlowCore", "FlowLLM"]),
-    // SwiftUI shell. Composition root for FlowLLM and FlowWindow.
-    .executableTarget(name: "FlowApp", dependencies: ["FlowCore", "FlowLLM", "FlowWindow"]),
-    // Typed command-line interface to FlowWindow for manual and scripted testing.
-    .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow"]),
+    // SwiftUI shell. Composition root for FlowLLM, FlowWindow and FlowAX.
+    .executableTarget(name: "FlowApp", dependencies: ["FlowCore", "FlowLLM", "FlowWindow", "FlowAX"]),
+    // Typed command-line interface to FlowWindow and FlowAX for manual and scripted testing.
+    .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
     // Track B — T-002 benchmark harness: fixtures → Bonsai via LM Studio → CSV + summary. Executes nothing.
     .executableTarget(name: "FlowBenchCLI", dependencies: ["FlowCore", "FlowLLM", "FlowRouting"]),
     .testTarget(name: "FlowCoreTests", dependencies: ["FlowCore"]),
     .testTarget(name: "FlowLLMTests", dependencies: ["FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowWindowTests", dependencies: ["FlowCore", "FlowWindow"]),
+    .testTarget(name: "FlowAXTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
     .testTarget(name: "FlowBenchTests", dependencies: ["FlowBenchCLI", "FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowRoutingTests", dependencies: ["FlowRouting", "FlowCore", "FlowLLM"]),

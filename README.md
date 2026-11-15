@@ -25,6 +25,8 @@ FLOW_LIVE_LLM=1 swift test       # plus live tests against LM Studio
 FLOW_LIVE_AX=1 swift test        # plus live window tests (moves your real Notes window, then restores it)
 scripts/build_app.sh --open      # build and launch build/Flow.app
 .build/debug/flowctl "activate notes" "move notes left_half" "undo"   # typed window commands
+.build/debug/flowctl "click seven in Calculator" "show numbers in Calculator" "choose 25"   # typed UI navigation
+swift build --product flow-nav-fixture && FLOW_LIVE_AX=1 swift test --filter FlowAXTests   # live navigation tests
 ```
 
 Window control needs Accessibility permission for whichever app runs it (Flow.app, or the terminal/IDE running `swift test` / `flowctl`).
@@ -53,13 +55,16 @@ Modules (SwiftPM):
 - `FlowArgmax` — Argmax Pro `LiveTranscriber` adapter implementing `SpeechTranscribing`
 - `FlowRouting` — intent router: stop/cancel, deterministic fast path, task context and references, clarification with follow-up answers, Bonsai fallback with slot grounding (proposes intents; executes nothing)
 - `FlowApp` — SwiftUI shell: "Interpret" tab (classifier preview, nothing executed) and "Window Control" tab (typed window commands)
-- `flowctl` — command-line typed interface to FlowWindow
+- `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
+- `flowctl` — command-line typed interface to FlowWindow and FlowAX
+- `flow-nav-fixture` — small AppKit app used by FlowAX live tests
 - `flow-voice` / `flow-bench` / `flow-speech-eval` — Track B developer harnesses (voice → typed intent; intent benchmark; synthesized-speech ASR and segmentation evaluation). None executes actions.
 
 ## Status
 
 - T-011 initial intent classifier (typed command → validated action preview)
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
+- T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results
 - T-030 voice-to-intent reliability: router, task context, clarification, ASR robustness, segmentation (see docs/evidence/T-030-voice-improvements.md)
