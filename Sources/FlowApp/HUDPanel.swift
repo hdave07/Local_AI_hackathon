@@ -41,7 +41,7 @@ final class HUDPanelController {
         panel.isReleasedWhenClosed = false
         panel.backgroundColor = .clear
         panel.isOpaque = false
-        panel.hasShadow = true
+        panel.hasShadow = false  // HUDView draws its own soft shadow inside FlowTheme.shadowRoom
         panel.title = "Flow HUD"
         panel.setAccessibilityLabel("Flow status")
         let hosting = NSHostingView(rootView: HUDView(model: model))
