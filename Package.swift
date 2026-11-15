@@ -103,7 +103,7 @@ var targets: [Target] = [
     .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail", "FlowText"]),
     .testTarget(name: "FlowExecutorTests",
                 dependencies: ["FlowExecutor", "FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowLLM",
-                               "FlowCalendar", "FlowMailSend", "FlowSession", "FlowSpeech", "FlowAudio"]),
+                               "FlowCalendar", "FlowMailSend", "FlowSession", "FlowSpeech", "FlowAudio", "FlowHUD"]),
     .testTarget(name: "FlowMailSendTests", dependencies: ["FlowMailSend", "FlowMail"]),
     .testTarget(name: "FlowCalendarTests", dependencies: ["FlowCalendar", "FlowCore"]),
     .testTarget(name: "FlowSessionTests",

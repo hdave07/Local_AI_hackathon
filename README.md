@@ -65,6 +65,7 @@ Modules (SwiftPM):
 - `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
 - `FlowText` — deterministic voice text editing (append, replace, delete, undo, occurrence questions, previews, dictation) over a versioned compare-and-set `TextBackend`; no model
 - `FlowCalendar` — read-only EventKit availability: time-expression parsing, busy/tentative/free-in-checked-calendars/unknown classification, configurable calendar scope, optional "show this day" in Calendar
+- `FlowHUD` — floating HUD state and placement: a pure projection of voice-session and spoken-feedback events (listening/hearing/working/speaking/waiting, what was heard, the open question and numbered choices, outcomes, hints); Flow.app shows it in a non-activating floating panel
 - `FlowMailSend` — confirmed Mail sending: re-checks the approved draft in Mail, dispatches at most once, classifies Sent / Outbox / not sent / unknown; disabled by default, dry-run mode records without sending
 - `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail, FlowCalendar, FlowMailSend); Mail limited to the FlowTest test mailbox; sending off unless `FLOW_SEND_MODE` is set
 - `FlowSession` — `VoiceSessionCoordinator`: Argmax utterances → TaskSession (router + planner) → executor, with stop/cancel priority and HUD status
@@ -78,6 +79,7 @@ Modules (SwiftPM):
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
 - T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
+- Floating HUD and usability: always-visible non-activating HUD with numbered choices and hints; voice minimize/restore/close window (never quit), go back, bring to front, list windows; questions survive quick app switches; spoken feedback wired into Flow.app (see docs/evidence/HUD-usability.md, ADR 0011)
 - T-023C confirmed Mail sending (explicit "yes, send it", bound to the exact draft version, at most once; disabled by default, dry-run available; real sending not yet verified live — see docs/evidence/T-023C-confirmed-sending.md, ADR 0010)
 - T-024 Calendar read (EventKit availability answers by voice or typing, "show me … on my calendar"; see docs/evidence/T-024-calendar.md, ADR 0008)
 - T-025 FlowText dictation and text-editing engine (simulated backends; see docs/evidence/T-025-text-editing.md, ADR 0009)

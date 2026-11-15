@@ -34,7 +34,6 @@ struct HUDView: View {
                 .buttonStyle(.borderless).help("Expand").accessibilityLabel("Expand the Flow HUD")
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
-        .accessibilityElement(children: .combine)
     }
 
     // MARK: Expanded
