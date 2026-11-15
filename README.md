@@ -27,6 +27,8 @@ scripts/build_app.sh --open      # build and launch build/Flow.app
 .build/debug/flowctl "activate notes" "move notes left_half" "undo"   # typed window commands
 .build/debug/flowctl "click seven in Calculator" "show numbers in Calculator" "choose 25"   # typed UI navigation
 swift build --product flow-nav-fixture && FLOW_LIVE_AX=1 swift test --filter FlowAXTests   # live navigation tests
+.build/debug/flowctl "mail find mail from sarah in mailbox FlowTest" "mail choose 2" "mail read it"   # typed Mail commands
+FLOW_LIVE_MAIL=1 swift test --filter FlowMailTests   # live Mail tests (import fixtures/mail/FlowTest.mbox into Mail first)
 ```
 
 Window control needs Accessibility permission for whichever app runs it (Flow.app, or the terminal/IDE running `swift test` / `flowctl`).
@@ -55,7 +57,8 @@ Modules (SwiftPM):
 - `FlowArgmax` — Argmax Pro `LiveTranscriber` adapter implementing `SpeechTranscribing`
 - `FlowApp` — SwiftUI shell: "Interpret" tab (classifier preview, nothing executed) and "Window Control" tab (typed window commands)
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
-- `flowctl` — command-line typed interface to FlowWindow and FlowAX
+- `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
+- `flowctl` — command-line typed interface to FlowWindow, FlowAX and FlowMail
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
 - `flow-voice` / `flow-bench` — Track B developer harnesses (voice → typed intent; Bonsai benchmark). Neither executes actions.
 
@@ -64,6 +67,7 @@ Modules (SwiftPM):
 - T-011 initial intent classifier (typed command → validated action preview)
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
+- T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results
 

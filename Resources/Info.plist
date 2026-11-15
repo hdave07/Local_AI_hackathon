@@ -12,6 +12,8 @@
 	<key>LSMinimumSystemVersion</key><string>15.0</string>
 	<key>NSHighResolutionCapable</key><true/>
 	<key>NSPrincipalClass</key><string>NSApplication</string>
+	<!-- Shown by macOS in the Automation consent prompt before Flow can use Apple Mail (read-only search and open). -->
+	<key>NSAppleEventsUsageDescription</key><string>Flow uses Apple Mail's scripting interface to find, open and read your messages when you ask. Flow does not send, delete or change messages.</string>
 	<!-- LM Studio is plain HTTP on localhost; allow local networking only. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>

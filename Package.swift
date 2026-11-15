@@ -19,6 +19,7 @@ var products: [Product] = [
     .executable(name: "flow-bench", targets: ["FlowBenchCLI"]),
     .library(name: "FlowAX", targets: ["FlowAX"]),
     .executable(name: "flow-nav-fixture", targets: ["FlowNavFixture"]),
+    .library(name: "FlowMail", targets: ["FlowMail"]),
 ]
 
 var targets: [Target] = [
@@ -34,18 +35,22 @@ var targets: [Target] = [
     // Track A — generic UI navigation: AX inspection, deterministic target resolution,
     // revalidated press/focus/select/scroll with verification, numbered overlay.
     .target(name: "FlowAX", dependencies: ["FlowCore", "FlowWindow"]),
+    // Track A — Apple Mail read/search (read-only): Mail scripting via osascript (JSON in/out)
+    // plus FlowAX verification of what Mail actually displays.
+    .target(name: "FlowMail", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
     // Track A — deterministic AppKit app exercised by FlowAX live integration tests.
     .executableTarget(name: "FlowNavFixture"),
     // SwiftUI shell. Composition root for FlowLLM, FlowWindow and FlowAX.
-    .executableTarget(name: "FlowApp", dependencies: ["FlowCore", "FlowLLM", "FlowWindow", "FlowAX"]),
+    .executableTarget(name: "FlowApp", dependencies: ["FlowCore", "FlowLLM", "FlowWindow", "FlowAX", "FlowMail"]),
     // Typed command-line interface to FlowWindow and FlowAX for manual and scripted testing.
-    .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
+    .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
     // Track B — T-002 benchmark harness: fixtures → Bonsai via LM Studio → CSV + summary. Executes nothing.
     .executableTarget(name: "FlowBenchCLI", dependencies: ["FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowCoreTests", dependencies: ["FlowCore"]),
     .testTarget(name: "FlowLLMTests", dependencies: ["FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowWindowTests", dependencies: ["FlowCore", "FlowWindow"]),
     .testTarget(name: "FlowAXTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
+    .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
     .testTarget(name: "FlowBenchTests", dependencies: ["FlowBenchCLI", "FlowCore", "FlowLLM"]),
 ]

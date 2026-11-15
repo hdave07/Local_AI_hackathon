@@ -2,6 +2,7 @@ import AppKit
 import FlowAX
 import FlowCore
 import FlowLLM
+import FlowMail
 import FlowWindow
 import SwiftUI
 
@@ -10,6 +11,7 @@ struct FlowApp: App {
     @State private var model: ClassifierViewModel
     @State private var windowModel: WindowControlViewModel
     @State private var navigationModel: NavigationViewModel
+    @State private var mailModel: MailViewModel
 
     init() {
         // Composition root. Defaults match the verified local setup; the
@@ -36,6 +38,9 @@ struct FlowApp: App {
             overlay: ScreenOverlay(),
             configuration: navigation)))
 
+        _mailModel = State(initialValue: MailViewModel(controller: MailController(
+            backend: JXAMailBackend(), verifier: AXMailDisplayVerifier())))
+
         let client = LMStudioClient(configuration: configuration)
         _model = State(initialValue: ClassifierViewModel(
             classifier: BonsaiIntentClassifier(client: client),
@@ -53,6 +58,8 @@ struct FlowApp: App {
                     .tabItem { Label("Window Control", systemImage: "macwindow") }
                 NavigationView(model: navigationModel)
                     .tabItem { Label("UI Navigation", systemImage: "cursorarrow.click") }
+                MailView(model: mailModel)
+                    .tabItem { Label("Mail", systemImage: "envelope") }
             }
                 .onAppear {
                     // Needed when launched as a bare SwiftPM executable (no .app bundle).
