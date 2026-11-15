@@ -25,6 +25,7 @@ var products: [Product] = [
     .library(name: "FlowMail", targets: ["FlowMail"]),
     .library(name: "FlowExecutor", targets: ["FlowExecutor"]),
     .library(name: "FlowSession", targets: ["FlowSession"]),
+    .library(name: "FlowText", targets: ["FlowText"]),
 ]
 
 // Flow.app links the Argmax transcriber only when the Argmax SDK is available.
@@ -66,6 +67,10 @@ var targets: [Target] = [
     .target(name: "FlowExecutor", dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail"]),
     // Voice-session coordinator: finalized utterances → TaskSession (router + planner state) → executor.
     .target(name: "FlowSession", dependencies: ["FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner"]),
+    // Track B — dictation and text-editing engine on text snapshots: deterministic edit commands,
+    // occurrence choice, versioned stale-safe application, targeted undo, previewed rewrites.
+    // Real apps plug in through `TextBackend` (ADR 0009). Not wired into macOS yet.
+    .target(name: "FlowText", dependencies: ["FlowCore"]),
     .executableTarget(name: "FlowApp", dependencies: flowAppDependencies),
     // Typed command-line interface to FlowWindow and FlowAX for manual and scripted testing.
     .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
@@ -80,6 +85,7 @@ var targets: [Target] = [
                 dependencies: ["FlowExecutor", "FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowLLM"]),
     .testTarget(name: "FlowSessionTests",
                 dependencies: ["FlowSession", "FlowExecutor", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),
+    .testTarget(name: "FlowTextTests", dependencies: ["FlowText", "FlowCore"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
     .testTarget(name: "FlowBenchTests", dependencies: ["FlowBenchCLI", "FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowRoutingTests", dependencies: ["FlowRouting", "FlowCore", "FlowLLM"]),
