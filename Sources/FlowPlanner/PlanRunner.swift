@@ -110,7 +110,19 @@ public actor PlanRunner {
                 await advance()
                 return .handled(drainSpoken())
             }
-            guard let pick = Self.choose(utterance, from: question.candidates) else { return .notAnAnswer }
+            guard let pick = Self.choose(utterance, from: question.candidates) else {
+                // "Sarah Chen" when two of three candidates are hers: ask again among just those.
+                if let subset = Self.narrow(utterance, from: question.candidates) {
+                    let options = subset.enumerated().map { "\($0.offset + 1). \($0.element.spoken)" }
+                    let prompt = "\(subset.count) of those match: " + options.joined(separator: "; ") + ". Which one?"
+                    state = .awaitingChoice(PlanQuestion(stepID: question.stepID, prompt: prompt, options: options,
+                                                         candidates: subset, askedAt: now()))
+                    log(.asked(prompt))
+                    await setPending(.plan(prompt: prompt, options: options))
+                    return .handled([prompt])
+                }
+                return .notAnAnswer
+            }
             chosen[question.stepID] = pick
             await setPending(nil)
             state = .running(planID: plan!.id, step: question.stepID)
@@ -531,6 +543,18 @@ public actor PlanRunner {
         let best = scored.map(\.1).max() ?? 0
         let top = scored.filter { $0.1 == best && best > 0 }
         return top.count == 1 ? top[0].0 : nil  // a tie is not an answer
+    }
+
+    /// Candidates tied for the best word match when that tie is a strict subset (≥2) of the
+    /// list, i.e. the answer narrowed the choice without deciding it.
+    static func narrow(_ utterance: String, from candidates: [MessageRef]) -> [MessageRef]? {
+        let meaningful = Set(tokens(utterance)).subtracting(queryStopwords)
+            .subtracting(["one", "that", "this", "it", "please", "i", "meant", "mean", "yeah", "yes", "no", "the"])
+        guard !meaningful.isEmpty else { return nil }
+        let scored = candidates.map { c in (c, meaningful.intersection(tokens(c.sender + " " + c.subject + " " + (c.date ?? ""))).count) }
+        let best = scored.map(\.1).max() ?? 0
+        let top = scored.filter { $0.1 == best && best > 0 }.map(\.0)
+        return top.count >= 2 && top.count < candidates.count ? top : nil
     }
 
     enum YesNo { case yes, no }

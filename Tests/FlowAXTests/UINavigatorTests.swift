@@ -83,6 +83,26 @@ struct UINavigatorTests {
         guard case .notPressable = r.error else { Issue.record("got \(String(describing: r.error))"); return }
     }
 
+    @Test func consequentialControlsAreNeverPressed() async {
+        let b = mailLikeBackend()
+        b.button("send", "Send", at: CGRect(x: 400, y: 40, width: 60, height: 22))
+        b.button("trash", "Move to Trash", at: CGRect(x: 470, y: 40, width: 90, height: 22))
+        let nav = makeNavigator(b)
+        for target in ["send", "move to trash"] {
+            let r = await nav.perform(.click(.parse(target), .frontmost))
+            #expect(r.status == .unsupported, "\(target)")
+            guard case .consequentialControl = r.error else { Issue.record("got \(String(describing: r.error))"); return }
+        }
+        #expect(b.log.isEmpty)
+    }
+
+    @Test func consequentialWordsAreWholeWords() {
+        #expect(UINavigator.isConsequential("Send"))
+        #expect(UINavigator.isConsequential("Delete Draft"))
+        #expect(!UINavigator.isConsequential("Sender details"))
+        #expect(!UINavigator.isConsequential("Remove Volatile"))
+    }
+
     // MARK: Ambiguity and numbers
 
     @Test func indistinguishableControlsAskInsteadOfClicking() async {

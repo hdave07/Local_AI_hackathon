@@ -18,6 +18,9 @@ public final class UINavigator {
         public var maxNumbers = 40
         public var frameTolerance: CGFloat = 2
         public var limits = SnapshotLimits()
+        /// Refuse to press controls whose label sounds consequential (send, delete, …).
+        /// Defence in depth behind the planner's confirmation flow (ADR 0004).
+        public var refuseConsequentialControls = true
 
         public init() {}
     }
@@ -185,6 +188,9 @@ public final class UINavigator {
 
         switch intent {
         case .click:
+            if configuration.refuseConsequentialControls, Self.isConsequential(fresh.label) {
+                throw .consequentialControl(fresh.displayName)
+            }
             if fresh.canPress {
                 let before = try backend.observe(app, limits: configuration.limits)
                 try backend.press(fresh.id)
@@ -252,6 +258,13 @@ public final class UINavigator {
                               message: "Asked \(fresh.displayName) to scroll, but its position didn't change.")
             }
         }
+    }
+
+    static let consequentialWords: Set<String> = ["send", "delete", "discard", "trash", "erase"]
+
+    /// Whether a label names a consequential action ("Send", "Move to Trash", "Delete Draft").
+    static func isConsequential(_ label: String) -> Bool {
+        !Set(LabelText.words(label)).isDisjoint(with: consequentialWords)
     }
 
     /// Spec 02 §3 "No stale AX identifiers": re-read the same element and refuse if it

@@ -1,5 +1,6 @@
 import FlowCore
 @testable import FlowPlanner
+import FlowLLM
 import FlowRouting
 import Foundation
 import Testing
@@ -422,5 +423,73 @@ struct SendSafetyTests {
         #expect(ledger.refusal(for: "d2") != nil)
         ledger.clearInFlight("d2")
         #expect(ledger.refusal(for: "d2") == nil)
+    }
+}
+
+/// Regression (live voice test, 2026-11-14): Argmax finalized "Um, open notes"; the clause
+/// splitter produced a filler-only clause "Um" that failed the whole utterance.
+@Suite("Filler clauses")
+struct FillerClauseTests {
+    @Test(arguments: ["Um, open notes", "Uh, open notes.", "um open notes", "Erm, uh, open notes"])
+    func fillerBeforeCommandStillPlans(utterance: String) async {
+        let planner = TaskPlanner(router: IntentRouter(model: FillerTestModel()).core)
+        guard case .plan(let plan) = await planner.plan(utterance, context: .empty) else {
+            Issue.record("no plan for \(utterance)")
+            return
+        }
+        #expect(plan.steps.map(\.action) == [.activateApp(.notes)])
+    }
+
+    @Test func fillerOnlyIsStillEmpty() async {
+        let planner = TaskPlanner(router: IntentRouter(model: FillerTestModel()).core)
+        guard case .failure(.emptyInput) = await planner.plan("Um, uh.", context: .empty) else {
+            Issue.record("expected emptyInput")
+            return
+        }
+    }
+
+    @Test func fillerWordsInsideContentAreKept() {
+        #expect(!TaskPlanner.isFillerOnly("um the album"))
+        #expect(TaskPlanner.isFillerOnly("Um,"))
+    }
+}
+
+private struct FillerTestModel: TracedIntentClassifying {
+    func classifyTraced(_ utterance: String) async -> ClassificationTrace {
+        ClassificationTrace(outcome: .success(Intent(kind: .unsupported, summary: "model disabled", source: .model(id: "none"))),
+                            attempts: [])
+    }
+}
+
+/// Regression (live voice test, 2026-11-14): "I meant Sarah Chen" when two of three candidates
+/// were hers re-asked the full list instead of narrowing it.
+@Suite("Narrowing a choice")
+struct NarrowingTests {
+    static let candidates = [
+        MessageRef(channel: .mail, id: "m1", sender: "Sarah Chen", subject: "Meeting tomorrow", epoch: 1),
+        MessageRef(channel: .mail, id: "m2", sender: "Sarah Okafor", subject: "Lunch on Friday?", epoch: 1),
+        MessageRef(channel: .mail, id: "m4", sender: "Sarah Chen", subject: "Launch checklist", epoch: 1),
+    ]
+
+    @Test func partialAnswerNarrowsToMatchingSubset() {
+        #expect(PlanRunner.narrow("I meant Sarah Chen", from: Self.candidates)?.map(\.id) == ["m1", "m4"])
+    }
+
+    @Test func noNarrowingWhenNothingOrEverythingMatches() {
+        #expect(PlanRunner.narrow("the blue one", from: Self.candidates) == nil)
+        #expect(PlanRunner.narrow("Sarah", from: Self.candidates) == nil, "all three match: not narrower")
+    }
+
+    @Test func narrowedQuestionThenOrdinalPicksWithinSubset() async {
+        let world = MockExecutor.World(activeApp: .mail, messages: Self.candidates)
+        let session = TaskSession(store: IntentRouter(model: FillerTestModel()), executor: MockExecutor(world: world))
+        guard case .awaitingChoice = await session.handle("find Sarah's email").state else { Issue.record("no question"); return }
+        let narrowed = await session.handle("I meant Sarah Chen")
+        guard case .awaitingChoice(let q) = narrowed.state else { Issue.record("not narrowed: \(narrowed.say)"); return }
+        #expect(q.candidates.map(\.id) == ["m1", "m4"])
+        #expect(narrowed.say.first?.hasPrefix("2 of those match") == true)
+        let done = await session.handle("the second one")
+        guard case .completed = done.state else { Issue.record("state \(done.state)"); return }
+        #expect(await session.store.context.selectedMessage?.id == "m4", "second of the narrowed list")
     }
 }
