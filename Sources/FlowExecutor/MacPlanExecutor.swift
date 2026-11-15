@@ -1,5 +1,6 @@
 import FlowAX
 import FlowCalendar
+import FlowMailSend
 import FlowCore
 import FlowMail
 import FlowPlanner
@@ -52,9 +53,10 @@ public final class MacPlanExecutor: PlanExecuting {
     /// - Parameter calendar: read-only calendar lookups (T-024). `nil` keeps them unsupported.
     @MainActor
     public init(window: WindowController, navigator: UINavigator, mail: MailController, drafts: MailDraftController? = nil,
-                calendar: CalendarController? = nil, configuration: ExecutorConfiguration = ExecutorConfiguration()) {
+                calendar: CalendarController? = nil, sender: MailSender? = nil,
+                configuration: ExecutorConfiguration = ExecutorConfiguration()) {
         engine = ExecutorEngine(window: window, navigator: navigator, mail: mail, drafts: drafts, calendar: calendar,
-                                configuration: configuration)
+                                sender: sender, configuration: configuration)
     }
 
     public func execute(_ request: ExecutionRequest) async -> ExecutionResult {
@@ -68,6 +70,8 @@ public final class MacPlanExecutor: PlanExecuting {
     @MainActor var engineWindow: WindowController { engine.window }
     @MainActor var engineNavigator: UINavigator { engine.navigator }
     @MainActor var engineMail: MailController { engine.mail }
+    @MainActor var engineDrafts: MailDraftController? { engine.drafts }
+    @MainActor public var sender: MailSender? { engine.sender }
 }
 
 @MainActor
@@ -77,6 +81,8 @@ final class ExecutorEngine {
     let mail: MailController
     let drafts: MailDraftController?
     let calendar: CalendarController?
+    /// Confirmed sending (T-023C). `nil` or `.disabled` keeps `request_send` unsupported.
+    let sender: MailSender?
     let configuration: ExecutorConfiguration
     private(set) var log: [ExecutionLogEntry] = []
     /// Message candidates belong to one search; a newer search makes older choices stale.
@@ -87,8 +93,9 @@ final class ExecutorEngine {
     private let editWitness = EditWitness()
 
     init(window: WindowController, navigator: UINavigator, mail: MailController, drafts: MailDraftController?,
-         calendar: CalendarController? = nil, configuration: ExecutorConfiguration) {
+         calendar: CalendarController? = nil, sender: MailSender? = nil, configuration: ExecutorConfiguration) {
         self.calendar = calendar
+        self.sender = sender
         self.window = window
         self.navigator = navigator
         self.mail = mail
@@ -123,7 +130,7 @@ final class ExecutorEngine {
         case .editText(let command):
             result = await editDraft(command, request)
         case .requestSend:
-            result = Self.unsupported("Sending is disabled in this version. Nothing was sent.")
+            result = await send(request)  // ExecutorSend.swift
         }
         return finish(request, result)
     }
@@ -471,7 +478,8 @@ final class ExecutorEngine {
         case .reviewShown(let d): "review shown: draft \(d.id.suffix(8)) v\(d.version)"
         case .lookupResult: "lookup answered"
         case .availability(let a): "availability: \(a.status.rawValue), \(a.events.count) event(s), calendars \(a.calendarsChecked.count)"
-        case .sent: "sent"
+        case .sent(_, let queued): queued ? "send accepted (in Outbox)" : "send accepted (in Sent)"
+        case .sendRehearsed: "dry-run send recorded (nothing sent)"
         case .textChoice(let prompt, _): "text question: \(prompt.prefix(60))"
         }
     }

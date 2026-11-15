@@ -65,7 +65,8 @@ Modules (SwiftPM):
 - `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
 - `FlowText` — deterministic voice text editing (append, replace, delete, undo, occurrence questions, previews, dictation) over a versioned compare-and-set `TextBackend`; no model
 - `FlowCalendar` — read-only EventKit availability: time-expression parsing, busy/tentative/free-in-checked-calendars/unknown classification, configurable calendar scope, optional "show this day" in Calendar
-- `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail, FlowCalendar); Mail limited to the FlowTest test mailbox; sending disabled
+- `FlowMailSend` — confirmed Mail sending: re-checks the approved draft in Mail, dispatches at most once, classifies Sent / Outbox / not sent / unknown; disabled by default, dry-run mode records without sending
+- `FlowExecutor` — real `PlanExecuting` adapter (FlowWindow, FlowAX, FlowMail, FlowCalendar, FlowMailSend); Mail limited to the FlowTest test mailbox; sending off unless `FLOW_SEND_MODE` is set
 - `FlowSession` — `VoiceSessionCoordinator`: Argmax utterances → TaskSession (router + planner) → executor, with stop/cancel priority and HUD status
 - `flowctl` — command-line typed interface to FlowWindow, FlowAX and FlowMail
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
@@ -77,6 +78,7 @@ Modules (SwiftPM):
 - T-020 window control foundation (typed commands on real windows, verified, undoable)
 - T-021 generic UI navigation (typed commands on real apps, clarification, numbered overlay, stale-target refusal)
 - T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
+- T-023C confirmed Mail sending (explicit "yes, send it", bound to the exact draft version, at most once; disabled by default, dry-run available; real sending not yet verified live — see docs/evidence/T-023C-confirmed-sending.md, ADR 0010)
 - T-024 Calendar read (EventKit availability answers by voice or typing, "show me … on my calendar"; see docs/evidence/T-024-calendar.md, ADR 0008)
 - T-025 FlowText dictation and text-editing engine (simulated backends; see docs/evidence/T-025-text-editing.md, ADR 0009)
 - T-023B voice editing of Flow-created Mail reply drafts, duplicate compose-window fix (simulated Mail only; real-Mail editing is off by default until verified live; see docs/evidence/T-023B-mail-draft-editing.md, ADR 0010)

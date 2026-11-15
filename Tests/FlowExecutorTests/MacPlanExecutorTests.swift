@@ -4,6 +4,7 @@ import FlowCore
 @testable import FlowExecutor
 import FlowLLM
 import FlowMail
+import FlowMailSend
 import FlowPlanner
 import FlowRouting
 import FlowWindow
@@ -18,8 +19,11 @@ struct Rig {
     let draftBackend: FakeDraftBackend
     let compose: FakeComposeInspector
     let executor: MacPlanExecutor
+    let sendTransport: FakeSendTransport
+    let sender: MailSender?
 
-    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest"), drafting: Bool = false, editing: Bool = false) {
+    init(scope: ExecutorConfiguration.MailScope = .testMailbox("FlowTest"), drafting: Bool = false, editing: Bool = false,
+         sending: MailSendMode? = nil) {
         for app in [KnownApp.notes, .mail] {
             windows.openCreatesWindowFor[app.bundleIdentifier] = CGRect(x: 100, y: 100, width: 800, height: 600)
         }
@@ -34,8 +38,15 @@ struct Rig {
         dc.verifyTimeout = .milliseconds(30)
         dc.pollInterval = .milliseconds(5)
         let drafts = drafting ? MailDraftController(mail: mail, backend: draftBackend, inspector: compose, configuration: dc) : nil
+        let transport = FakeSendTransport(drafts: draftBackend)
+        sendTransport = transport
+        var sc = MailSender.Configuration()
+        sc.evidenceTimeout = .milliseconds(30)
+        sc.pollInterval = .milliseconds(5)
+        sender = sending.map { MailSender(mode: $0, transport: transport, configuration: sc) }
         executor = MacPlanExecutor(window: makeController(windows), navigator: makeNavigator(ui), mail: makeMail(mail),
-                                   drafts: drafts, configuration: ExecutorConfiguration(mailScope: scope, allowMailDraftEditing: editing))
+                                   drafts: drafts, sender: sender,
+                                   configuration: ExecutorConfiguration(mailScope: scope, allowMailDraftEditing: editing))
     }
 
     func run(_ action: FlowAction, channel: MessageChannel? = nil, bindings: StepBindings = StepBindings()) async -> ExecutionResult {

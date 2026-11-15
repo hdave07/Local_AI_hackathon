@@ -24,6 +24,7 @@ var products: [Product] = [
     .executable(name: "flow-nav-fixture", targets: ["FlowNavFixture"]),
     .library(name: "FlowMail", targets: ["FlowMail"]),
     .library(name: "FlowExecutor", targets: ["FlowExecutor"]),
+    .library(name: "FlowMailSend", targets: ["FlowMailSend"]),
     .library(name: "FlowCalendar", targets: ["FlowCalendar"]),
     .executable(name: "flow-calendar-livecheck", targets: ["FlowCalendarLiveCheck"]),
     .library(name: "FlowSession", targets: ["FlowSession"]),
@@ -34,7 +35,7 @@ var products: [Product] = [
 // Flow.app links the Argmax transcriber only when the Argmax SDK is available.
 var flowAppDependencies: [Target.Dependency] = [
     "FlowCore", "FlowLLM", "FlowWindow", "FlowAX", "FlowMail", "FlowAudio", "FlowRouting", "FlowPlanner",
-    "FlowExecutor", "FlowSession", "FlowCalendar",
+    "FlowExecutor", "FlowSession", "FlowCalendar", "FlowMailSend",
 ]
 if argmaxEnabled { flowAppDependencies.append("FlowArgmax") }
 
@@ -71,8 +72,11 @@ var targets: [Target] = [
     .target(name: "FlowCalendar", dependencies: ["FlowCore", "FlowMail"]),
     // Live EventKit check (app bundle, see scripts/run_calendar_livecheck.sh): FlowTest calendar only.
     .executableTarget(name: "FlowCalendarLiveCheck", dependencies: ["FlowCalendar"]),
+    // Track A — confirmed Mail sending (T-023C): dispatches an approved, re-verified draft at most once and
+    // classifies the outcome. Disabled by default; dry-run records sends without performing them (ADR 0010).
+    .target(name: "FlowMailSend", dependencies: ["FlowMail"]),
     .target(name: "FlowExecutor",
-            dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowCalendar"]),
+            dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowCalendar", "FlowMailSend"]),
     // Voice-session coordinator: finalized utterances → TaskSession (router + planner state) → executor.
     .target(name: "FlowSession", dependencies: ["FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner"]),
     // Track B — dictation and text-editing engine on text snapshots: deterministic edit commands,
@@ -95,7 +99,8 @@ var targets: [Target] = [
     .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail", "FlowText"]),
     .testTarget(name: "FlowExecutorTests",
                 dependencies: ["FlowExecutor", "FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowLLM",
-                               "FlowCalendar"]),
+                               "FlowCalendar", "FlowMailSend", "FlowSession", "FlowSpeech", "FlowAudio"]),
+    .testTarget(name: "FlowMailSendTests", dependencies: ["FlowMailSend", "FlowMail"]),
     .testTarget(name: "FlowCalendarTests", dependencies: ["FlowCalendar", "FlowCore"]),
     .testTarget(name: "FlowSessionTests",
                 dependencies: ["FlowSession", "FlowExecutor", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),

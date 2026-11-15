@@ -130,8 +130,14 @@ public actor PlanRunner {
             return .handled(drainSpoken())
 
         case .awaitingConfirmation(let request):
-            switch Self.yesNo(utterance) {
-            case .yes:
+            if now().timeIntervalSince(request.askedAt) > Approval.lifetime {
+                invalidateApproval("The confirmation expired.")
+                await setPending(nil)
+                stop(SendWording.expired)
+                return .handled(drainSpoken())
+            }
+            switch ConfirmationReply.parse(utterance) {
+            case .approve:
                 let ctx = await store.context
                 guard let live = ctx.draft, live.id == request.draft.id, live.version == request.draft.version,
                       live.contentHash == request.draft.contentHash
@@ -145,11 +151,18 @@ public actor PlanRunner {
                 state = .running(planID: plan!.id, step: request.stepID)
                 await advance()
                 return .handled(drainSpoken())
-            case .no:
+            case .decline:
+                invalidateApproval("The user declined.")
                 await setPending(nil)
-                stop("Okay, I won't send it.")
+                stop(SendWording.declined)
                 return .handled(drainSpoken())
-            case nil:
+            case .readBack:
+                log(.confirmationRequested(request.prompt))
+                return .handled([request.prompt])
+            case .unclear:
+                // Vague assent or a repeated "send it": never an approval; keep waiting.
+                return .handled([SendWording.reprompt])
+            case .unrelated:
                 return .notAnAnswer
             }
         default:
@@ -217,10 +230,11 @@ public actor PlanRunner {
                 if let refusal = ledger.refusal(for: draft.id) { stop(refusal); return }
                 if approval?.authorizes(.send, on: draft, now: now()) != true {
                     approval = nil
-                    let channelName = step.channel.map { " by \($0)" } ?? ""
-                    let to = draft.recipients.joined(separator: ", ")
-                    let prompt = "Send this\(channelName) to \(to)? “\(draft.body)” Say yes to send, or no."
-                    state = .awaitingConfirmation(ApprovalRequest(stepID: step.id, action: .send, draft: draft, prompt: prompt))
+                    let ch = step.channel ?? draft.channel
+                    let channelName = ch == .mail ? "email" : "message by \(ch.rawValue)"
+                    let prompt = SendWording.confirmation(draft, channelName: channelName)
+                    state = .awaitingConfirmation(ApprovalRequest(stepID: step.id, action: .send, draft: draft, prompt: prompt,
+                                                                  askedAt: now()))
                     log(.confirmationRequested(prompt))
                     spoken.append(prompt)
                     await setPending(.plan(prompt: prompt, options: ["yes", "no"]))
@@ -279,13 +293,25 @@ public actor PlanRunner {
             if case .lookupResult(let answer) = result.observation { spoken.append(answer) }
             if case .availability(let a) = result.observation { spoken.append(a.answer) }
             if case .reviewShown(let d) = result.observation {
-                // Read back what was verified on screen, not what Flow intended to write.
-                spoken.append(d.body.isEmpty ? "Here's the draft. It's empty." : "Here's the draft. It says: “\(d.body)”")
+                // Read back what was verified on screen, not what Flow intended to write. Before a
+                // send, the confirmation that follows reads the same verified draft, so skip it here.
+                let precedesSend = plan?.steps.contains { $0.capability == .send && $0.dependsOn.contains(step.id) } ?? false
+                if !precedesSend {
+                    spoken.append(d.body.isEmpty ? "Here's the draft. It's empty." : "Here's the draft. It says: “\(d.body)”")
+                }
             }
             if step.capability == .editText, case .draft = result.observation, !result.userMessage.isEmpty {
                 spoken.append(result.userMessage)  // the executor's verified summary of the edit
             }
-            if case .sent(_, let queued) = result.observation { spoken.append(queued ? "Queued to send." : "Sent.") }
+            if case .sent(_, let queued) = result.observation {
+                // Mail accepted it; delivery to the recipient is never claimed.
+                spoken.append(queued
+                    ? "Mail accepted it, but it's still in the Outbox, so it hasn't gone out yet."
+                    : (result.userMessage.isEmpty ? "Mail sent it. It's in your Sent mailbox; I can't confirm delivery." : result.userMessage))
+            }
+            if case .sendRehearsed = result.observation {
+                spoken.append("Dry run: the draft checked out and I would have sent it now. Nothing was sent.")
+            }
             return true
 
         case .needsClarification:
@@ -323,6 +349,14 @@ public actor PlanRunner {
                 invalidateApproval("The draft changed outside Flow. Review it again before sending.")
                 await markDraftUnreviewed()
                 stop("The draft changed outside Flow; nothing was sent.")
+                return false
+            }
+            if step.capability == .send, result.error == .notSent {
+                stop(result.userMessage.isEmpty ? "Mail didn't send it. The draft is still open." : result.userMessage)
+                return false
+            }
+            if step.capability == .send, let code = result.error, Self.refusedBeforeSending.contains(code) {
+                stop(result.userMessage.isEmpty ? "I didn't send it." : result.userMessage + " Nothing was sent.")
                 return false
             }
             if step.capability == .send {
@@ -408,7 +442,7 @@ public actor PlanRunner {
             ctx.draft = nil
             ctx.hasDraft = false
             ctx.reviewedDraftVersion = nil
-        case .none, .uiActed, .scrolled, .lookupResult, .availability, .messageCandidates, .textChoice:
+        case .none, .uiActed, .scrolled, .lookupResult, .availability, .messageCandidates, .sendRehearsed, .textChoice:
             break
         }
         ctx.updatedAt = now()
@@ -432,12 +466,19 @@ public actor PlanRunner {
         await store.updateContext(ctx)
     }
 
+    /// Executor errors that guarantee nothing was dispatched (ADR 0010).
+    static let refusedBeforeSending: Set<ExecutionErrorCode> = [
+        .approvalInvalid, .draftChanged, .recipientMismatch, .draftAlreadyOpen, .targetNotFound, .permissionDenied, .appUnavailable,
+    ]
+
     private func recordSend(_ draftID: String, _ result: ExecutionResult) {
         switch result.status {
         case .completed:
-            ledger.record(draftID, .sent)
-        case .unsupported, .failed where result.error == .approvalInvalid || result.error == .draftChanged:
-            ledger.clearInFlight(draftID)  // the executor refused before sending
+            if case .sendRehearsed = result.observation { ledger.record(draftID, .rehearsed) } else { ledger.record(draftID, .sent) }
+        case .unsupported:
+            ledger.clearInFlight(draftID)  // sending disabled: nothing dispatched
+        case .failed where result.error.map { Self.refusedBeforeSending.contains($0) || $0 == .notSent } ?? false:
+            ledger.clearInFlight(draftID)  // refused before sending, or Mail reported it did not send
         default:
             ledger.record(draftID, .unverified)  // unknown outcome: never retried automatically
         }
@@ -529,7 +570,7 @@ public actor PlanRunner {
         case (.draftShown, .reviewShown(let d)):
             if let ch = step.channel, d.channel != ch { return false }
             return bindings.draft.map { $0.id == d.id } ?? true
-        case (.sent, .sent(let draftID, _)):
+        case (.sent, .sent(let draftID, _)), (.sent, .sendRehearsed(let draftID)):
             return bindings.approval?.draftID == draftID
         default:
             return false
@@ -584,12 +625,4 @@ public actor PlanRunner {
         return top.count >= 2 && top.count < candidates.count ? top : nil
     }
 
-    enum YesNo { case yes, no }
-
-    static func yesNo(_ utterance: String) -> YesNo? {
-        let w = Set(tokens(utterance))
-        if !w.isDisjoint(with: ["no", "nope", "don't", "dont", "not", "wait", "hold"]) { return .no }
-        if !w.isDisjoint(with: ["yes", "yeah", "yep", "send", "confirm", "sure", "ok", "okay", "go"]) { return .yes }
-        return nil
-    }
 }

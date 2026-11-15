@@ -90,6 +90,8 @@ public enum Observation: Sendable, Equatable {
     case availability(AvailabilityAnswer)
     /// The channel accepted the message for sending (queued or sent). Delivery is not implied.
     case sent(draftID: String, queued: Bool)
+    /// Dry-run mode: the live draft matched the approval and one send was recorded, not performed.
+    case sendRehearsed(draftID: String)
 }
 
 public enum ExecutionErrorCode: String, Sendable, Equatable {
@@ -107,6 +109,8 @@ public enum ExecutionErrorCode: String, Sendable, Equatable {
     case recipientMismatch = "recipient_mismatch"
     /// A draft for this target is already open; a second one was not created.
     case draftAlreadyOpen = "draft_already_open"
+    /// The send was dispatched and Mail reported it did not send; the draft is still open, unchanged.
+    case notSent = "not_sent"
     case unknown
 }
 

@@ -128,7 +128,9 @@ enum Rules {
     static let scrollDir = Rx(#"scroll\s+(up|down)(?:\s+(?:a\s+(?:bit|little)|a little bit|some|more|slightly|again))?"#)
     static let scrollEnd = Rx(#"(?:scroll|go|jump|move)\s+(?:all the way\s+)?(?:to\s+|up to\s+|down to\s+)?(?:the\s+)?(top|bottom)(?:\s+of\s+(?:the\s+)?(?:page|window|list|message|email|screen))?"#)
     static let page = Rx(#"page\s+(up|down)"#)
-    static let send = Rx(#"send(?:\s+(?:it|this|that|the draft|the email|the message|the reply|my reply|my draft|my email|my message|the mail))?(?:\s+now)?"#)
+    static let send = Rx(#"send(?:\s+(?:it|this|that|the|my))?(?:\s+(?:draft|email|e-mail|message|reply|response|mail))?(?:\s+now)?"#)
+    /// "send my reply to Sarah", "send it to sarah": a named recipient must match the open draft.
+    static let sendNamed = Rx(#"send(?:\s+(?:it|this|that|the|my))?(?:\s+(?:draft|email|e-mail|message|reply|response|mail))?\s+to\s+([a-z][a-z'.-]*(?:\s+[a-z][a-z'.-]*)?)(?:\s+now)?"#)
     static let review = Rx(#"(?:review|show me|let me (?:see|review|check)|read(?: back)?(?: me)?|check)\s+(?:the|my|this)\s+(?:draft|reply|response|email draft|message draft)(?:\s+before sending)?"#)
 
     // Mail search: explicit mail noun, never a calendar phrase.
@@ -364,6 +366,16 @@ enum Rules {
             // Low-risk geometry default (PRD D-013): the current window.
             return RuleHit(intent: Make.intent(.direct, .resizeWindow(target, change), "Make \(target.displayName) \(change.rawValue)"), stage: .context)
         }
+        if let m = sendNamed.match(s), let name = m[0], let draft = ctx.draft {
+            let who = draftRecipientWords(draft, ctx)
+            let named = Words.tokens(name)
+            if !named.isEmpty, named.allSatisfy(who.contains) {
+                return RuleHit(intent: Make.intent(.direct, .requestSend, "Send the current draft (needs confirmation)"), stage: .context)
+            }
+            let to = draft.recipients.joined(separator: ", ")
+            return RuleHit(intent: Make.decline("The open draft is to \(to), not \(name), so I won't send it. Say “review the draft” to check it."),
+                           stage: .clarify)
+        }
         if sendTo.match(s) != nil {
             return RuleHit(intent: Make.ask("I can't change who a draft goes to by voice yet. Say “review the draft” to check its recipients."), stage: .clarify)
         }
@@ -534,6 +546,13 @@ enum Rules {
     }
 
     // MARK: Helpers
+
+    /// Words identifying a draft's recipients: address local parts, plus the replied-to sender's name.
+    static func draftRecipientWords(_ draft: DraftSnapshot, _ ctx: ConversationContext) -> Set<String> {
+        var words = Set(draft.recipients.flatMap { Words.tokens(String($0.split(separator: "@").first ?? "")) })
+        if let m = ctx.selectedMessage, draft.inReplyTo == m.id { words.formUnion(Words.tokens(m.sender)) }
+        return words
+    }
 
     private static let timeLead = Rx(#"(?:(?:and|but|what|how)\s+)?(?:about\s+)?(?:for\s+)?(.+?)\??"#)
     private static let timeConnectors: Set<String> = [
