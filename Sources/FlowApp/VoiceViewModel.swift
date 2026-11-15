@@ -1,7 +1,9 @@
 import FlowAudio
 import FlowCalendar
 import FlowExecutor
+import FlowHUD
 import FlowSession
+import FlowSpeech
 import Foundation
 import Observation
 #if canImport(FlowArgmax)
@@ -26,10 +28,14 @@ final class VoiceViewModel {
     private let coordinator: VoiceSessionCoordinator
     private let executor: MacPlanExecutor
     private var listener: Task<Void, Never>?
+    private var feedbackListener: Task<Void, Never>?
+    private let hud: HUDModel?
+    private(set) var speech: FeedbackStatus = .ready
 
-    init(coordinator: VoiceSessionCoordinator, executor: MacPlanExecutor) {
+    init(coordinator: VoiceSessionCoordinator, executor: MacPlanExecutor, hud: HUDModel? = nil, feedback: SpokenFeedback? = nil) {
         self.coordinator = coordinator
         self.executor = executor
+        self.hud = hud
         let mail: String
         switch executor.configuration.mailScope {
         case .testMailbox(let name): mail = "Mail: \(name) mailbox only (test mode)"
@@ -45,6 +51,12 @@ final class VoiceViewModel {
         keySource = ArgmaxKeyStore.load().source
         listener = Task { [weak self, coordinator] in
             for await event in coordinator.events { self?.apply(event) }
+        }
+        if let feedback {
+            feedbackListener = Task { [weak self, feedback, coordinator] in
+                await feedback.attach(to: coordinator)
+                for await event in feedback.events { self?.apply(event) }
+            }
         }
     }
 
@@ -100,7 +112,13 @@ final class VoiceViewModel {
         keyEntry = ""
     }
 
+    private func apply(_ event: FeedbackEvent) {
+        if case .status(let s) = event { speech = s }
+        hud?.apply(.feedback(event))
+    }
+
     private func apply(_ event: CoordinatorEvent) {
+        hud?.apply(.coordinator(event))
         switch event {
         case .status(let s): status = s
         case .finalized(let text): lastHeard = text

@@ -111,8 +111,10 @@ final class ExecutorEngine {
         switch request.action {
         case .activateApp(let app):
             result = await activate(app)
-        case .moveWindow, .resizeWindow, .tileWindows:
+        case .moveWindow, .resizeWindow, .tileWindows, .minimizeWindow, .restoreWindow, .closeWindow:
             result = await arrange(request.action)
+        case .listWindows:
+            result = listOpenWindows()
         case .clickElement, .focus, .scroll:
             result = await navigate(request.action)
         case .readMessage(let query):
@@ -159,6 +161,12 @@ final class ExecutorEngine {
         let r = await window.perform(command)
         switch r.status {
         case .completed:
+            if case .close = command, let closed = r.targets.first {
+                // The closed window no longer exists; report which one it was.
+                let selected = SelectedWindow(app: KnownApp.allCases.first { $0.bundleIdentifier == closed.appBundleID },
+                                              title: closed.title.isEmpty ? nil : closed.title, windowID: closed.id.description)
+                return ExecutionResult(status: .completed, observation: .window(selected), userMessage: r.userMessage)
+            }
             guard let w = r.observed.first else { return ExecutionResult(status: .unverified, userMessage: r.userMessage) }
             let selected = SelectedWindow(app: KnownApp.allCases.first { $0.bundleIdentifier == w.app.bundleID },
                                           title: w.title.isEmpty ? nil : w.title, windowID: w.id.description)
@@ -175,6 +183,34 @@ final class ExecutorEngine {
             }
             return ExecutionResult(status: .failed, error: Self.code(r.error), retrySafe: r.retrySafe, userMessage: r.userMessage)
         }
+    }
+
+    /// "Show me my open windows": standard windows of the apps Flow can control (read-only).
+    private func listOpenWindows() -> ExecutionResult {
+        var parts: [String] = []
+        var denied = false
+        for app in KnownApp.allCases {
+            do throws(WindowError) {
+                let windows = try window.listWindows(app)
+                guard !windows.isEmpty else { continue }
+                let names = windows.prefix(4).map { w -> String in
+                    let title = w.title.isEmpty ? "untitled" : String(w.title.prefix(40))
+                    return w.isMinimized ? "\(title) (minimized)" : title
+                }
+                let more = windows.count > 4 ? " and \(windows.count - 4) more" : ""
+                parts.append("\(app.rawValue): \(names.joined(separator: ", "))\(more)")
+            } catch {
+                if error == .accessibilityNotTrusted { denied = true; break }
+            }
+        }
+        if denied {
+            return ExecutionResult(status: .failed, error: .permissionDenied, userMessage: WindowError.accessibilityNotTrusted.userMessage)
+        }
+        let answer = parts.isEmpty
+            ? "None of the apps I can control (Mail, Calendar, Notes, Finder, Safari) has an open window."
+            : "Open windows — " + parts.joined(separator: ". ") + "."
+        return ExecutionResult(status: .completed, observation: .lookupResult(answer: answer), retrySafe: true,
+                               userMessage: "listed windows of \(parts.count) app(s)")
     }
 
     // MARK: Generic UI (FlowAX)

@@ -30,12 +30,13 @@ var products: [Product] = [
     .library(name: "FlowSession", targets: ["FlowSession"]),
     .library(name: "FlowText", targets: ["FlowText"]),
     .library(name: "FlowSpeech", targets: ["FlowSpeech"]),
+    .library(name: "FlowHUD", targets: ["FlowHUD"]),
 ]
 
 // Flow.app links the Argmax transcriber only when the Argmax SDK is available.
 var flowAppDependencies: [Target.Dependency] = [
     "FlowCore", "FlowLLM", "FlowWindow", "FlowAX", "FlowMail", "FlowAudio", "FlowRouting", "FlowPlanner",
-    "FlowExecutor", "FlowSession", "FlowCalendar", "FlowMailSend",
+    "FlowExecutor", "FlowSession", "FlowCalendar", "FlowMailSend", "FlowSpeech", "FlowHUD",
 ]
 if argmaxEnabled { flowAppDependencies.append("FlowArgmax") }
 
@@ -87,6 +88,9 @@ var targets: [Target] = [
     // echo guard (Flow's own speech is never a command), reminders/timeouts. Attaches to the
     // coordinator through `VoiceSessionHook`; no executor, planner or FlowCore changes (ADR 0008).
     .target(name: "FlowSpeech", dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowSession"]),
+    // Floating HUD state and placement (ADR 0011): a pure projection of voice-session and
+    // spoken-feedback events; Flow.app renders it in a non-activating floating panel.
+    .target(name: "FlowHUD", dependencies: ["FlowPlanner", "FlowSession", "FlowSpeech"]),
     .executableTarget(name: "FlowApp", dependencies: flowAppDependencies),
     // Typed command-line interface to FlowWindow and FlowAX for manual and scripted testing.
     .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
@@ -105,6 +109,7 @@ var targets: [Target] = [
     .testTarget(name: "FlowSessionTests",
                 dependencies: ["FlowSession", "FlowExecutor", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),
     .testTarget(name: "FlowTextTests", dependencies: ["FlowText", "FlowCore"]),
+    .testTarget(name: "FlowHUDTests", dependencies: ["FlowHUD", "FlowSession", "FlowSpeech", "FlowPlanner", "FlowRouting", "FlowCore"]),
     .testTarget(name: "FlowSpeechTests",
                 dependencies: ["FlowSpeech", "FlowSession", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),

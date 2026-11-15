@@ -88,6 +88,11 @@ public actor MockExecutor: PlanExecuting {
         case .moveWindow(let w, _), .resizeWindow(let w, _):
             let app: KnownApp? = if case .app(let a) = w { a } else { world.activeApp }
             return ExecutionResult(status: .completed, observation: .window(SelectedWindow(app: app, title: nil, windowID: "w-1")))
+        case .minimizeWindow(let w), .restoreWindow(let w), .closeWindow(let w):
+            let app: KnownApp? = if case .app(let a) = w { a } else { world.activeApp }
+            return ExecutionResult(status: .completed, observation: .window(SelectedWindow(app: app, title: nil, windowID: "w-1")))
+        case .listWindows:
+            return ExecutionResult(status: .completed, observation: .lookupResult(answer: "Open windows: \(world.activeApp?.rawValue ?? "none")."))
         case .tileWindows(let left, _):
             return ExecutionResult(status: .completed, observation: .window(SelectedWindow(app: left, title: nil, windowID: "w-1")))
         case .clickElement(let label), .focus(let label):

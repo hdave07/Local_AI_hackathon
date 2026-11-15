@@ -23,12 +23,21 @@ public enum ActionType: String, Sendable, Codable, CaseIterable {
     /// ("change 3:30 to 4", "remove the last sentence", "undo that change"). Produced only
     /// by deterministic routing; never offered to the language model (ADR 0010).
     case editText = "edit_text"
+    /// Window control by voice (deterministic-only; never offered to the language model).
+    case minimizeWindow = "minimize_window"
+    case restoreWindow = "restore_window"
+    /// Closes a window (never quits the app, never answers a "save changes?" sheet).
+    case closeWindow = "close_window"
+    /// Lists the open windows of the apps Flow knows.
+    case listWindows = "list_windows"
 
     /// Text-editing actions, the only ones valid for `edit` / `dictation` intents.
     public var isTextAction: Bool { self == .insertText || self == .replaceText || self == .editText }
 
-    /// Actions the language model may emit (`edit_text` is deterministic-only).
-    public static var modelEmittable: [ActionType] { allCases.filter { $0 != .editText } }
+    /// Actions the language model may emit (`edit_text` and the window actions below are deterministic-only).
+    public static var modelEmittable: [ActionType] { allCases.filter { !deterministicOnly.contains($0) } }
+
+    public static let deterministicOnly: Set<ActionType> = [.editText, .minimizeWindow, .restoreWindow, .closeWindow, .listWindows]
 }
 
 /// Apps Flow targets in the MVP (PRD D-004: Mail and Calendar anchor; Finder,
@@ -156,6 +165,10 @@ public enum FlowAction: Sendable, Equatable {
     case requestSend
     /// The user's edit command, verbatim (wake word and discourse openers removed).
     case editText(String)
+    case minimizeWindow(WindowTarget)
+    case restoreWindow(WindowTarget)
+    case closeWindow(WindowTarget)
+    case listWindows
 
     public var type: ActionType {
         switch self {
@@ -175,6 +188,10 @@ public enum FlowAction: Sendable, Equatable {
         case .requestReview: .requestReview
         case .requestSend: .requestSend
         case .editText: .editText
+        case .minimizeWindow: .minimizeWindow
+        case .restoreWindow: .restoreWindow
+        case .closeWindow: .closeWindow
+        case .listWindows: .listWindows
         }
     }
 
@@ -182,7 +199,11 @@ public enum FlowAction: Sendable, Equatable {
     public var risk: RiskLevel {
         switch self {
         case .activateApp, .moveWindow, .resizeWindow, .tileWindows, .clickElement,
-            .scroll, .focus, .readMessage, .queryCalendar, .showCalendar, .requestReview:
+            .scroll, .focus, .readMessage, .queryCalendar, .showCalendar, .requestReview,
+            .minimizeWindow, .restoreWindow, .listWindows:
+            .low
+        case .closeWindow:
+            // Reversible only by reopening; the app's own "save changes?" sheet is never answered by Flow.
             .low
         case .insertText, .replaceText, .createDraft, .editText:
             .content
@@ -209,6 +230,8 @@ public enum FlowAction: Sendable, Equatable {
         case .showCalendar(let d): d
         case .requestReview, .requestSend: "current draft"
         case .editText(let command): "draft: “\(command)”"
+        case .minimizeWindow(let t), .restoreWindow(let t), .closeWindow(let t): t.displayName
+        case .listWindows: "open windows"
         }
     }
 }

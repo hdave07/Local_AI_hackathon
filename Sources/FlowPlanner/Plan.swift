@@ -121,7 +121,8 @@ public enum Capability: String, Sendable, Equatable {
     public init(_ action: FlowAction) {
         switch action {
         case .activateApp: self = .activate
-        case .moveWindow, .resizeWindow, .tileWindows: self = .arrangeWindows
+        case .moveWindow, .resizeWindow, .tileWindows, .minimizeWindow, .restoreWindow, .closeWindow: self = .arrangeWindows
+        case .listWindows: self = .lookup
         case .clickElement, .focus: self = .interact
         case .scroll: self = .scroll
         case .insertText, .replaceText, .editText: self = .editText

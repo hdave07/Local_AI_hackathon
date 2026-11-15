@@ -51,7 +51,8 @@ public struct IntentRouterCore: Sendable {
             return decision(.success(answer), .followUp)
         }
         if let hit = Rules.overlay(s) ?? Rules.draftDiscard(s, context) ?? Rules.draftReview(s, context)
-            ?? Rules.draftEdit(raw: raw, cleaned: s, context) ?? Rules.unsupported(s) ?? Rules.references(s, context)
+            ?? Rules.draftEdit(raw: raw, cleaned: s, context) ?? Rules.windowControl(s, context) ?? Rules.unsupported(s)
+            ?? Rules.references(s, context)
             ?? Rules.fastPath(s) {
             let intent = Self.restoreTerminalMark(hit.intent, Cleaner.terminalMark(raw))
             if let confirm = Guard.confirmTime(intent) {

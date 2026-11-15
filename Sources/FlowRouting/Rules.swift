@@ -103,17 +103,108 @@ enum Rules {
 
     // MARK: Unsupported verbs (no such action in the allowlist)
 
-    static let unsupportedVerbs = Rx(#"(close|quit|delete|remove|trash|erase|discard|shut|kill|uninstall)\b.*"#)
+    static let unsupportedVerbs = Rx(#"(?:force\s+)?(close|quit|delete|remove|trash|erase|discard|shut|kill|uninstall)\b.*"#)
 
     static func unsupported(_ s: String) -> RuleHit? {
         guard let m = unsupportedVerbs.match(s), let verb = m[0]?.lowercased() else { return nil }
-        let what = ["close", "quit", "shut", "kill"].contains(verb) ? "Closing or quitting" : "Deleting"
-        return RuleHit(intent: Make.decline("\(what) isn't supported yet."), stage: .clarify)
+        switch verb {
+        case "quit", "kill", "shut":
+            // Quitting can discard unsaved work; Flow never quits or force-quits apps.
+            return RuleHit(intent: Make.decline("I can't quit apps. I can close a window instead: say “close this window” or “close Notes”."),
+                           stage: .clarify)
+        case "close":
+            return RuleHit(intent: Make.decline("I can close windows of Mail, Calendar, Notes, Finder or Safari. Say “close this window” or “close Notes”."),
+                           stage: .clarify)
+        default:
+            return RuleHit(intent: Make.decline("Deleting isn't supported yet."), stage: .clarify)
+        }
+    }
+
+    // MARK: Apps and windows by voice (ADR 0011)
+
+    /// App and window commands that may run while a question is open without abandoning it.
+    static func isQuickAppCommand(_ s: String) -> Bool {
+        if let hit = windowControl(s, .empty), let action = hit.intent.action {
+            switch action {
+            case .activateApp, .minimizeWindow, .restoreWindow, .listWindows: return true
+            default: return false
+            }
+        }
+        if let m = activate.match(s), let phrase = m[0], KnownApp.fromPhrase(phrase) != nil { return true }
+        return false
+    }
+
+    static let closeWindowRx = Rx(#"close\s+(.+?)"#)
+    static let bringBackRx = Rx(#"bring\s+(?:the\s+)?(.+?)\s+back(?:\s+up)?"#)
+    static let minimizeRx = Rx(#"minimi[sz]e(?:\s+(.+?))?"#)
+    static let restoreRx = Rx(#"(?:restore|unminimi[sz]e|un-minimi[sz]e|bring back)(?:\s+(.+?))?"#)
+    static let goBackRx = Rx(#"(?:go|switch|get|take me|jump|flip)\s+back(?:\s+to\s+(?:the\s+)?(.+?))?(?:\s+again)?|(?:return|back)\s+to\s+(?:the\s+)?(.+?)"#)
+    static let bringFrontRx = Rx(#"(?:bring|put|move)\s+(?:the\s+)?(.+?)\s+(?:to the front|to front|in front|forward|up front|on top|to the top)"#)
+    static let listWindowsRx = Rx(#"(?:(?:show|list|tell)(?:\s+me)?\s+(?:all\s+)?(?:of\s+)?(?:my\s+|the\s+)?(?:open\s+)?windows(?:\s+(?:that are\s+|are\s+)?open)?|what\s+windows\s+(?:are|do i have)\s+open|which\s+windows\s+are\s+open|what(?:'s| is)\s+open)"#)
+
+    /// The window a phrase names: "this window" → the active window; an app → that app's window;
+    /// "it" / "that window" → the window Flow last acted on (or the active app's).
+    static func windowTarget(_ phrase: String?, _ ctx: ConversationContext) -> WindowTarget? {
+        guard var p = phrase?.lowercased().trimmingCharacters(in: .whitespaces), !p.isEmpty else { return .active }
+        for prefix in ["the ", "my "] where p.hasPrefix(prefix) { p = String(p.dropFirst(prefix.count)) }
+        for suffix in [" window", " app", " application"] where p.hasSuffix(suffix) && p.count > suffix.count {
+            p = String(p.dropLast(suffix.count))
+        }
+        // "this window" / "the window": what the user is looking at now.
+        if ["window", "current", "active", "front", "frontmost", "focused", "this", "this one", "current one"].contains(p) {
+            return .active
+        }
+        // "it" / "that window": the window Flow last acted on. Without one, don't guess.
+        if ["it", "that", "that one", "the last one", "last", "last one"].contains(p) {
+            guard let app = ctx.selectedWindow?.app ?? ctx.activeApp else { return nil }
+            return .app(app)
+        }
+        if let app = KnownApp.fromPhrase(p) { return .app(app) }
+        return nil
+    }
+
+    static func windowControl(_ s: String, _ ctx: ConversationContext) -> RuleHit? {
+        let lower = s.lowercased()
+        if listWindowsRx.match(lower) != nil {
+            return hit(.direct, .listWindows, "Show open windows")
+        }
+        if let m = goBackRx.match(s) {
+            if let phrase = m[0] ?? m[1] {
+                guard let app = KnownApp.fromPhrase(phrase.lowercased()) else { return nil }
+                return hit(.direct, .activateApp(app), "Go back to \(app.rawValue)")
+            }
+            guard let app = ctx.previousApp else {
+                return RuleHit(intent: Make.ask("Which app should I go back to?"), stage: .clarify, pending: .app(then: .activate))
+            }
+            return RuleHit(intent: Make.intent(.direct, .activateApp(app), "Go back to \(app.rawValue)"), stage: .context)
+        }
+        if let m = bringFrontRx.match(s), let phrase = m[0], let app = KnownApp.fromPhrase(phrase.lowercased()) {
+            return hit(.direct, .activateApp(app), "Bring \(app.rawValue) to the front")
+        }
+        if let m = closeWindowRx.match(s) {
+            // "close the draft/reply" is handled earlier (draftDiscard); anything else unknown falls through.
+            guard let target = windowTarget(m[0], ctx) else { return nil }
+            return RuleHit(intent: Make.intent(.direct, .closeWindow(target), "Close \(target.displayName)"), stage: .fastPath)
+        }
+        if let m = minimizeRx.match(s) {
+            guard let target = windowTarget(m[0], ctx) else { return nil }
+            return RuleHit(intent: Make.intent(.direct, .minimizeWindow(target), "Minimize \(target.displayName)"), stage: .fastPath)
+        }
+        if let m = bringBackRx.match(s), let target = windowTarget(m[0], ctx) {
+            return RuleHit(intent: Make.intent(.direct, .restoreWindow(target), "Restore \(target.displayName)"), stage: .fastPath)
+        }
+        if let m = restoreRx.match(s) {
+            // Bare "restore": the window Flow last acted on, if any.
+            let phrase = m[0] ?? (ctx.selectedWindow?.app != nil ? "it" : nil)
+            guard let target = windowTarget(phrase, ctx) else { return nil }
+            return RuleHit(intent: Make.intent(.direct, .restoreWindow(target), "Restore \(target.displayName)"), stage: .fastPath)
+        }
+        return nil
     }
 
     // MARK: Fast path (explicit targets only)
 
-    static let activate = Rx(#"(?:open|launch|start|switch to|go to|bring up|show(?: me)?|pull up|focus on|focus|activate)\s+(.+?)"#)
+    static let activate = Rx(#"(?:open|launch|start|switch to|switch over to|change to|go to|go over to|bring up|show(?: me)?|pull up|focus on|focus|activate|jump to|take me to)\s+(?:the\s+)?(.+?)(?:\s+app)?"#)
     /// "and"; ASR often hears "end" between two app names.
     static let and = #"(?:and|end)"#
     static let tileVerb = Rx(#"(?:tile|split)\s+(.+?)\s+"# + and + #"\s+(.+?)(?:\s+(?:side by side|next to each other|together))?"#)
@@ -492,6 +583,10 @@ enum Rules {
     // MARK: Follow-up answers
 
     static func answer(_ s: String, to pending: PendingQuestion) -> Intent? {
+        // A quick app/window command ("switch to Mail", "minimize this window") is never an
+        // answer: it runs, and the question stays open (ADR 0011).
+        // ("Which app?" is the exception: "open Notes" answers it.)
+        if case .app = pending {} else if isQuickAppCommand(s) { return nil }
         let lower = s.lowercased()
         switch pending {
         case .app(let then):

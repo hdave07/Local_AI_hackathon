@@ -140,6 +140,9 @@ enum Guard {
         case .editText:
             // Never produced by the model (not in its schema); if it ever appears, refuse.
             return ask("What should I change in the draft?")
+        case .minimizeWindow, .restoreWindow, .closeWindow, .listWindows:
+            // Deterministic-only window actions: model output naming them is never trusted.
+            return ask("Which window should I use?")
         }
     }
 
