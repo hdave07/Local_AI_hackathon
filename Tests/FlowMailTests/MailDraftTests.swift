@@ -57,18 +57,51 @@ final class FakeDraftBackend: MailDraftBackend {
         log.append("show")
         return open.filter { $0.subject == subject }.count
     }
+
+    /// Mail rewrites what it is given (e.g. trailing whitespace) in some versions; tests set this.
+    var transformWrite: ((String) -> String)?
+    /// The write is accepted but the window keeps showing the old text (AX lag / failure).
+    var windowIgnoresWrites = false
+    var writeError: MailError?
+
+    func draftDetails(subject: String) async throws(MailError) -> [OpenDraftDetail] {
+        open.filter { $0.subject == subject }.map { OpenDraftDetail(to: $0.to, cc: $0.cc, bcc: $0.bcc, content: $0.body) }
+    }
+
+    func setDraftContent(subject: String, to: [String], expected: String, new: String) async throws(MailError) -> DraftContentWrite {
+        log.append("setContent")
+        if let writeError { throw writeError }
+        let mine = open.indices.filter { open[$0].subject == subject && open[$0].to == to && open[$0].cc.isEmpty && open[$0].bcc.isEmpty }
+        if mine.isEmpty { return .notFound }
+        let exact = mine.filter { open[$0].body == expected }
+        if exact.isEmpty { return .changed }
+        if exact.count > 1 { return .ambiguous(exact.count) }
+        let written = transformWrite?(new) ?? new
+        if windowIgnoresWrites { shownBody[exact[0]] = open[exact[0]].body }
+        open[exact[0]].body = written
+        return .written(content: written)
+    }
+
+    /// What the compose window shows when it differs from the scripting text (index → body).
+    var shownBody: [Int: String] = [:]
 }
 
 @MainActor
 final class FakeComposeInspector: MailComposeInspecting {
     let backend: FakeDraftBackend
     var extraToTokens: [String] = []
+    /// Report window identities, as the real inspector does.
+    var tokens = true
+    /// Other windows with the same title that are not drafts Flow made (e.g. opened by hand).
+    var extraWindows: [MailComposeView] = []
     init(backend: FakeDraftBackend) { self.backend = backend }
 
     func compose(titled subject: String) -> [MailComposeView] {
-        backend.open.filter { $0.subject == subject && $0.visible }.map {
-            MailComposeView(title: $0.subject, to: $0.to + extraToTokens, cc: $0.cc, subject: $0.subject, body: $0.body)
-        }
+        backend.open.indices.filter { backend.open[$0].subject == subject && backend.open[$0].visible }.map { i in
+            let o = backend.open[i]
+            return MailComposeView(title: o.subject, to: o.to + extraToTokens, cc: o.cc, subject: o.subject,
+                                   body: backend.shownBody[i] ?? o.body, windowToken: tokens ? 1000 + i : nil)
+        } + extraWindows.filter { $0.title == subject }
     }
 }
 

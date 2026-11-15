@@ -114,6 +114,7 @@ struct ActionSignature: Equatable {
         case .queryCalendar(let t): args = ["time": t]
         case .showCalendar(let d): args = ["date": d]
         case .requestReview, .requestSend: args = [:]
+        case .editText(let command): args = ["command": command]
         }
     }
 

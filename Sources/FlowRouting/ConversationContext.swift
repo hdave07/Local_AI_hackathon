@@ -115,6 +115,8 @@ public struct ConversationContext: Sendable, Equatable {
             hasDraft = false
         case .clickElement, .focus, .scroll, .requestReview:
             break
+        case .editText:
+            break  // the edited draft's verified state arrives from the executor (`draft`)
         }
         updatedAt = now
     }
@@ -154,6 +156,9 @@ public enum PendingQuestion: Sendable, Equatable {
     case calendarTime
     /// A paused plan is waiting for this answer (FlowPlanner resolves it, not the router).
     case plan(prompt: String, options: [String])
+    /// FlowText asked about the draft (which occurrence; keep or discard a preview). A short
+    /// answer goes back to it as `edit_text`; anything else drops the question.
+    case textEdit(prompt: String, options: [String])
     /// "What should the reply say?" for a reply to the open message; the answer is the content.
     case draftContent(recipient: String)
 

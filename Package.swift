@@ -53,15 +53,15 @@ var targets: [Target] = [
     .target(name: "FlowAX", dependencies: ["FlowCore", "FlowWindow"]),
     // Track A — Apple Mail read/search (read-only): Mail scripting via osascript (JSON in/out)
     // plus FlowAX verification of what Mail actually displays.
-    .target(name: "FlowMail", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
+    .target(name: "FlowMail", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowText"]),
     // Track A — deterministic AppKit app exercised by FlowAX live integration tests.
     .executableTarget(name: "FlowNavFixture"),
     // Track B — intent router: control phrases, fast path, task context and references,
     // clarification, Bonsai fallback with slot grounding. Proposes intents; executes nothing.
-    .target(name: "FlowRouting", dependencies: ["FlowCore", "FlowLLM"]),
+    .target(name: "FlowRouting", dependencies: ["FlowCore", "FlowLLM", "FlowText"]),
     // Track B — bounded multi-step planner, plan runner, approvals and send ledger, task state.
     // Channel-agnostic; talks to macOS only through the `PlanExecuting` protocol (Track A).
-    .target(name: "FlowPlanner", dependencies: ["FlowCore", "FlowLLM", "FlowRouting"]),
+    .target(name: "FlowPlanner", dependencies: ["FlowCore", "FlowLLM", "FlowRouting", "FlowText"]),
     // Track B — planner walkthrough against the mock executor (no macOS actions).
     .executableTarget(name: "FlowPlanDemoCLI", dependencies: ["FlowCore", "FlowLLM", "FlowRouting", "FlowPlanner"]),
     // SwiftUI shell. Composition root for FlowLLM, FlowWindow and FlowAX.
@@ -92,7 +92,7 @@ var targets: [Target] = [
     .testTarget(name: "FlowLLMTests", dependencies: ["FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowWindowTests", dependencies: ["FlowCore", "FlowWindow"]),
     .testTarget(name: "FlowAXTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
-    .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
+    .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail", "FlowText"]),
     .testTarget(name: "FlowExecutorTests",
                 dependencies: ["FlowExecutor", "FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowLLM",
                                "FlowCalendar"]),
@@ -105,7 +105,7 @@ var targets: [Target] = [
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
     .testTarget(name: "FlowBenchTests", dependencies: ["FlowBenchCLI", "FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowRoutingTests", dependencies: ["FlowRouting", "FlowCore", "FlowLLM"]),
-    .testTarget(name: "FlowPlannerTests", dependencies: ["FlowPlanner", "FlowRouting", "FlowCore", "FlowLLM"]),
+    .testTarget(name: "FlowPlannerTests", dependencies: ["FlowPlanner", "FlowRouting", "FlowCore", "FlowLLM", "FlowText"]),
 ]
 
 var dependencies: [Package.Dependency] = []

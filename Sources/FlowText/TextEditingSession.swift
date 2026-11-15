@@ -284,7 +284,11 @@ public actor TextEditingSession {
                 let leftLen = min(k, s.range.location), rightLen = min(k, old.length - s.range.end)
                 let left = old.substring(with: NSRange(location: s.range.location - leftLen, length: leftLen))
                 let right = old.substring(with: NSRange(location: s.range.end, length: rightLen))
-                let hits = exactOccurrences(of: left + s.inserted + right, in: now)
+                var hits = exactOccurrences(of: left + s.inserted + right, in: now)
+                // A span at the very start or end of the text must still be there: text the user
+                // typed right against it (e.g. "4" → "4:15") is a change to its neighbor.
+                if leftLen == 0 { hits = hits.filter { $0 == 0 } }
+                if rightLen == 0 { hits = hits.filter { $0 + ((left + s.inserted) as NSString).length == now.length } }
                 if hits.count == 1 { located = hits[0] + (left as NSString).length; break }
                 if hits.count > 1 { return nil }  // repeated context: ambiguous, never guess
             }
@@ -328,6 +332,13 @@ public actor TextEditingSession {
     }
 
     // MARK: Answers
+
+    /// Whether `utterance` is a short answer to an open FlowText question: a pick among
+    /// `optionCount` options, or keep/discard when `optionCount` is 0 (a preview). Lets a
+    /// router send the answer back here instead of treating it as a new request.
+    public static func isAnswer(_ utterance: String, optionCount: Int) -> Bool {
+        optionCount > 0 ? pick(utterance, count: optionCount) != nil : yesNo(utterance) != nil
+    }
 
     /// "the second one", "2", "number two", "the last one", "both", "all of them".
     static func pick(_ utterance: String, count: Int) -> [Int]? {

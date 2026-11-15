@@ -51,7 +51,13 @@ public enum TextEditor {
         switch op {
         case .append(let content):
             guard !content.isEmpty else { return .nothingToDo("There's nothing to add.") }
-            let sep = separator(before: text.length, in: text, inserting: content)
+            var sep = separator(before: text.length, in: text, inserting: content)
+            // "Also say I'll be late" after "I can meet at 4" starts a new sentence: end the
+            // previous one. Only when it ends in a letter or digit and the addition is a sentence.
+            if sep == " ", let prev = Unicode.Scalar(text.character(at: text.length - 1)), CharacterSet.alphanumerics.contains(prev),
+               let first = content.unicodeScalars.first, CharacterSet.uppercaseLetters.contains(first), content.contains(" ") {
+                sep = ". "
+            }
             return .plan(make(snap, [Replacement(range: TextRange(location: text.length, length: 0), text: sep + content)],
                               summary: "Added “\(content)”"))
 

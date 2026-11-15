@@ -159,3 +159,18 @@ struct InvalidClassificationTests {
         }
     }
 }
+
+@Suite("edit_text is deterministic-only (ADR 0010)")
+struct EditTextIsNotModelEmittableTests {
+    @Test func modelOutputNamingEditTextIsRejected() {
+        let json = Fixtures.intentJSON(kind: "edit", action: "edit_text", target: "", detail: "remove the last sentence")
+        guard case .failure(.unsupportedAction("edit_text")) = validate(json) else {
+            Issue.record("edit_text from the model must be rejected"); return
+        }
+    }
+
+    @Test func schemaNeverOffersEditText() {
+        #expect(!IntentSchema.allowedActionNames.contains("edit_text"))
+        #expect(IntentSchema.allowedActionNames.contains("replace_text"))
+    }
+}
