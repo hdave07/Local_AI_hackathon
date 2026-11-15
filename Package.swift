@@ -27,6 +27,7 @@ var products: [Product] = [
     .library(name: "FlowCalendar", targets: ["FlowCalendar"]),
     .executable(name: "flow-calendar-livecheck", targets: ["FlowCalendarLiveCheck"]),
     .library(name: "FlowSession", targets: ["FlowSession"]),
+    .library(name: "FlowText", targets: ["FlowText"]),
     .library(name: "FlowSpeech", targets: ["FlowSpeech"]),
 ]
 
@@ -74,6 +75,10 @@ var targets: [Target] = [
             dependencies: ["FlowCore", "FlowRouting", "FlowPlanner", "FlowWindow", "FlowAX", "FlowMail", "FlowCalendar"]),
     // Voice-session coordinator: finalized utterances → TaskSession (router + planner state) → executor.
     .target(name: "FlowSession", dependencies: ["FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner"]),
+    // Track B — dictation and text-editing engine on text snapshots: deterministic edit commands,
+    // occurrence choice, versioned stale-safe application, targeted undo, previewed rewrites.
+    // Real apps plug in through `TextBackend` (ADR 0009). Not wired into macOS yet.
+    .target(name: "FlowText", dependencies: ["FlowCore"]),
     // Track B — spoken feedback for voice sessions: local TTS (AVSpeechSynthesizer), what to say,
     // echo guard (Flow's own speech is never a command), reminders/timeouts. Attaches to the
     // coordinator through `VoiceSessionHook`; no executor, planner or FlowCore changes (ADR 0008).
@@ -94,6 +99,7 @@ var targets: [Target] = [
     .testTarget(name: "FlowCalendarTests", dependencies: ["FlowCalendar", "FlowCore"]),
     .testTarget(name: "FlowSessionTests",
                 dependencies: ["FlowSession", "FlowExecutor", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),
+    .testTarget(name: "FlowTextTests", dependencies: ["FlowText", "FlowCore"]),
     .testTarget(name: "FlowSpeechTests",
                 dependencies: ["FlowSpeech", "FlowSession", "FlowCore", "FlowAudio", "FlowRouting", "FlowPlanner", "FlowLLM"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
