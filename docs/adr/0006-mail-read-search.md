@@ -1,4 +1,4 @@
-# ADR 0004 — Apple Mail read/search (FlowMail) and proposed shared contracts
+# ADR 0006 — Apple Mail read/search (FlowMail) and proposed shared contracts
 
 **Status:** Proposed (FlowCore items need Track B agreement) · **Date:** 2026-11-14 · **Owner:** Track A (`feature/mail-integration`)
 
@@ -36,3 +36,9 @@ T-022 (spec 02 §9, PRD D-016, gate G-04) adds read-only Apple Mail search, open
 ## Consequences
 - The future executor calls `MailController.perform(.openMessage(ref))` or `.readMessage(ref)` for planner-held refs, and these always revalidate.
 - Classifier output is still not connected to execution.
+
+## Relation to ADR 0005 (planner/executor contract, merged from main)
+- **ADR 0005 Q2 (Mail message identity and epochs):** FlowMail identifies a message by RFC 5322 Message-ID + mailbox (account + path) + Mail's scripting id (`MailMessageRef`). There are no result-set epochs: every open or read re-reads the message at (mailbox, id) and refuses if the Message-ID, subject or sender differ. A candidate list is single-use and expires after 5 minutes. `MailMessageRef` is a natural fit for ADR 0005 §1's proposed `MessageRef`.
+- **ADR 0005 Q3 (search input):** structured filters, as in §1 above. `MailQuery(sender, subject, terms, mailbox)` is what FlowMail executes; Track A doesn't re-parse verbatim speech.
+- **ADR 0005 §1 / §4 (shared status and choice shape):** FlowMail already returns the shared status vocabulary (via FlowAX `NavigationStatus`) and a numbered `MailClarification`. It's compatible with a unified `needs_clarification` + options observation.
+- FlowMail doesn't yet implement `PlanExecuting`. Wiring it to the planner is a follow-up once the FlowCore types in ADR 0005 §1 are agreed.

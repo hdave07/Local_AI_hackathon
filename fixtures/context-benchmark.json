@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "notes": "Reference-resolution set written BEFORE implementation (SHA-256 recorded with the baseline). 'context' is the task state before the utterance: app = last activated/focused app; people = people in the recent conversation (most recent first); message = query of the currently open message; draft = a Flow-authored draft is open; lastEdited = text Flow last inserted/replaced. Baseline Bonsai receives no context. Cases include negatives (no context, two candidate people, explicit name overriding context).",
+  "contextual": [
+    {"id": "C01", "context": {"app": "Notes"}, "utterance": "open it", "accept": [{"action": "activate_app", "args": {"app": "Notes"}}]},
+    {"id": "C02", "context": {"app": "Mail"}, "utterance": "switch to it", "accept": [{"action": "activate_app", "args": {"app": "Mail"}}]},
+    {"id": "C03", "context": {"people": ["Sarah"]}, "utterance": "reply to her", "accept": [{"action": "create_draft", "contains": {"recipient": "sarah"}}]},
+    {"id": "C04", "context": {"people": ["Marco"]}, "utterance": "reply to him saying sounds good", "accept": [{"action": "create_draft", "contains": {"recipient": "marco", "content": "sounds good"}}]},
+    {"id": "C05", "context": {"people": ["Dana"]}, "utterance": "email them that friday works", "accept": [{"action": "create_draft", "contains": {"recipient": "dana", "content": "friday works"}}]},
+    {"id": "C06", "context": {"people": ["Priya"], "message": "invoice from priya"}, "utterance": "reply to that email saying it's paid", "accept": [{"action": "create_draft", "contains": {"recipient": "priya", "content": "paid"}}]},
+    {"id": "C07", "tags": ["negative"], "context": {}, "utterance": "reply to her", "accept": [{"kind": "clarification"}]},
+    {"id": "C08", "tags": ["negative"], "context": {}, "utterance": "open it", "accept": [{"kind": "clarification"}]},
+    {"id": "C09", "context": {"app": "Calendar"}, "utterance": "maximize it", "accept": [{"action": "move_window", "args": {"window": "Calendar", "position": "maximize"}}, {"action": "move_window", "args": {"window": "active", "position": "maximize"}}]},
+    {"id": "C10", "context": {"app": "Safari"}, "utterance": "put that window on the left", "accept": [{"action": "move_window", "args": {"window": "Safari", "position": "left_half"}}, {"action": "move_window", "args": {"window": "active", "position": "left_half"}}]},
+    {"id": "C11", "context": {"people": ["Sarah"], "draft": true}, "utterance": "send it", "accept": [{"action": "request_send"}]},
+    {"id": "C12", "tags": ["negative"], "context": {"people": ["Sarah", "Sam"]}, "utterance": "reply to her", "accept": [{"kind": "clarification"}]},
+    {"id": "C13", "context": {"lastEdited": "3 pm"}, "utterance": "change that to 4 pm", "accept": [{"action": "replace_text", "args": {"old": "3 pm", "new": "4 pm"}}]},
+    {"id": "C14", "tags": ["negative"], "context": {"app": "Notes"}, "utterance": "open mail", "accept": [{"action": "activate_app", "args": {"app": "Mail"}}]},
+    {"id": "C15", "tags": ["negative"], "context": {"people": ["Sarah"]}, "utterance": "reply to john that I agree", "accept": [{"action": "create_draft", "contains": {"recipient": "john", "content": "agree"}}]},
+    {"id": "C16", "tags": ["negative"], "context": {}, "utterance": "change that to 4 pm", "accept": [{"kind": "clarification"}]},
+    {"id": "C17", "context": {"people": ["Lee"]}, "utterance": "find her last email", "accept": [{"action": "read_message", "contains": {"query": "lee"}}]},
+    {"id": "C18", "tags": ["negative"], "context": {"app": "Mail"}, "utterance": "close it", "accept": [{"kind": "clarification"}, {"kind": "unsupported"}]}
+  ]
+}

@@ -9,14 +9,16 @@ import Foundation
 /// the SDK flush and *confirm* the text. Actions still use confirmed text only.
 public struct UtteranceSegmenter: Sendable {
     public struct Policy: Sendable, Equatable {
-        /// Extra quiet time after the VAD reports end of speech before cutting.
+        /// Extra quiet time after the VAD reports end of speech before cutting. 0.6 s: with
+        /// 0.3 s, 30% of commands with a 700 ms mid-sentence pause and 100% with 900 ms were
+        /// split in two; with 0.6 s none were (T-030 segmentation evidence).
         public var hold: TimeInterval
         /// Force a cut for very long speech so text is not held indefinitely.
         public var maxSegment: TimeInterval
         /// Recycle a segment that has heard no speech, bounding recognizer buffers.
         public var maxIdle: TimeInterval
 
-        public init(hold: TimeInterval = 0.3, maxSegment: TimeInterval = 30, maxIdle: TimeInterval = 20) {
+        public init(hold: TimeInterval = 0.6, maxSegment: TimeInterval = 30, maxIdle: TimeInterval = 20) {
             self.hold = hold
             self.maxSegment = maxSegment
             self.maxIdle = maxIdle

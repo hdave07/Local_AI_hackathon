@@ -21,6 +21,26 @@ struct BenchmarkHarnessTests {
         #expect((f.intent + f.ambiguous).allSatisfy { !$0.accept.isEmpty })
     }
 
+    static func fixture(_ name: String) -> URL {
+        fixturesURL.deletingLastPathComponent().appending(path: name)
+    }
+
+    @Test func heldOutAndContextSetsLoadWithUniqueIDs() throws {
+        let heldout = try BenchmarkFixtures.load(Self.fixture("heldout-benchmark.json"))
+        let context = try BenchmarkFixtures.load(Self.fixture("context-benchmark.json"))
+        let main = try BenchmarkFixtures.load(Self.fixturesURL)
+        #expect(heldout.intent.count >= 30)
+        #expect(heldout.ambiguous.count >= 15)
+        #expect(context.contextual.count >= 15)
+        #expect(context.contextual.allSatisfy { $0.context != nil })
+        let all = [main, heldout, context].flatMap { $0.intent + $0.ambiguous + $0.contextual }
+        #expect(Set(all.map(\.id)).count == all.count, "case IDs must be unique across fixture files")
+        // Held-out utterances must not duplicate tuned ones.
+        let tuned = Set((main.intent + main.ambiguous).map { $0.utterance.lowercased() })
+        #expect((heldout.intent + heldout.ambiguous).allSatisfy { !tuned.contains($0.utterance.lowercased()) })
+        #expect(all.allSatisfy { !$0.accept.isEmpty })
+    }
+
     @Test func everyMalformedOutputIsRejectedWithTheExpectedError() throws {
         let f = try BenchmarkFixtures.load(Self.fixturesURL)
         for (c, got, ok) in checkMalformed(f.malformed, modelID: "m") {

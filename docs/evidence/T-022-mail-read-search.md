@@ -65,8 +65,8 @@ The FlowAX Calculator live test failed once when Calculator was cold-launched: A
 - **Unread-detection is not a guarantee:** if Mail marks read after the check window, it isn't reported.
 - **Automation consent is per app.** Flow.app's consent existed before it was requested (see above).
 - **Misleading error during launch:** FlowAX reports `inaccessibleApp` for an app still launching (AX "cannot complete"). It should probably be `noWindow`/retry; proposed for FlowAX follow-up.
-- **Not connected to voice or model output:** typed commands only (ADR 0004 proposals).
+- **Not connected to voice or model output:** typed commands only (ADR 0006 proposals).
 
 ## Next recommended milestone
 **T-024 Calendar EventKit read** (availability at a time: busy/tentative/free-in-accessible/unknown), completing the read side of the flagship journey ("Find Sarah's email about tomorrow" → "Do I have anything at four?").
-Alternatively, **T-023 Mail compose/reply draft** (still no send), after agreeing ADR 0004 §1–3 with Track B.
+Alternatively, **T-023 Mail compose/reply draft** (still no send), after agreeing ADR 0006 §1–3 with Track B.

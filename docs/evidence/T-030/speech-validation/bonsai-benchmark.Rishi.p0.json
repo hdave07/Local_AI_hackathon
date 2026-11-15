@@ -1,0 +1,723 @@
+{
+  "ambiguous" : [
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Open it."
+      ],
+      "id" : "A01",
+      "utterance" : "Open it."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "resize_window",
+          "args" : {
+            "change" : "larger",
+            "window" : "active"
+          }
+        },
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Make it bigger me"
+      ],
+      "id" : "A02",
+      "utterance" : "Make it bigger me"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Move that over there me"
+      ],
+      "id" : "A03",
+      "utterance" : "Move that over there me"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "action" : "create_draft"
+        }
+      ],
+      "asrFinals" : [
+        "Reply to her."
+      ],
+      "id" : "A04",
+      "utterance" : "Reply to her."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Delete that."
+      ],
+      "id" : "A05",
+      "utterance" : "Delete that."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "query_calendar"
+        },
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Check my schedule"
+      ],
+      "id" : "A06",
+      "utterance" : "Check my schedule"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        },
+        {
+          "action" : "read_message"
+        }
+      ],
+      "asrFinals" : [
+        "Open the thing from yesterday."
+      ],
+      "id" : "A07",
+      "utterance" : "Open the thing from yesterday."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Do the usual."
+      ],
+      "id" : "A08",
+      "utterance" : "Do the usual."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Put them side by side."
+      ],
+      "id" : "A09",
+      "utterance" : "Put them side by side."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Change the time."
+      ],
+      "id" : "A10",
+      "utterance" : "Change the time."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "recipient" : "sarah"
+          }
+        },
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Email Sera"
+      ],
+      "id" : "A11",
+      "utterance" : "Email Sera"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Clauset"
+      ],
+      "id" : "A12",
+      "utterance" : "Clauset"
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "action" : "read_message"
+        }
+      ],
+      "asrFinals" : [
+        "Find that email."
+      ],
+      "id" : "A13",
+      "utterance" : "Find that email."
+    },
+    {
+      "accept" : [
+        {
+          "kind" : "clarification"
+        },
+        {
+          "kind" : "unsupported"
+        }
+      ],
+      "asrFinals" : [
+        "Make it more formal."
+      ],
+      "id" : "A14",
+      "utterance" : "Make it more formal."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "window" : "Mail"
+          }
+        },
+        {
+          "kind" : "clarification"
+        }
+      ],
+      "asrFinals" : [
+        "Move mail"
+      ],
+      "id" : "A15",
+      "utterance" : "Move mail"
+    }
+  ],
+  "intent" : [
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Notes"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Open notes"
+      ],
+      "id" : "I01",
+      "utterance" : "Open notes"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Mail"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Open mail"
+      ],
+      "id" : "I02",
+      "utterance" : "Open mail"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Calendar"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Launch calendar"
+      ],
+      "id" : "I03",
+      "utterance" : "Launch calendar"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "activate_app",
+          "args" : {
+            "app" : "Safari"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Switch to Safari"
+      ],
+      "id" : "I04",
+      "utterance" : "Switch to Safari"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "request_review"
+        }
+      ],
+      "asrFinals" : [
+        "Let me review the draft."
+      ],
+      "id" : "I05",
+      "utterance" : "Let me review the draft."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "tile_windows",
+          "args" : {
+            "left" : "Mail",
+            "right" : "Calendar"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Put mail and calendar side by side."
+      ],
+      "id" : "I06",
+      "utterance" : "Put mail and calendar side by side."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "tile_windows",
+          "args" : {
+            "left" : "Notes",
+            "right" : "Safari"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Put notes on the left and safari on the right."
+      ],
+      "id" : "I07",
+      "utterance" : "Put notes on the left and safari on the right."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "left_half",
+            "window" : "active"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Move this window to the left half."
+      ],
+      "id" : "I08",
+      "utterance" : "Move this window to the left half."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "move_window",
+          "args" : {
+            "position" : "maximize",
+            "window" : "Mail"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Maximize the male window"
+      ],
+      "id" : "I09",
+      "utterance" : "Maximize the male window"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "resize_window",
+          "args" : {
+            "change" : "wider",
+            "window" : "active"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Make this window a little wider."
+      ],
+      "id" : "I10",
+      "utterance" : "Make this window a little wider."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "resize_window",
+          "args" : {
+            "change" : "smaller",
+            "window" : "Calendar"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Make the calendar window smaller."
+      ],
+      "id" : "I11",
+      "utterance" : "Make the calendar window smaller."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "scroll",
+          "args" : {
+            "direction" : "down"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Scroll down."
+      ],
+      "id" : "I12",
+      "utterance" : "Scroll down."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "scroll",
+          "args" : {
+            "direction" : "top"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Scroll to the top."
+      ],
+      "id" : "I13",
+      "utterance" : "Scroll to the top."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "click_element",
+          "contains" : {
+            "label" : "reply"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Click the reply button."
+      ],
+      "id" : "I14",
+      "utterance" : "Click the reply button."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "click_element",
+          "contains" : {
+            "label" : "new message"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Click new message."
+      ],
+      "id" : "I15",
+      "utterance" : "Click new message."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "focus",
+          "contains" : {
+            "label" : "search"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Focus the search field"
+      ],
+      "id" : "I16",
+      "utterance" : "Focus the search field"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "insert_text",
+          "contains" : {
+            "text" : "hello everyone"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Type hello everyone"
+      ],
+      "id" : "I17",
+      "utterance" : "Type hello everyone"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "replace_text",
+          "args" : {
+            "new" : "3:30",
+            "old" : "3"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Change 3 to 330"
+      ],
+      "id" : "I18",
+      "utterance" : "Change 3 to 330"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "replace_text",
+          "contains" : {
+            "new" : "wednesday",
+            "old" : "tuesday"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Replaced Tuesday with Wednesday"
+      ],
+      "id" : "I19",
+      "utterance" : "Replaced Tuesday with Wednesday"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "meet tomorrow",
+            "recipient" : "sarah"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Reply to Serah that I can meet tomorrow."
+      ],
+      "id" : "I20",
+      "tags" : [
+        "draft-content"
+      ],
+      "utterance" : "Reply to Serah that I can meet tomorrow."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "report is ready",
+            "recipient" : "john"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Email John saying the report is ready."
+      ],
+      "id" : "I21",
+      "tags" : [
+        "draft-content"
+      ],
+      "utterance" : "Email John saying the report is ready."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "friday",
+            "recipient" : "alex"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Write to Alex and ask if Friday works."
+      ],
+      "id" : "I22",
+      "tags" : [
+        "draft-content"
+      ],
+      "utterance" : "Write to Alex and ask if Friday works."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "create_draft",
+          "contains" : {
+            "content" : "see you",
+            "recipient" : "sarah"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Reply to Sera, thanks, see you at 4."
+      ],
+      "id" : "I23",
+      "tags" : [
+        "draft-content"
+      ],
+      "utterance" : "Reply to Sera, thanks, see you at 4."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "sarah"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Find Sarah's email about tomorrow."
+      ],
+      "id" : "I24",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Find Sarah's email about tomorrow."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "john"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Open the latest email from John."
+      ],
+      "id" : "I25",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Open the latest email from John."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "budget"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Search my mail for the budget report."
+      ],
+      "id" : "I26",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Search my mail for the budget report."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "read_message",
+          "contains" : {
+            "query" : "alex"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Show me the email from Alex about thee of sight."
+      ],
+      "id" : "I27",
+      "tags" : [
+        "email-search"
+      ],
+      "utterance" : "Show me the email from Alex about thee of sight."
+    },
+    {
+      "accept" : [
+        {
+          "action" : "query_calendar",
+          "nonEmpty" : [
+            "time"
+          ]
+        }
+      ],
+      "asrFinals" : [
+        "Do I have anything at four tomorrow?"
+      ],
+      "id" : "I28",
+      "utterance" : "Do I have anything at four tomorrow?"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "query_calendar",
+          "contains" : {
+            "time" : "friday"
+          }
+        }
+      ],
+      "asrFinals" : [
+        "Am I free on Friday afternoon?"
+      ],
+      "id" : "I29",
+      "utterance" : "Am I free on Friday afternoon?"
+    },
+    {
+      "accept" : [
+        {
+          "action" : "request_send"
+        }
+      ],
+      "asrFinals" : [
+        "Send it."
+      ],
+      "id" : "I30",
+      "utterance" : "Send it."
+    }
+  ],
+  "notes" : "ASR transcripts (Argmax 3.1.8, say voice Rishi, 180 wpm, pause 0 ms, hold 0.3 s) of bonsai-benchmark. utterance = first final.",
+  "version" : 1
+}

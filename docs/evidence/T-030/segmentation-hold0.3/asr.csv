@@ -1,0 +1,433 @@
+fixture,id,voice,pause_ms,reference,finals,n_finals,wer,exact
+bonsai-benchmark,I05,Samantha,300,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Samantha,300,"put mail and calendar side by side","Put Mailan, calendar side by side.",1,0.286,0
+bonsai-benchmark,I07,Samantha,300,"put notes on the left and safari on the right","Put notes on the left, and Safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Samantha,300,"move this window to the left half","Move this window, to the left half.",1,0.000,1
+bonsai-benchmark,I09,Samantha,300,"maximize the mail window","Maximize the male window.",1,0.250,0
+bonsai-benchmark,I10,Samantha,300,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Samantha,300,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I13,Samantha,300,"scroll to the top","Scroll to the top.",1,0.000,1
+bonsai-benchmark,I14,Samantha,300,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I16,Samantha,300,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I18,Samantha,300,"change 3 to 3:30","Change 3 to 330.",1,0.400,0
+bonsai-benchmark,I19,Samantha,300,"replace tuesday with wednesday","Replace Tuesday, with Wednesday.",1,0.000,1
+bonsai-benchmark,I20,Samantha,300,"reply to sarah that I can meet tomorrow","Reply to Sarah that, I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Samantha,300,"email john saying the report is ready","Email John saying, the report is ready.",1,0.000,1
+bonsai-benchmark,I22,Samantha,300,"write to alex and ask if friday works","Write to Alexanne, ask if Friday works.",1,0.250,0
+bonsai-benchmark,I23,Samantha,300,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks, see you at 4.",1,0.000,1
+bonsai-benchmark,I24,Samantha,300,"find sarah's email about tomorrow","Find Sarah's, email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Samantha,300,"open the latest email from john","Open the latest, email from John.",1,0.000,1
+bonsai-benchmark,I26,Samantha,300,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Samantha,300,"show me the email from alex about the offsite","Show me the email from Alex about the off-site.",1,0.222,0
+bonsai-benchmark,I28,Samantha,300,"do I have anything at four tomorrow","Do I have anything at for tomorrow?",1,0.143,0
+bonsai-benchmark,I29,Samantha,300,"am I free on friday afternoon","Am I free, on Friday afternoon?",1,0.000,1
+bonsai-benchmark,A03,Samantha,300,"move that over there","Move that, over there.",1,0.000,1
+bonsai-benchmark,A07,Samantha,300,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A09,Samantha,300,"put them side by side","Put them, side by side.",1,0.000,1
+bonsai-benchmark,A14,Samantha,300,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,I05,Daniel,300,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Daniel,300,"put mail and calendar side by side","Hutmaland, calendar side by side.",1,0.429,0
+bonsai-benchmark,I07,Daniel,300,"put notes on the left and safari on the right","Put notes on the left, and Safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Daniel,300,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Daniel,300,"maximize the mail window","Maximize the male window",1,0.250,0
+bonsai-benchmark,I10,Daniel,300,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Daniel,300,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I13,Daniel,300,"scroll to the top","Skreldsimmer, the talk",1,0.750,0
+bonsai-benchmark,I14,Daniel,300,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I16,Daniel,300,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I18,Daniel,300,"change 3 to 3:30","Change 3 to 330.",1,0.400,0
+bonsai-benchmark,I19,Daniel,300,"replace tuesday with wednesday","Replace Tuesday with Wednesday.",1,0.000,1
+bonsai-benchmark,I20,Daniel,300,"reply to sarah that I can meet tomorrow","Reply to Sarah that, I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Daniel,300,"email john saying the report is ready","Email John saying, The report is ready.",1,0.000,1
+bonsai-benchmark,I22,Daniel,300,"write to alex and ask if friday works","Ride to Alexand, ask if Friday works.",1,0.375,0
+bonsai-benchmark,I23,Daniel,300,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks, see you add for.",1,0.250,0
+bonsai-benchmark,I24,Daniel,300,"find sarah's email about tomorrow","Find Sarah's, email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Daniel,300,"open the latest email from john","Open the latest. Email from John.",1,0.000,1
+bonsai-benchmark,I26,Daniel,300,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Daniel,300,"show me the email from alex about the offsite","Show me the email from Alex about the effic",1,0.111,0
+bonsai-benchmark,I28,Daniel,300,"do I have anything at four tomorrow","Do I have anything at four tomorrow?",1,0.000,1
+bonsai-benchmark,I29,Daniel,300,"am I free on friday afternoon","Am I free on Friday afternoon?",1,0.000,1
+bonsai-benchmark,A03,Daniel,300,"move that over there","Move that, over there.",1,0.000,1
+bonsai-benchmark,A07,Daniel,300,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A09,Daniel,300,"put them side by side","Cut them, side by side.",1,0.200,0
+bonsai-benchmark,A14,Daniel,300,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,I05,Samantha,500,"let me review the draft","Let me review the draft",1,0.000,1
+bonsai-benchmark,I06,Samantha,500,"put mail and calendar side by side","Put Malan. Calendar side by side.",1,0.286,0
+bonsai-benchmark,I07,Samantha,500,"put notes on the left and safari on the right","Put notes on the left, and Safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Samantha,500,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Samantha,500,"maximize the mail window","Maximize the male window.",1,0.250,0
+bonsai-benchmark,I10,Samantha,500,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Samantha,500,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I13,Samantha,500,"scroll to the top","Scroll to the top",1,0.000,1
+bonsai-benchmark,I14,Samantha,500,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I16,Samantha,500,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I18,Samantha,500,"change 3 to 3:30","Change 3 to 330.",1,0.400,0
+bonsai-benchmark,I19,Samantha,500,"replace tuesday with wednesday","Replace Tuesday with Wednesday",1,0.000,1
+bonsai-benchmark,I20,Samantha,500,"reply to sarah that I can meet tomorrow","Reply to Sarah that, I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Samantha,500,"email john saying the report is ready","Email John saying, The report is ready.",1,0.000,1
+bonsai-benchmark,I22,Samantha,500,"write to alex and ask if friday works","Write to Alexan. Ask if Friday works.",1,0.250,0
+bonsai-benchmark,I23,Samantha,500,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks. See you at 4.",1,0.000,1
+bonsai-benchmark,I24,Samantha,500,"find sarah's email about tomorrow","Find Sarah's. Email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Samantha,500,"open the latest email from john","Open the latest. Email from John.",1,0.000,1
+bonsai-benchmark,I26,Samantha,500,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Samantha,500,"show me the email from alex about the offsite","Show me the email. From Alex about the off-site.",1,0.222,0
+bonsai-benchmark,I28,Samantha,500,"do I have anything at four tomorrow","Do I have anything at for tomorrow?",1,0.143,0
+bonsai-benchmark,I29,Samantha,500,"am I free on friday afternoon","Am I free on Friday afternoon?",1,0.000,1
+bonsai-benchmark,A03,Samantha,500,"move that over there","Move that over there",1,0.000,1
+bonsai-benchmark,A07,Samantha,500,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A09,Samantha,500,"put them side by side","Put them side by side.",1,0.000,1
+bonsai-benchmark,A14,Samantha,500,"make it more formal","Make it more formal",1,0.000,1
+bonsai-benchmark,I05,Daniel,500,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Daniel,500,"put mail and calendar side by side","Hut Maland. Calendar side by side.",1,0.429,0
+bonsai-benchmark,I07,Daniel,500,"put notes on the left and safari on the right","Put notes on the left. And Safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Daniel,500,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Daniel,500,"maximize the mail window","Maximize the male window",1,0.250,0
+bonsai-benchmark,I10,Daniel,500,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Daniel,500,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I13,Daniel,500,"scroll to the top","Skreldsimmer, the talk",1,0.750,0
+bonsai-benchmark,I14,Daniel,500,"click the reply button","Click the Reply button.",1,0.000,1
+bonsai-benchmark,I16,Daniel,500,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I18,Daniel,500,"change 3 to 3:30","Change 3 to 330",1,0.400,0
+bonsai-benchmark,I19,Daniel,500,"replace tuesday with wednesday","Replace Tuesday with Wednesday.",1,0.000,1
+bonsai-benchmark,I20,Daniel,500,"reply to sarah that I can meet tomorrow","Reply to Sarah that. I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Daniel,500,"email john saying the report is ready","Email John saying. The report is ready.",1,0.000,1
+bonsai-benchmark,I22,Daniel,500,"write to alex and ask if friday works","Ride to Alexander Ask if Friday works.",1,0.375,0
+bonsai-benchmark,I23,Daniel,500,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks. See you add for.",1,0.250,0
+bonsai-benchmark,I24,Daniel,500,"find sarah's email about tomorrow","Find Sarah's. Email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Daniel,500,"open the latest email from john","Open the latest. Email from John.",1,0.000,1
+bonsai-benchmark,I26,Daniel,500,"search my mail for the budget report","Search my mail for the budget report",1,0.000,1
+bonsai-benchmark,I27,Daniel,500,"show me the email from alex about the offsite","Show me the email. From Alex about the efficient.",1,0.111,0
+bonsai-benchmark,I28,Daniel,500,"do I have anything at four tomorrow","Do I have anything at four tomorrow?",1,0.000,1
+bonsai-benchmark,I29,Daniel,500,"am I free on friday afternoon","Am I free? On Friday afternoon?",1,0.000,1
+bonsai-benchmark,A03,Daniel,500,"move that over there","Moozat. Over there.",1,0.500,0
+bonsai-benchmark,A07,Daniel,500,"open the thing from yesterday","Opened the thing from yesterday.",1,0.200,0
+bonsai-benchmark,A09,Daniel,500,"put them side by side","Cut them side by side.",1,0.200,0
+bonsai-benchmark,A14,Daniel,500,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,I05,Samantha,700,"let me review the draft","Let me. Review the draft.",1,0.000,1
+bonsai-benchmark,I06,Samantha,700,"put mail and calendar side by side","Fukmailan. | Calendar side by side",2,0.429,0
+bonsai-benchmark,I07,Samantha,700,"put notes on the left and safari on the right","Put notes on the left. | And Safari on the right",2,0.000,0
+bonsai-benchmark,I08,Samantha,700,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Samantha,700,"maximize the mail window","Maximize the male window",1,0.250,0
+bonsai-benchmark,I10,Samantha,700,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Samantha,700,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I13,Samantha,700,"scroll to the top","Scroll to the top",1,0.000,1
+bonsai-benchmark,I14,Samantha,700,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I16,Samantha,700,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I18,Samantha,700,"change 3 to 3:30","Change 3 to 330",1,0.400,0
+bonsai-benchmark,I19,Samantha,700,"replace tuesday with wednesday","Replace Tuesday. With Wednesday.",1,0.000,1
+bonsai-benchmark,I20,Samantha,700,"reply to sarah that I can meet tomorrow","Reply to Saradat. | I can meet tomorrow.",2,0.250,0
+bonsai-benchmark,I21,Samantha,700,"email john saying the report is ready","Email John saying. | The report is ready.",2,0.000,0
+bonsai-benchmark,I22,Samantha,700,"write to alex and ask if friday works","Write to Alexan. | Ask if Friday works.",2,0.250,0
+bonsai-benchmark,I23,Samantha,700,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks. See you at four.",1,0.000,1
+bonsai-benchmark,I24,Samantha,700,"find sarah's email about tomorrow","Find Sarahs | Email about tomorrow",2,0.200,0
+bonsai-benchmark,I25,Samantha,700,"open the latest email from john","Open the latest. | Email from John.",2,0.000,0
+bonsai-benchmark,I26,Samantha,700,"search my mail for the budget report","Search my mail. For the budget report.",1,0.000,1
+bonsai-benchmark,I27,Samantha,700,"show me the email from alex about the offsite","Show me the email. | From Alex about the off-site.",2,0.222,0
+bonsai-benchmark,I28,Samantha,700,"do I have anything at four tomorrow","Do I have anything at for tomorrow?",1,0.143,0
+bonsai-benchmark,I29,Samantha,700,"am I free on friday afternoon","Am I free? On Friday afternoon?",1,0.000,1
+bonsai-benchmark,A03,Samantha,700,"move that over there","Move that. Over there.",1,0.000,1
+bonsai-benchmark,A07,Samantha,700,"open the thing from yesterday","Opened ah | Thing from yesterday",2,0.400,0
+bonsai-benchmark,A09,Samantha,700,"put them side by side","Put them side by side",1,0.000,1
+bonsai-benchmark,A14,Samantha,700,"make it more formal","Make it. More formal.",1,0.000,1
+bonsai-benchmark,I05,Daniel,700,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Daniel,700,"put mail and calendar side by side","Hugmaland | Calendar side by side",2,0.429,0
+bonsai-benchmark,I07,Daniel,700,"put notes on the left and safari on the right","Put notes on the left. And Safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Daniel,700,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Daniel,700,"maximize the mail window","Maximize the male window",1,0.250,0
+bonsai-benchmark,I10,Daniel,700,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Daniel,700,"make the calendar window smaller","Make the. | Calendar window smaller",2,0.000,0
+bonsai-benchmark,I13,Daniel,700,"scroll to the top","Skreldsimma. The talk.",1,0.750,0
+bonsai-benchmark,I14,Daniel,700,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I16,Daniel,700,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I18,Daniel,700,"change 3 to 3:30","Change 3. | To free thirty",2,0.400,0
+bonsai-benchmark,I19,Daniel,700,"replace tuesday with wednesday","Replace Tuesday with Wednesday",1,0.000,1
+bonsai-benchmark,I20,Daniel,700,"reply to sarah that I can meet tomorrow","Reply to Sarah that. I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Daniel,700,"email john saying the report is ready","Email John saying. The report is ready.",1,0.000,1
+bonsai-benchmark,I22,Daniel,700,"write to alex and ask if friday works","Ride to Alexaland. Ask if Friday works.",1,0.375,0
+bonsai-benchmark,I23,Daniel,700,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks. See you add for",1,0.250,0
+bonsai-benchmark,I24,Daniel,700,"find sarah's email about tomorrow","Find Sarah's. Email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Daniel,700,"open the latest email from john","Open the latest. Email from John.",1,0.000,1
+bonsai-benchmark,I26,Daniel,700,"search my mail for the budget report","Search my mail. For the budget report.",1,0.000,1
+bonsai-benchmark,I27,Daniel,700,"show me the email from alex about the offsite","Show me the email. | From Alex about the effic",2,0.111,0
+bonsai-benchmark,I28,Daniel,700,"do I have anything at four tomorrow","Do I have anything at four tomorrow?",1,0.000,1
+bonsai-benchmark,I29,Daniel,700,"am I free on friday afternoon","Am I free? On Friday afternoon.",1,0.000,1
+bonsai-benchmark,A03,Daniel,700,"move that over there","Move that over there",1,0.000,1
+bonsai-benchmark,A07,Daniel,700,"open the thing from yesterday","Sopanda. | Thing from yesterday",2,0.400,0
+bonsai-benchmark,A09,Daniel,700,"put them side by side","Cut them. Side by side.",1,0.200,0
+bonsai-benchmark,A14,Daniel,700,"make it more formal","Make it. | More formal.",2,0.000,0
+bonsai-benchmark,I05,Samantha,900,"let me review the draft","Let me. | Review the draft",2,0.000,0
+bonsai-benchmark,I06,Samantha,900,"put mail and calendar side by side","Fukmail animals are the same. | Calendar side by side",2,0.714,0
+bonsai-benchmark,I07,Samantha,900,"put notes on the left and safari on the right","Put notes on the left. | And Safari on the right.",2,0.000,0
+bonsai-benchmark,I08,Samantha,900,"move this window to the left half","Move this window. | To the left half.",2,0.000,0
+bonsai-benchmark,I09,Samantha,900,"maximize the mail window","Maximize the. | Mail window",2,0.000,0
+bonsai-benchmark,I10,Samantha,900,"make this window a little wider","Make this window. | A little wider",2,0.000,0
+bonsai-benchmark,I11,Samantha,900,"make the calendar window smaller","Make duh | Calendar window smaller",2,0.200,0
+bonsai-benchmark,I13,Samantha,900,"scroll to the top","Scroll to | The tob",2,0.250,0
+bonsai-benchmark,I14,Samantha,900,"click the reply button","Click da. | Reply button",2,0.250,0
+bonsai-benchmark,I16,Samantha,900,"focus the search field","Focused ah | Surge field",2,0.750,0
+bonsai-benchmark,I18,Samantha,900,"change 3 to 3:30","Change 3. | To three thirty",2,0.200,0
+bonsai-benchmark,I19,Samantha,900,"replace tuesday with wednesday","Replace Tuesday | With Wednesday",2,0.000,0
+bonsai-benchmark,I20,Samantha,900,"reply to sarah that I can meet tomorrow","Reply to Saradat. | I can meet tomorrow.",2,0.250,0
+bonsai-benchmark,I21,Samantha,900,"email john saying the report is ready","Email John saying. | The report is ready.",2,0.000,0
+bonsai-benchmark,I22,Samantha,900,"write to alex and ask if friday works","Write to Alexan. | Ask if Friday works.",2,0.250,0
+bonsai-benchmark,I23,Samantha,900,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks. | C you and four",2,0.250,0
+bonsai-benchmark,I24,Samantha,900,"find sarah's email about tomorrow","Find Sarahs | Email about tomorrow",2,0.200,0
+bonsai-benchmark,I25,Samantha,900,"open the latest email from john","Open the latest. | Email from John",2,0.000,0
+bonsai-benchmark,I26,Samantha,900,"search my mail for the budget report","Search my mail. | For the budget report",2,0.000,0
+bonsai-benchmark,I27,Samantha,900,"show me the email from alex about the offsite","Show me the email. | From Alex about the off-site.",2,0.222,0
+bonsai-benchmark,I28,Samantha,900,"do I have anything at four tomorrow","Do I have? | Anything at for tomorrow.",2,0.143,0
+bonsai-benchmark,I29,Samantha,900,"am I free on friday afternoon","Am I free? | On Friday afternoon",2,0.000,0
+bonsai-benchmark,A03,Samantha,900,"move that over there","Move that. | Over there",2,0.000,0
+bonsai-benchmark,A07,Samantha,900,"open the thing from yesterday","Opened ah | Thing from yesterday",2,0.400,0
+bonsai-benchmark,A09,Samantha,900,"put them side by side","Put them | Side by side",2,0.000,0
+bonsai-benchmark,A14,Samantha,900,"make it more formal","Make it. | Mord forinal",2,0.500,0
+bonsai-benchmark,I05,Daniel,900,"let me review the draft","Love me. | Review the draft",2,0.200,0
+bonsai-benchmark,I06,Daniel,900,"put mail and calendar side by side","Ugmaland | Calendar side by side",2,0.429,0
+bonsai-benchmark,I07,Daniel,900,"put notes on the left and safari on the right","Put notes on the left. | And Safari on the right",2,0.000,0
+bonsai-benchmark,I08,Daniel,900,"move this window to the left half","Move this window. | To the left house",2,0.143,0
+bonsai-benchmark,I09,Daniel,900,"maximize the mail window","Maximizer | Mail window",2,0.500,0
+bonsai-benchmark,I10,Daniel,900,"make this window a little wider","Make this window. | A little wider",2,0.000,0
+bonsai-benchmark,I11,Daniel,900,"make the calendar window smaller","Make the. | Calendar window smaller",2,0.000,0
+bonsai-benchmark,I13,Daniel,900,"scroll to the top","Skreldsima | The talk.",2,0.750,0
+bonsai-benchmark,I14,Daniel,900,"click the reply button","Click the | Reply button",2,0.000,0
+bonsai-benchmark,I16,Daniel,900,"focus the search field","Focus the | Such field",2,0.250,0
+bonsai-benchmark,I18,Daniel,900,"change 3 to 3:30","Change 3 | To free thirty",2,0.400,0
+bonsai-benchmark,I19,Daniel,900,"replace tuesday with wednesday","Replace Tuesday | With Wednesday",2,0.000,0
+bonsai-benchmark,I20,Daniel,900,"reply to sarah that I can meet tomorrow","Reply to Sarah that. | I can meet tomorrow.",2,0.000,0
+bonsai-benchmark,I21,Daniel,900,"email john saying the report is ready","Email John saying. | The report is ready.",2,0.000,0
+bonsai-benchmark,I22,Daniel,900,"write to alex and ask if friday works","Right to Alexand. | Askift Friday works",2,0.625,0
+bonsai-benchmark,I23,Daniel,900,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks. | C U and 4",2,0.375,0
+bonsai-benchmark,I24,Daniel,900,"find sarah's email about tomorrow","Find Sarah's | Email about tomorrow",2,0.000,0
+bonsai-benchmark,I25,Daniel,900,"open the latest email from john","Open the latest. | Email from John",2,0.000,0
+bonsai-benchmark,I26,Daniel,900,"search my mail for the budget report","Search my mail. | For the budget report.",2,0.000,0
+bonsai-benchmark,I27,Daniel,900,"show me the email from alex about the offsite","Show me the email. | From Alex about the ephesite.",2,0.111,0
+bonsai-benchmark,I28,Daniel,900,"do I have anything at four tomorrow","Do I have? | Anything at four tomorrow",2,0.000,0
+bonsai-benchmark,I29,Daniel,900,"am I free on friday afternoon","Am I free? | On Friday afternoon",2,0.000,0
+bonsai-benchmark,A03,Daniel,900,"move that over there","Moozat | Over there.",2,0.500,0
+bonsai-benchmark,A07,Daniel,900,"open the thing from yesterday","Opened a. | Thing from yesterday",2,0.400,0
+bonsai-benchmark,A09,Daniel,900,"put them side by side","Put them | Side by side",2,0.000,0
+bonsai-benchmark,A14,Daniel,900,"make it more formal","Make it. | More formal",2,0.000,0
+heldout-benchmark,HI03,Samantha,300,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Samantha,300,"show the notes app","Shilda, notes ab",1,0.750,0
+heldout-benchmark,HI06,Samantha,300,"put safari on the left and mail on the right","Put Safari on the left, and male on the right.",1,0.100,0
+heldout-benchmark,HI07,Samantha,300,"calendar and notes side by side","Calendar and notes, side by side.",1,0.000,1
+heldout-benchmark,HI08,Samantha,300,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Samantha,300,"make the notes window full screen","Make the notes, window full screen.",1,0.000,1
+heldout-benchmark,HI11,Samantha,300,"make the mail window bigger","Make the mail window bigger.",1,0.000,1
+heldout-benchmark,HI12,Samantha,300,"scroll up a bit","Scroll up, a bit.",1,0.000,1
+heldout-benchmark,HI13,Samantha,300,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Samantha,300,"press the archive button","Press the Archive button.",1,0.000,1
+heldout-benchmark,HI16,Samantha,300,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Samantha,300,"type see you soon","Type C, Yusun.",1,0.750,0
+heldout-benchmark,HI18,Samantha,300,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Samantha,300,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Samantha,300,"reply to priya saying thanks for the update","Reply to Priya saying, thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Samantha,300,"send an email to marco that the meeting moved to 3:45","Send an email to Marco, that the meeting moved to 345.",1,0.167,0
+heldout-benchmark,HI22,Samantha,300,"write an email to dana asking whether the 12th still works","Write an email to Dana, asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Samantha,300,"tell lee I'll be ten minutes late","Tell Le Isle, be ten minutes late.",1,0.286,0
+heldout-benchmark,HI24,Samantha,300,"look for the email from priya about the invoice","Look for the email from Priya about the invoice.",1,0.000,1
+heldout-benchmark,HI25,Samantha,300,"find the message from marco","Find the message from Marco",1,0.000,1
+heldout-benchmark,HI26,Samantha,300,"open my latest email","Open my, latest email.",1,0.000,1
+heldout-benchmark,HI27,Samantha,300,"search mail for flight confirmation","Search mail for flag confirmation.",1,0.200,0
+heldout-benchmark,HI28,Samantha,300,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Samantha,300,"am I busy at 10 am tomorrow","Am I busy, at 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HA05,Samantha,300,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA09,Samantha,300,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Samantha,300,"change it to 5","Change it to five.",1,0.000,1
+heldout-benchmark,HA14,Samantha,300,"make this sound nicer","Make this, sound nicer.",1,0.000,1
+heldout-benchmark,HI03,Daniel,300,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Daniel,300,"show the notes app","Shova, notes at",1,0.750,0
+heldout-benchmark,HI06,Daniel,300,"put safari on the left and mail on the right","Put Safari on the left, and Mel on the right.",1,0.100,0
+heldout-benchmark,HI07,Daniel,300,"calendar and notes side by side","Calendar and notes, side by side.",1,0.000,1
+heldout-benchmark,HI08,Daniel,300,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Daniel,300,"make the notes window full screen","Make the nodes, window full screen.",1,0.167,0
+heldout-benchmark,HI11,Daniel,300,"make the mail window bigger","Make the male window bigger.",1,0.200,0
+heldout-benchmark,HI12,Daniel,300,"scroll up a bit","Scroll up a bit.",1,0.000,1
+heldout-benchmark,HI13,Daniel,300,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Daniel,300,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI16,Daniel,300,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Daniel,300,"type see you soon","Type C. You soon.",1,0.250,0
+heldout-benchmark,HI18,Daniel,300,"change monday to tuesday","Change Monday to Tuesday.",1,0.000,1
+heldout-benchmark,HI19,Daniel,300,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Daniel,300,"reply to priya saying thanks for the update","Reply to Priya saying, thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Daniel,300,"send an email to marco that the meeting moved to 3:45","Send an email to Marco, that the meeting moved to 3.45.",1,0.000,1
+heldout-benchmark,HI22,Daniel,300,"write an email to dana asking whether the 12th still works","Write an email to Dama, asking whether the 12th still works.",1,0.091,0
+heldout-benchmark,HI23,Daniel,300,"tell lee I'll be ten minutes late","Tell Liao, be ten minutes late.",1,0.286,0
+heldout-benchmark,HI24,Daniel,300,"look for the email from priya about the invoice","Look for the email from Priyo about the invoice.",1,0.111,0
+heldout-benchmark,HI25,Daniel,300,"find the message from marco","Find the message from Marco",1,0.000,1
+heldout-benchmark,HI26,Daniel,300,"open my latest email","Open my latest email.",1,0.000,1
+heldout-benchmark,HI27,Daniel,300,"search mail for flight confirmation","Search mail for flight confirmation",1,0.000,1
+heldout-benchmark,HI28,Daniel,300,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Daniel,300,"am I busy at 10 am tomorrow","Am I busy, at 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HA05,Daniel,300,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA09,Daniel,300,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Daniel,300,"change it to 5","Change it to 5.",1,0.000,1
+heldout-benchmark,HA14,Daniel,300,"make this sound nicer","Make this sound nicer.",1,0.000,1
+heldout-benchmark,HI03,Samantha,500,"can you open safari please","Can you open Safari, please?",1,0.000,1
+heldout-benchmark,HI04,Samantha,500,"show the notes app","Shilda. Notes ab",1,0.750,0
+heldout-benchmark,HI06,Samantha,500,"put safari on the left and mail on the right","Put Safari on the left, and male on the right.",1,0.100,0
+heldout-benchmark,HI07,Samantha,500,"calendar and notes side by side","Calendar and notes. Side by side.",1,0.000,1
+heldout-benchmark,HI08,Samantha,500,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Samantha,500,"make the notes window full screen","Make the notes. Window full screen.",1,0.000,1
+heldout-benchmark,HI11,Samantha,500,"make the mail window bigger","Make the mail window bigger.",1,0.000,1
+heldout-benchmark,HI12,Samantha,500,"scroll up a bit","Scroll up a bit",1,0.000,1
+heldout-benchmark,HI13,Samantha,500,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Samantha,500,"press the archive button","Press the Archive button.",1,0.000,1
+heldout-benchmark,HI16,Samantha,500,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Samantha,500,"type see you soon","Type C. You soon",1,0.250,0
+heldout-benchmark,HI18,Samantha,500,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Samantha,500,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Samantha,500,"reply to priya saying thanks for the update","Reply to Priya saying. Thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Samantha,500,"send an email to marco that the meeting moved to 3:45","Send an email to Marco. That the meeting moved to 345.",1,0.167,0
+heldout-benchmark,HI22,Samantha,500,"write an email to dana asking whether the 12th still works","Write an email to Dana. Asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Samantha,500,"tell lee I'll be ten minutes late","Tell Le Isle. Be 10 minutes late.",1,0.286,0
+heldout-benchmark,HI24,Samantha,500,"look for the email from priya about the invoice","Look for the email from Priya about the invoice.",1,0.000,1
+heldout-benchmark,HI25,Samantha,500,"find the message from marco","Find uh message from Marco",1,0.200,0
+heldout-benchmark,HI26,Samantha,500,"open my latest email","Open my latest email",1,0.000,1
+heldout-benchmark,HI27,Samantha,500,"search mail for flight confirmation","Search mail for flag confirmation.",1,0.200,0
+heldout-benchmark,HI28,Samantha,500,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Samantha,500,"am I busy at 10 am tomorrow","Am I busy? At 10 a.m. tomorrow",1,0.286,0
+heldout-benchmark,HA05,Samantha,500,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA09,Samantha,500,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Samantha,500,"change it to 5","Change it to five.",1,0.000,1
+heldout-benchmark,HA14,Samantha,500,"make this sound nicer","Make this sound nicer.",1,0.000,1
+heldout-benchmark,HI03,Daniel,500,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Daniel,500,"show the notes app","Shova notesap",1,1.000,0
+heldout-benchmark,HI06,Daniel,500,"put safari on the left and mail on the right","Put Safari on the left. And Mel on the right.",1,0.100,0
+heldout-benchmark,HI07,Daniel,500,"calendar and notes side by side","Calendar and notes. Side by side.",1,0.000,1
+heldout-benchmark,HI08,Daniel,500,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Daniel,500,"make the notes window full screen","Make the nodes. Window full screen.",1,0.167,0
+heldout-benchmark,HI11,Daniel,500,"make the mail window bigger","Make the male window bigger.",1,0.200,0
+heldout-benchmark,HI12,Daniel,500,"scroll up a bit","Scroll up a bit.",1,0.000,1
+heldout-benchmark,HI13,Daniel,500,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Daniel,500,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI16,Daniel,500,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Daniel,500,"type see you soon","Type C. Yusune.",1,0.750,0
+heldout-benchmark,HI18,Daniel,500,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Daniel,500,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Daniel,500,"reply to priya saying thanks for the update","Reply to Priya saying. Thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Daniel,500,"send an email to marco that the meeting moved to 3:45","Send an email to Marco. That the meeting moved to 3:45.",1,0.000,1
+heldout-benchmark,HI22,Daniel,500,"write an email to dana asking whether the 12th still works","Write an email to Dama. Asking whether the 12th still works.",1,0.091,0
+heldout-benchmark,HI23,Daniel,500,"tell lee I'll be ten minutes late","Tell Liao. Be ten minutes late.",1,0.286,0
+heldout-benchmark,HI24,Daniel,500,"look for the email from priya about the invoice","Look for the email. From Priyo About the Invoice.",1,0.111,0
+heldout-benchmark,HI25,Daniel,500,"find the message from marco","Find the message from Marco",1,0.000,1
+heldout-benchmark,HI26,Daniel,500,"open my latest email","Open my latest email.",1,0.000,1
+heldout-benchmark,HI27,Daniel,500,"search mail for flight confirmation","Search mail for flight confirmation",1,0.000,1
+heldout-benchmark,HI28,Daniel,500,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Daniel,500,"am I busy at 10 am tomorrow","Am I busy? At 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HA05,Daniel,500,"send it to him","Send it to him",1,0.000,1
+heldout-benchmark,HA09,Daniel,500,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Daniel,500,"change it to 5","Change it to five",1,0.000,1
+heldout-benchmark,HA14,Daniel,500,"make this sound nicer","Make this. Sound nicer.",1,0.000,1
+heldout-benchmark,HI03,Samantha,700,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Samantha,700,"show the notes app","Shilda. Notes ab",1,0.750,0
+heldout-benchmark,HI06,Samantha,700,"put safari on the left and mail on the right","Put Safari on the left. | And male on the right",2,0.100,0
+heldout-benchmark,HI07,Samantha,700,"calendar and notes side by side","Calendar and notes | Side by side",2,0.000,0
+heldout-benchmark,HI08,Samantha,700,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Samantha,700,"make the notes window full screen","Make the notes. | Window full screen",2,0.000,0
+heldout-benchmark,HI11,Samantha,700,"make the mail window bigger","Make the mail window bigger.",1,0.000,1
+heldout-benchmark,HI12,Samantha,700,"scroll up a bit","Scroll up. | A band",2,0.250,0
+heldout-benchmark,HI13,Samantha,700,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Samantha,700,"press the archive button","Press the archive button",1,0.000,1
+heldout-benchmark,HI16,Samantha,700,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Samantha,700,"type see you soon","Type C. Yusun",1,0.750,0
+heldout-benchmark,HI18,Samantha,700,"change monday to tuesday","Change Monday. To Tuesday.",1,0.000,1
+heldout-benchmark,HI19,Samantha,700,"replace 2 pm with 2:30 pm","Replace 2 p.m. With 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Samantha,700,"reply to priya saying thanks for the update","Reply to Priya saying. | Thanks for the update.",2,0.000,0
+heldout-benchmark,HI21,Samantha,700,"send an email to marco that the meeting moved to 3:45","Send an email to Marco. That the meeting moved to 3:45",1,0.000,1
+heldout-benchmark,HI22,Samantha,700,"write an email to dana asking whether the 12th still works","Write an email to Dana. Asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Samantha,700,"tell lee I'll be ten minutes late","Tell Le Isle. Be 10 minutes late.",1,0.286,0
+heldout-benchmark,HI24,Samantha,700,"look for the email from priya about the invoice","Look for the email. | From Priya about the invoice.",2,0.000,0
+heldout-benchmark,HI25,Samantha,700,"find the message from marco","Find uh message from Marco",1,0.200,0
+heldout-benchmark,HI26,Samantha,700,"open my latest email","Open my. Latest email.",1,0.000,1
+heldout-benchmark,HI27,Samantha,700,"search mail for flight confirmation","Search mail | Perfect confirmation.",2,0.400,0
+heldout-benchmark,HI28,Samantha,700,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Samantha,700,"am I busy at 10 am tomorrow","Am I busy? At 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HA05,Samantha,700,"send it to him","Send it | To him.",2,0.000,0
+heldout-benchmark,HA09,Samantha,700,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Samantha,700,"change it to 5","Change it. | To five",2,0.000,0
+heldout-benchmark,HA14,Samantha,700,"make this sound nicer","Make this. | Sound nicer.",2,0.000,0
+heldout-benchmark,HI03,Daniel,700,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Daniel,700,"show the notes app","Shova. Notesap.",1,1.000,0
+heldout-benchmark,HI06,Daniel,700,"put safari on the left and mail on the right","Put Safari on the left. And male on the right.",1,0.100,0
+heldout-benchmark,HI07,Daniel,700,"calendar and notes side by side","Calendar and notes | Side by side",2,0.000,0
+heldout-benchmark,HI08,Daniel,700,"snap this window to the right","Snap this window | To the right.",2,0.000,0
+heldout-benchmark,HI09,Daniel,700,"make the notes window full screen","Make the notes. Window full screen.",1,0.000,1
+heldout-benchmark,HI11,Daniel,700,"make the mail window bigger","Make the male window bigger.",1,0.200,0
+heldout-benchmark,HI12,Daniel,700,"scroll up a bit","Scroll app | A bit",2,0.250,0
+heldout-benchmark,HI13,Daniel,700,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Daniel,700,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI16,Daniel,700,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Daniel,700,"type see you soon","Type C. Yusung.",1,0.750,0
+heldout-benchmark,HI18,Daniel,700,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Daniel,700,"replace 2 pm with 2:30 pm","Replace 2 p.m. With 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Daniel,700,"reply to priya saying thanks for the update","Reply to Priya saying. | Thanks for the update.",2,0.000,0
+heldout-benchmark,HI21,Daniel,700,"send an email to marco that the meeting moved to 3:45","Send an email to Marco. That the meeting moved to 3.45.",1,0.000,1
+heldout-benchmark,HI22,Daniel,700,"write an email to dana asking whether the 12th still works","Write an email to Dama. Asking whether the 12th still works.",1,0.091,0
+heldout-benchmark,HI23,Daniel,700,"tell lee I'll be ten minutes late","Tell Liao. Be ten minutes late.",1,0.286,0
+heldout-benchmark,HI24,Daniel,700,"look for the email from priya about the invoice","Look for the email. From Priyo about the invoice.",1,0.111,0
+heldout-benchmark,HI25,Daniel,700,"find the message from marco","Find the message from Marco",1,0.000,1
+heldout-benchmark,HI26,Daniel,700,"open my latest email","Open my latest email",1,0.000,1
+heldout-benchmark,HI27,Daniel,700,"search mail for flight confirmation","Such mail | Bo flight confirmation",2,0.400,0
+heldout-benchmark,HI28,Daniel,700,"what's on my calendar on thursday","Whops on my. | Calendar on Thursday",2,0.167,0
+heldout-benchmark,HI29,Daniel,700,"am I busy at 10 am tomorrow","Am I busy? At 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HA05,Daniel,700,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA09,Daniel,700,"put those two next to each other","Cut those two. | Next to each other",2,0.143,0
+heldout-benchmark,HA10,Daniel,700,"change it to 5","Change it to five",1,0.000,1
+heldout-benchmark,HA14,Daniel,700,"make this sound nicer","Make this. Sound nicer.",1,0.000,1
+heldout-benchmark,HI03,Samantha,900,"can you open safari please","Can you? | Open Safari please.",2,0.000,0
+heldout-benchmark,HI04,Samantha,900,"show the notes app","Should | Notes ab",2,0.750,0
+heldout-benchmark,HI06,Samantha,900,"put safari on the left and mail on the right","Put Safari on the left. | And male on the right.",2,0.100,0
+heldout-benchmark,HI07,Samantha,900,"calendar and notes side by side","Calendar and notes | Side by side",2,0.000,0
+heldout-benchmark,HI08,Samantha,900,"snap this window to the right","Snap this window | To the right.",2,0.000,0
+heldout-benchmark,HI09,Samantha,900,"make the notes window full screen","Make the notes. | Window full screen",2,0.000,0
+heldout-benchmark,HI11,Samantha,900,"make the mail window bigger","Make duh. | Male window bigger",2,0.400,0
+heldout-benchmark,HI12,Samantha,900,"scroll up a bit","Scroll up. | A bent",2,0.250,0
+heldout-benchmark,HI13,Samantha,900,"go to the bottom of the page","Go to the | Bottom of the page",2,0.000,0
+heldout-benchmark,HI14,Samantha,900,"press the archive button","Press the | Archive button",2,0.000,0
+heldout-benchmark,HI16,Samantha,900,"put the cursor in the subject field","Put the cursor. | In the subject field",2,0.000,0
+heldout-benchmark,HI17,Samantha,900,"type see you soon","Type C | You soon",2,0.250,0
+heldout-benchmark,HI18,Samantha,900,"change monday to tuesday","Change Monday | To Tuesday",2,0.000,0
+heldout-benchmark,HI19,Samantha,900,"replace 2 pm with 2:30 pm","Replace 2 p.m. | With 2.30 p.m.",2,0.571,0
+heldout-benchmark,HI20,Samantha,900,"reply to priya saying thanks for the update","Reply to Priya saying | Thanks for the update.",2,0.000,0
+heldout-benchmark,HI21,Samantha,900,"send an email to marco that the meeting moved to 3:45","Send an email to Marco. | That the meeting moved to 345.",2,0.167,0
+heldout-benchmark,HI22,Samantha,900,"write an email to dana asking whether the 12th still works","Write an email to Dana. | Asking whether the twelfth still works.",2,0.091,0
+heldout-benchmark,HI23,Samantha,900,"tell lee I'll be ten minutes late","Tell me I'll. | Be 10 minutes late.",2,0.143,0
+heldout-benchmark,HI24,Samantha,900,"look for the email from priya about the invoice","Look for the email. | From Priya about the invoice",2,0.000,0
+heldout-benchmark,HI25,Samantha,900,"find the message from marco","Find uh | Message from Marco",2,0.200,0
+heldout-benchmark,HI26,Samantha,900,"open my latest email","Open my | Latest email",2,0.000,0
+heldout-benchmark,HI27,Samantha,900,"search mail for flight confirmation","Search mail | For flight confirmation",2,0.000,0
+heldout-benchmark,HI28,Samantha,900,"what's on my calendar on thursday","What's on my? | Calendar on Thursday",2,0.000,0
+heldout-benchmark,HI29,Samantha,900,"am I busy at 10 am tomorrow","Am I busy? | At 10 AM tomorrow.",2,0.000,0
+heldout-benchmark,HA05,Samantha,900,"send it to him","Send it | To him",2,0.000,0
+heldout-benchmark,HA09,Samantha,900,"put those two next to each other","Put those two. | Next to each other.",2,0.000,0
+heldout-benchmark,HA10,Samantha,900,"change it to 5","Change it. | To five",2,0.000,0
+heldout-benchmark,HA14,Samantha,900,"make this sound nicer","Make this. | Sound nicer",2,0.000,0
+heldout-benchmark,HI03,Daniel,900,"can you open safari please","Can you? | Open Safari, please",2,0.000,0
+heldout-benchmark,HI04,Daniel,900,"show the notes app","Shuva | NodeSat",2,1.000,0
+heldout-benchmark,HI06,Daniel,900,"put safari on the left and mail on the right","Kud Safari on the left. | And metal on the right.",2,0.200,0
+heldout-benchmark,HI07,Daniel,900,"calendar and notes side by side","Calendar and notes | Side by side",2,0.000,0
+heldout-benchmark,HI08,Daniel,900,"snap this window to the right","Snap this window | To the right",2,0.000,0
+heldout-benchmark,HI09,Daniel,900,"make the notes window full screen","Make the notes. | Window full screen",2,0.000,0
+heldout-benchmark,HI11,Daniel,900,"make the mail window bigger","Make the. | Male window bigger",2,0.200,0
+heldout-benchmark,HI12,Daniel,900,"scroll up a bit","Scroll app | A bit",2,0.250,0
+heldout-benchmark,HI13,Daniel,900,"go to the bottom of the page","Go to the. | Bottom of the page",2,0.000,0
+heldout-benchmark,HI14,Daniel,900,"press the archive button","Press the | Archive button",2,0.000,0
+heldout-benchmark,HI16,Daniel,900,"put the cursor in the subject field","Put the cursor | In the subject field.",2,0.000,0
+heldout-benchmark,HI17,Daniel,900,"type see you soon","Type C | Yusum",2,0.750,0
+heldout-benchmark,HI18,Daniel,900,"change monday to tuesday","Change Monday | To Tuesday",2,0.000,0
+heldout-benchmark,HI19,Daniel,900,"replace 2 pm with 2:30 pm","Replace 2 p.m. | With 2:30 p.m.",2,0.571,0
+heldout-benchmark,HI20,Daniel,900,"reply to priya saying thanks for the update","Reply to Priya saying | Thanks for the update.",2,0.000,0
+heldout-benchmark,HI21,Daniel,900,"send an email to marco that the meeting moved to 3:45","Send an email to Marco. | That the meeting moved to 345.",2,0.167,0
+heldout-benchmark,HI22,Daniel,900,"write an email to dana asking whether the 12th still works","Write an email to Dama. | Asking whether the twelfth still works.",2,0.182,0
+heldout-benchmark,HI23,Daniel,900,"tell lee I'll be ten minutes late","Tell Liao. | Be ten minutes late.",2,0.286,0
+heldout-benchmark,HI24,Daniel,900,"look for the email from priya about the invoice","Look for the email. | From Priyo about the invoice",2,0.111,0
+heldout-benchmark,HI25,Daniel,900,"find the message from marco","Finder. | Message from Marco",2,0.400,0
+heldout-benchmark,HI26,Daniel,900,"open my latest email","Open my | Latest email",2,0.000,0
+heldout-benchmark,HI27,Daniel,900,"search mail for flight confirmation","Such mail | For flight confirmation",2,0.200,0
+heldout-benchmark,HI28,Daniel,900,"what's on my calendar on thursday","Whops on my. | Calendar on Thursday",2,0.167,0
+heldout-benchmark,HI29,Daniel,900,"am I busy at 10 am tomorrow","Am I busy? | At 10 a.m. tomorrow",2,0.286,0
+heldout-benchmark,HA05,Daniel,900,"send it to him","Send it. | To him",2,0.000,0
+heldout-benchmark,HA09,Daniel,900,"put those two next to each other","Put those two. | Next to each other",2,0.000,0
+heldout-benchmark,HA10,Daniel,900,"change it to 5","Change it. | To five",2,0.000,0
+heldout-benchmark,HA14,Daniel,900,"make this sound nicer","Makeless | Sound nicer",2,0.500,0

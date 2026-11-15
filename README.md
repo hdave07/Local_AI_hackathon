@@ -47,7 +47,7 @@ scripts/flow_voice.sh --once     # mic → Argmax → Bonsai → mock consumer (
 swift run flow-bench --runs 3 --out docs/evidence/T-002   # T-002 Bonsai benchmark
 ```
 
-No registry access? `FLOW_DISABLE_ARGMAX=1 swift build` builds everything except the Argmax adapter.
+No registry access? `FLOW_DISABLE_ARGMAX=1 swift build` builds everything except the Argmax adapter. Note: that mode removes `Package.resolved` locally (no dependencies to pin). Do not commit the deletion; restore it with `git checkout -- Package.resolved`.
 
 Modules (SwiftPM):
 - `FlowCore` — intents, typed action allowlist, risk tiers, errors, deterministic control router
@@ -55,12 +55,14 @@ Modules (SwiftPM):
 - `FlowWindow` — app launch/switch and window move/resize/tile/minimize/restore via Accessibility, verified re-reads, undo
 - `FlowAudio` — speech pipeline independent of any SDK: microphone consent, utterance endpointing (partial vs final), VAD, deterministic stop/cancel, routing to the classifier and an `IntentSink`
 - `FlowArgmax` — Argmax Pro `LiveTranscriber` adapter implementing `SpeechTranscribing`
-- `FlowApp` — SwiftUI shell: "Interpret" tab (classifier preview, nothing executed) and "Window Control" tab (typed window commands)
+- `FlowRouting` — intent router: stop/cancel, deterministic fast path, task context and references, clarification with follow-up answers, Bonsai fallback with slot grounding (proposes intents; executes nothing)
+- `FlowPlanner` — bounded multi-step planner (≤5 allowlisted steps), plan runner with pause/resume, bound single-use send approvals, at-most-once send ledger; channel-agnostic (Mail, Messages, WhatsApp, …); talks to macOS only through `PlanExecuting` (Track A)
+- `FlowApp` — SwiftUI shell with typed-command tabs: "Interpret" (classifier preview, nothing executed), "Window Control", "UI Navigation" and "Mail" (read-only)
 - `FlowAX` — generic UI navigation: AX inspection, deterministic target resolution, revalidated click/focus/select/scroll with verification, numbered overlay
 - `FlowMail` — read-only Apple Mail search/open/read: Mail scripting (JSON over osascript), stable message refs with revalidation, on-screen verification via FlowAX
 - `flowctl` — command-line typed interface to FlowWindow, FlowAX and FlowMail
 - `flow-nav-fixture` — small AppKit app used by FlowAX live tests
-- `flow-voice` / `flow-bench` — Track B developer harnesses (voice → typed intent; Bonsai benchmark). Neither executes actions.
+- `flow-voice` / `flow-bench` / `flow-speech-eval` / `flow-plan-demo` — Track B developer harnesses (voice → typed intent; intent benchmark; synthesized-speech ASR and segmentation evaluation; planner walkthrough against a mock executor). None executes actions.
 
 ## Status
 
@@ -70,5 +72,7 @@ Modules (SwiftPM):
 - T-022 Apple Mail read and search (read-only; synthetic FlowTest mailbox for live tests)
 - T-003/T-012 Argmax voice pipeline: spoken command → confirmed utterance → validated intent → mock consumer (nothing executed)
 - T-002 Bonsai benchmark harness and results
+- T-026 bounded task planner, execution safety and task state against a mock executor (see docs/evidence/T-026-task-planner.md, ADR 0005)
+- T-030 voice-to-intent reliability: router, task context, clarification, ASR robustness, segmentation (see docs/evidence/T-030-voice-improvements.md)
 
 See [docs/evidence](docs/evidence) and [docs/adr](docs/adr).

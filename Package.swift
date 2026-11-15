@@ -14,9 +14,12 @@ var products: [Product] = [
     .library(name: "FlowLLM", targets: ["FlowLLM"]),
     .library(name: "FlowWindow", targets: ["FlowWindow"]),
     .library(name: "FlowAudio", targets: ["FlowAudio"]),
+    .library(name: "FlowRouting", targets: ["FlowRouting"]),
+    .library(name: "FlowPlanner", targets: ["FlowPlanner"]),
     .executable(name: "FlowApp", targets: ["FlowApp"]),
     .executable(name: "flowctl", targets: ["flowctl"]),
     .executable(name: "flow-bench", targets: ["FlowBenchCLI"]),
+    .executable(name: "flow-plan-demo", targets: ["FlowPlanDemoCLI"]),
     .library(name: "FlowAX", targets: ["FlowAX"]),
     .executable(name: "flow-nav-fixture", targets: ["FlowNavFixture"]),
     .library(name: "FlowMail", targets: ["FlowMail"]),
@@ -40,12 +43,20 @@ var targets: [Target] = [
     .target(name: "FlowMail", dependencies: ["FlowCore", "FlowWindow", "FlowAX"]),
     // Track A — deterministic AppKit app exercised by FlowAX live integration tests.
     .executableTarget(name: "FlowNavFixture"),
+    // Track B — intent router: control phrases, fast path, task context and references,
+    // clarification, Bonsai fallback with slot grounding. Proposes intents; executes nothing.
+    .target(name: "FlowRouting", dependencies: ["FlowCore", "FlowLLM"]),
+    // Track B — bounded multi-step planner, plan runner, approvals and send ledger, task state.
+    // Channel-agnostic; talks to macOS only through the `PlanExecuting` protocol (Track A).
+    .target(name: "FlowPlanner", dependencies: ["FlowCore", "FlowLLM", "FlowRouting"]),
+    // Track B — planner walkthrough against the mock executor (no macOS actions).
+    .executableTarget(name: "FlowPlanDemoCLI", dependencies: ["FlowCore", "FlowLLM", "FlowRouting", "FlowPlanner"]),
     // SwiftUI shell. Composition root for FlowLLM, FlowWindow and FlowAX.
     .executableTarget(name: "FlowApp", dependencies: ["FlowCore", "FlowLLM", "FlowWindow", "FlowAX", "FlowMail"]),
     // Typed command-line interface to FlowWindow and FlowAX for manual and scripted testing.
     .executableTarget(name: "flowctl", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
     // Track B — T-002 benchmark harness: fixtures → Bonsai via LM Studio → CSV + summary. Executes nothing.
-    .executableTarget(name: "FlowBenchCLI", dependencies: ["FlowCore", "FlowLLM"]),
+    .executableTarget(name: "FlowBenchCLI", dependencies: ["FlowCore", "FlowLLM", "FlowRouting"]),
     .testTarget(name: "FlowCoreTests", dependencies: ["FlowCore"]),
     .testTarget(name: "FlowLLMTests", dependencies: ["FlowCore", "FlowLLM"]),
     .testTarget(name: "FlowWindowTests", dependencies: ["FlowCore", "FlowWindow"]),
@@ -53,6 +64,8 @@ var targets: [Target] = [
     .testTarget(name: "FlowMailTests", dependencies: ["FlowCore", "FlowWindow", "FlowAX", "FlowMail"]),
     .testTarget(name: "FlowAudioTests", dependencies: ["FlowCore", "FlowAudio", "FlowLLM"]),
     .testTarget(name: "FlowBenchTests", dependencies: ["FlowBenchCLI", "FlowCore", "FlowLLM"]),
+    .testTarget(name: "FlowRoutingTests", dependencies: ["FlowRouting", "FlowCore", "FlowLLM"]),
+    .testTarget(name: "FlowPlannerTests", dependencies: ["FlowPlanner", "FlowRouting", "FlowCore", "FlowLLM"]),
 ]
 
 var dependencies: [Package.Dependency] = []
@@ -61,6 +74,7 @@ if argmaxEnabled {
     dependencies.append(.package(id: "argmaxinc.argmax-sdk-swift", exact: "3.1.8"))
     products.append(.library(name: "FlowArgmax", targets: ["FlowArgmax"]))
     products.append(.executable(name: "flow-voice", targets: ["FlowVoiceCLI"]))
+    products.append(.executable(name: "flow-speech-eval", targets: ["FlowSpeechEvalCLI"]))
     targets += [
         // Track B — Argmax Pro adapter implementing FlowAudio's `SpeechTranscribing`.
         .target(
@@ -68,7 +82,9 @@ if argmaxEnabled {
             dependencies: ["FlowAudio", .product(name: "Argmax", package: "argmaxinc.argmax-sdk-swift")]),
         // Track B developer harness: microphone/file → Argmax → Bonsai → mock consumer.
         // Executes nothing.
-        .executableTarget(name: "FlowVoiceCLI", dependencies: ["FlowCore", "FlowAudio", "FlowArgmax", "FlowLLM"]),
+        .executableTarget(name: "FlowVoiceCLI", dependencies: ["FlowCore", "FlowAudio", "FlowArgmax", "FlowLLM", "FlowRouting"]),
+        // Track B speech robustness/segmentation harness (synthesized speech → Argmax). Executes nothing.
+        .executableTarget(name: "FlowSpeechEvalCLI", dependencies: ["FlowAudio", "FlowArgmax"]),
         .testTarget(name: "FlowArgmaxTests", dependencies: ["FlowAudio", "FlowArgmax", "FlowCore", "FlowLLM"]),
     ]
 }

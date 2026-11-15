@@ -1,0 +1,546 @@
+fixture,id,voice,pause_ms,reference,finals,n_finals,wer,exact
+bonsai-benchmark,I01,Samantha,0,"open notes","Open notes",1,0.000,1
+bonsai-benchmark,I02,Samantha,0,"open mail","Open mail",1,0.000,1
+bonsai-benchmark,I03,Samantha,0,"launch calendar","Launch calendar",1,0.000,1
+bonsai-benchmark,I04,Samantha,0,"switch to safari","Switch to Safari",1,0.000,1
+bonsai-benchmark,I05,Samantha,0,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Samantha,0,"put mail and calendar side by side","Put mail and calendar side by side.",1,0.000,1
+bonsai-benchmark,I07,Samantha,0,"put notes on the left and safari on the right","Put notes on the left end safari on the right.",1,0.100,0
+bonsai-benchmark,I08,Samantha,0,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Samantha,0,"maximize the mail window","Maximize the male window.",1,0.250,0
+bonsai-benchmark,I10,Samantha,0,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Samantha,0,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I12,Samantha,0,"scroll down","Scroll down.",1,0.000,1
+bonsai-benchmark,I13,Samantha,0,"scroll to the top","Scroll to the top.",1,0.000,1
+bonsai-benchmark,I14,Samantha,0,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I15,Samantha,0,"click new message","Click New Message",1,0.000,1
+bonsai-benchmark,I16,Samantha,0,"focus the search field","Focus the search field",1,0.000,1
+bonsai-benchmark,I17,Samantha,0,"type hello everyone","Type Hello Everyone.",1,0.000,1
+bonsai-benchmark,I18,Samantha,0,"change 3 to 3:30","Change 3 to 330.",1,0.400,0
+bonsai-benchmark,I19,Samantha,0,"replace tuesday with wednesday","Replace Tuesday with Wednesday",1,0.000,1
+bonsai-benchmark,I20,Samantha,0,"reply to sarah that I can meet tomorrow","Reply to Sarah that I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Samantha,0,"email john saying the report is ready","Email John saying the report is ready.",1,0.000,1
+bonsai-benchmark,I22,Samantha,0,"write to alex and ask if friday works","Write to Alex and ask if Friday works.",1,0.000,1
+bonsai-benchmark,I23,Samantha,0,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks, see you at 4.",1,0.000,1
+bonsai-benchmark,I24,Samantha,0,"find sarah's email about tomorrow","Find Sarah's email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Samantha,0,"open the latest email from john","Open the latest email from John.",1,0.000,1
+bonsai-benchmark,I26,Samantha,0,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Samantha,0,"show me the email from alex about the offsite","Show me the email from Alex about the off-site.",1,0.222,0
+bonsai-benchmark,I28,Samantha,0,"do I have anything at four tomorrow","Do I have anything at four tomorrow?",1,0.000,1
+bonsai-benchmark,I29,Samantha,0,"am I free on friday afternoon","Am I free on Friday afternoon?",1,0.000,1
+bonsai-benchmark,I30,Samantha,0,"send it","Send it",1,0.000,1
+bonsai-benchmark,A01,Samantha,0,"open it","Open it.",1,0.000,1
+bonsai-benchmark,A02,Samantha,0,"make it bigger","Make it bigger.",1,0.000,1
+bonsai-benchmark,A03,Samantha,0,"move that over there","Move that over there.",1,0.000,1
+bonsai-benchmark,A04,Samantha,0,"reply to her","Reply to her.",1,0.000,1
+bonsai-benchmark,A05,Samantha,0,"delete that","Delete that.",1,0.000,1
+bonsai-benchmark,A06,Samantha,0,"check my schedule","Check my schedule.",1,0.000,1
+bonsai-benchmark,A07,Samantha,0,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A08,Samantha,0,"do the usual","Do the usual.",1,0.000,1
+bonsai-benchmark,A09,Samantha,0,"put them side by side","Put them side by side.",1,0.000,1
+bonsai-benchmark,A10,Samantha,0,"change the time","Change the time.",1,0.000,1
+bonsai-benchmark,A11,Samantha,0,"email sarah","Email Sarah.",1,0.000,1
+bonsai-benchmark,A12,Samantha,0,"close it","Close it",1,0.000,1
+bonsai-benchmark,A13,Samantha,0,"find that email","Find that email",1,0.000,1
+bonsai-benchmark,A14,Samantha,0,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,A15,Samantha,0,"move mail","Move mail",1,0.000,1
+bonsai-benchmark,I01,Daniel,0,"open notes","Open notes",1,0.000,1
+bonsai-benchmark,I02,Daniel,0,"open mail","Open mail.",1,0.000,1
+bonsai-benchmark,I03,Daniel,0,"launch calendar","Launch calendar",1,0.000,1
+bonsai-benchmark,I04,Daniel,0,"switch to safari","Switch to Safari",1,0.000,1
+bonsai-benchmark,I05,Daniel,0,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Daniel,0,"put mail and calendar side by side","Cook mail and calendar side by side.",1,0.143,0
+bonsai-benchmark,I07,Daniel,0,"put notes on the left and safari on the right","Put notes on the left and safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Daniel,0,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Daniel,0,"maximize the mail window","Maximize the male window",1,0.250,0
+bonsai-benchmark,I10,Daniel,0,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Daniel,0,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I12,Daniel,0,"scroll down","Scroll down.",1,0.000,1
+bonsai-benchmark,I13,Daniel,0,"scroll to the top","Scroll to the top.",1,0.000,1
+bonsai-benchmark,I14,Daniel,0,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I15,Daniel,0,"click new message","Click New Message",1,0.000,1
+bonsai-benchmark,I16,Daniel,0,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I17,Daniel,0,"type hello everyone","Type Hello Everyone",1,0.000,1
+bonsai-benchmark,I18,Daniel,0,"change 3 to 3:30","Change 3 to 330.",1,0.400,0
+bonsai-benchmark,I19,Daniel,0,"replace tuesday with wednesday","Replace Tuesday with Wednesday.",1,0.000,1
+bonsai-benchmark,I20,Daniel,0,"reply to sarah that I can meet tomorrow","Reply to Sarah that I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Daniel,0,"email john saying the report is ready","Email John saying the report is ready.",1,0.000,1
+bonsai-benchmark,I22,Daniel,0,"write to alex and ask if friday works","Write to Alex and ask if Friday works.",1,0.000,1
+bonsai-benchmark,I23,Daniel,0,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks, see you add for.",1,0.250,0
+bonsai-benchmark,I24,Daniel,0,"find sarah's email about tomorrow","Find Sarah's email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Daniel,0,"open the latest email from john","Open the latest email from John.",1,0.000,1
+bonsai-benchmark,I26,Daniel,0,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Daniel,0,"show me the email from alex about the offsite","Show me the email from Alex about the effic",1,0.111,0
+bonsai-benchmark,I28,Daniel,0,"do I have anything at four tomorrow","Do I have anything at for tomorrow?",1,0.143,0
+bonsai-benchmark,I29,Daniel,0,"am I free on friday afternoon","Am I free on Friday afternoon?",1,0.000,1
+bonsai-benchmark,I30,Daniel,0,"send it","Send it.",1,0.000,1
+bonsai-benchmark,A01,Daniel,0,"open it","Open it.",1,0.000,1
+bonsai-benchmark,A02,Daniel,0,"make it bigger","Make it bigger.",1,0.000,1
+bonsai-benchmark,A03,Daniel,0,"move that over there","Move that over there.",1,0.000,1
+bonsai-benchmark,A04,Daniel,0,"reply to her","Reply to the.",1,0.333,0
+bonsai-benchmark,A05,Daniel,0,"delete that","The lead that",1,1.000,0
+bonsai-benchmark,A06,Daniel,0,"check my schedule","Check my schedule.",1,0.000,1
+bonsai-benchmark,A07,Daniel,0,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A08,Daniel,0,"do the usual","Do the usual",1,0.000,1
+bonsai-benchmark,A09,Daniel,0,"put them side by side","Put them side by side.",1,0.000,1
+bonsai-benchmark,A10,Daniel,0,"change the time","Change the time",1,0.000,1
+bonsai-benchmark,A11,Daniel,0,"email sarah","Email Sarah",1,0.000,1
+bonsai-benchmark,A12,Daniel,0,"close it","Close it.",1,0.000,1
+bonsai-benchmark,A13,Daniel,0,"find that email","Find that email.",1,0.000,1
+bonsai-benchmark,A14,Daniel,0,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,A15,Daniel,0,"move mail","Move mail.",1,0.000,1
+bonsai-benchmark,I01,Karen,0,"open notes","Open notes",1,0.000,1
+bonsai-benchmark,I02,Karen,0,"open mail","Odin mail",1,0.500,0
+bonsai-benchmark,I03,Karen,0,"launch calendar","Launch calendar",1,0.000,1
+bonsai-benchmark,I04,Karen,0,"switch to safari","Switch to Safari",1,0.000,1
+bonsai-benchmark,I05,Karen,0,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Karen,0,"put mail and calendar side by side","Pudmail and Kalin decide by side.",1,0.571,0
+bonsai-benchmark,I07,Karen,0,"put notes on the left and safari on the right","Putnotes on the left and Safari on the right.",1,0.200,0
+bonsai-benchmark,I08,Karen,0,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Karen,0,"maximize the mail window","Maximize the male window",1,0.250,0
+bonsai-benchmark,I10,Karen,0,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Karen,0,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I12,Karen,0,"scroll down","Scroll down.",1,0.000,1
+bonsai-benchmark,I13,Karen,0,"scroll to the top","Scroll to the top.",1,0.000,1
+bonsai-benchmark,I14,Karen,0,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I15,Karen,0,"click new message","Click new message",1,0.000,1
+bonsai-benchmark,I16,Karen,0,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I17,Karen,0,"type hello everyone","Type Hello Everyone",1,0.000,1
+bonsai-benchmark,I18,Karen,0,"change 3 to 3:30","Change 3 to 330",1,0.400,0
+bonsai-benchmark,I19,Karen,0,"replace tuesday with wednesday","Replace Tuesday with Wednesday.",1,0.000,1
+bonsai-benchmark,I20,Karen,0,"reply to sarah that I can meet tomorrow","Reply to Sarah that I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Karen,0,"email john saying the report is ready","Email John saying the report is ready.",1,0.000,1
+bonsai-benchmark,I22,Karen,0,"write to alex and ask if friday works","Write to Alex and ask if Friday works.",1,0.000,1
+bonsai-benchmark,I23,Karen,0,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks, see you at 4.",1,0.000,1
+bonsai-benchmark,I24,Karen,0,"find sarah's email about tomorrow","Find Sarah's email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Karen,0,"open the latest email from john","Open the latest email from John.",1,0.000,1
+bonsai-benchmark,I26,Karen,0,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Karen,0,"show me the email from alex about the offsite","Show me the email from Alex about the of site.",1,0.222,0
+bonsai-benchmark,I28,Karen,0,"do I have anything at four tomorrow","Do I have anything at 4 tomorrow?",1,0.000,1
+bonsai-benchmark,I29,Karen,0,"am I free on friday afternoon","Am I free on Friday afternoon?",1,0.000,1
+bonsai-benchmark,I30,Karen,0,"send it","Sendage",1,1.000,0
+bonsai-benchmark,A01,Karen,0,"open it","Obernidge",1,1.000,0
+bonsai-benchmark,A02,Karen,0,"make it bigger","Make it bigger",1,0.000,1
+bonsai-benchmark,A03,Karen,0,"move that over there","Move that over there.",1,0.000,1
+bonsai-benchmark,A04,Karen,0,"reply to her","Reply to her.",1,0.000,1
+bonsai-benchmark,A05,Karen,0,"delete that","Delete that.",1,0.000,1
+bonsai-benchmark,A06,Karen,0,"check my schedule","Check my schedule",1,0.000,1
+bonsai-benchmark,A07,Karen,0,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A08,Karen,0,"do the usual","Do the usual.",1,0.000,1
+bonsai-benchmark,A09,Karen,0,"put them side by side","Put them side by side.",1,0.000,1
+bonsai-benchmark,A10,Karen,0,"change the time","Change the time",1,0.000,1
+bonsai-benchmark,A11,Karen,0,"email sarah","Email Sarah",1,0.000,1
+bonsai-benchmark,A12,Karen,0,"close it","Closage",1,1.000,0
+bonsai-benchmark,A13,Karen,0,"find that email","Signed the D email.",1,1.000,0
+bonsai-benchmark,A14,Karen,0,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,A15,Karen,0,"move mail","Move mail",1,0.000,1
+bonsai-benchmark,I01,Moira,0,"open notes","Ogre notes",1,0.500,0
+bonsai-benchmark,I02,Moira,0,"open mail","Oken mail",1,0.500,0
+bonsai-benchmark,I03,Moira,0,"launch calendar","Launch calendar",1,0.000,1
+bonsai-benchmark,I04,Moira,0,"switch to safari","Switch to Safari",1,0.000,1
+bonsai-benchmark,I05,Moira,0,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Moira,0,"put mail and calendar side by side","Put mail and calendar side by side.",1,0.000,1
+bonsai-benchmark,I07,Moira,0,"put notes on the left and safari on the right","Put notes on the left and safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Moira,0,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Moira,0,"maximize the mail window","Maximize the male window",1,0.250,0
+bonsai-benchmark,I10,Moira,0,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Moira,0,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I12,Moira,0,"scroll down","Scroll down.",1,0.000,1
+bonsai-benchmark,I13,Moira,0,"scroll to the top","Scroll to the top.",1,0.000,1
+bonsai-benchmark,I14,Moira,0,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I15,Moira,0,"click new message","Click New Message",1,0.000,1
+bonsai-benchmark,I16,Moira,0,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I17,Moira,0,"type hello everyone","Tight hello everyone.",1,0.333,0
+bonsai-benchmark,I18,Moira,0,"change 3 to 3:30","Change 3 to 330",1,0.400,0
+bonsai-benchmark,I19,Moira,0,"replace tuesday with wednesday","Replace Tuesday with Wednesday.",1,0.000,1
+bonsai-benchmark,I20,Moira,0,"reply to sarah that I can meet tomorrow","Reply to Sarah that I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Moira,0,"email john saying the report is ready","Email John saying the report is ready.",1,0.000,1
+bonsai-benchmark,I22,Moira,0,"write to alex and ask if friday works","Write to Alexander Friday works",1,0.500,0
+bonsai-benchmark,I23,Moira,0,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks, see you at 4.",1,0.000,1
+bonsai-benchmark,I24,Moira,0,"find sarah's email about tomorrow","Find Sarah's email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Moira,0,"open the latest email from john","Open the latest email from John.",1,0.000,1
+bonsai-benchmark,I26,Moira,0,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Moira,0,"show me the email from alex about the offsite","Show me the email from Alex about the F site.",1,0.222,0
+bonsai-benchmark,I28,Moira,0,"do I have anything at four tomorrow","Do I have anything at four tomorrow?",1,0.000,1
+bonsai-benchmark,I29,Moira,0,"am I free on friday afternoon","Am I free on Friday afternoon?",1,0.000,1
+bonsai-benchmark,I30,Moira,0,"send it","Send it",1,0.000,1
+bonsai-benchmark,A01,Moira,0,"open it","Openness",1,1.000,0
+bonsai-benchmark,A02,Moira,0,"make it bigger","Make it bigger.",1,0.000,1
+bonsai-benchmark,A03,Moira,0,"move that over there","Moved that over there.",1,0.250,0
+bonsai-benchmark,A04,Moira,0,"reply to her","Reply to her.",1,0.000,1
+bonsai-benchmark,A05,Moira,0,"delete that","Delete that's.",1,0.500,0
+bonsai-benchmark,A06,Moira,0,"check my schedule","Check my schedule.",1,0.000,1
+bonsai-benchmark,A07,Moira,0,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A08,Moira,0,"do the usual","Do the usual",1,0.000,1
+bonsai-benchmark,A09,Moira,0,"put them side by side","Put them side by side.",1,0.000,1
+bonsai-benchmark,A10,Moira,0,"change the time","Change the time.",1,0.000,1
+bonsai-benchmark,A11,Moira,0,"email sarah","Email Sarah",1,0.000,1
+bonsai-benchmark,A12,Moira,0,"close it","Closes",1,1.000,0
+bonsai-benchmark,A13,Moira,0,"find that email","Find that email.",1,0.000,1
+bonsai-benchmark,A14,Moira,0,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,A15,Moira,0,"move mail","Moves mail",1,0.500,0
+bonsai-benchmark,I01,Aman,0,"open notes","Open knots.",1,0.500,0
+bonsai-benchmark,I02,Aman,0,"open mail","Open mayor.",1,0.500,0
+bonsai-benchmark,I03,Aman,0,"launch calendar","Launch calendar",1,0.000,1
+bonsai-benchmark,I04,Aman,0,"switch to safari","Switch to Safari",1,0.000,1
+bonsai-benchmark,I05,Aman,0,"let me review the draft","Let me review the draft.",1,0.000,1
+bonsai-benchmark,I06,Aman,0,"put mail and calendar side by side","Put mail and calendar side by side.",1,0.000,1
+bonsai-benchmark,I07,Aman,0,"put notes on the left and safari on the right","Put notes on the left and Safari on the right.",1,0.000,1
+bonsai-benchmark,I08,Aman,0,"move this window to the left half","Move this window to the left half.",1,0.000,1
+bonsai-benchmark,I09,Aman,0,"maximize the mail window","Maximize the mail window",1,0.000,1
+bonsai-benchmark,I10,Aman,0,"make this window a little wider","Make this window a little wider.",1,0.000,1
+bonsai-benchmark,I11,Aman,0,"make the calendar window smaller","Make the calendar window smaller.",1,0.000,1
+bonsai-benchmark,I12,Aman,0,"scroll down","Scroll down.",1,0.000,1
+bonsai-benchmark,I13,Aman,0,"scroll to the top","Scroll to the top.",1,0.000,1
+bonsai-benchmark,I14,Aman,0,"click the reply button","Click the reply button.",1,0.000,1
+bonsai-benchmark,I15,Aman,0,"click new message","Click new message.",1,0.000,1
+bonsai-benchmark,I16,Aman,0,"focus the search field","Focus the search field.",1,0.000,1
+bonsai-benchmark,I17,Aman,0,"type hello everyone","Type hello everyone",1,0.000,1
+bonsai-benchmark,I18,Aman,0,"change 3 to 3:30","Change 3 2 3 30",1,0.200,0
+bonsai-benchmark,I19,Aman,0,"replace tuesday with wednesday","Replace Tuesday with Wednesday",1,0.000,1
+bonsai-benchmark,I20,Aman,0,"reply to sarah that I can meet tomorrow","Reply to Sarah that I can meet tomorrow.",1,0.000,1
+bonsai-benchmark,I21,Aman,0,"email john saying the report is ready","Email John saying the report is ready.",1,0.000,1
+bonsai-benchmark,I22,Aman,0,"write to alex and ask if friday works","Write to Alex and ask if Friday works.",1,0.000,1
+bonsai-benchmark,I23,Aman,0,"reply to sarah: thanks, see you at four","Reply to Sarah, thanks, see you at 4.",1,0.000,1
+bonsai-benchmark,I24,Aman,0,"find sarah's email about tomorrow","Find Sarah's email about tomorrow.",1,0.000,1
+bonsai-benchmark,I25,Aman,0,"open the latest email from john","Open the latest email from John.",1,0.000,1
+bonsai-benchmark,I26,Aman,0,"search my mail for the budget report","Search my mail for the budget report.",1,0.000,1
+bonsai-benchmark,I27,Aman,0,"show me the email from alex about the offsite","Show me the email from Alex about the offside.",1,0.111,0
+bonsai-benchmark,I28,Aman,0,"do I have anything at four tomorrow","Do I have anything at four tomorrow?",1,0.000,1
+bonsai-benchmark,I29,Aman,0,"am I free on friday afternoon","Am I free on Friday afternoon?",1,0.000,1
+bonsai-benchmark,I30,Aman,0,"send it","Send it.",1,0.000,1
+bonsai-benchmark,A01,Aman,0,"open it","Open it.",1,0.000,1
+bonsai-benchmark,A02,Aman,0,"make it bigger","Make it bigger.",1,0.000,1
+bonsai-benchmark,A03,Aman,0,"move that over there","Move that over there.",1,0.000,1
+bonsai-benchmark,A04,Aman,0,"reply to her","Reply to her.",1,0.000,1
+bonsai-benchmark,A05,Aman,0,"delete that","Delete that.",1,0.000,1
+bonsai-benchmark,A06,Aman,0,"check my schedule","Check my schedule.",1,0.000,1
+bonsai-benchmark,A07,Aman,0,"open the thing from yesterday","Open the thing from yesterday.",1,0.000,1
+bonsai-benchmark,A08,Aman,0,"do the usual","Dio the usual",1,0.333,0
+bonsai-benchmark,A09,Aman,0,"put them side by side","Put them side by side.",1,0.000,1
+bonsai-benchmark,A10,Aman,0,"change the time","Change the time",1,0.000,1
+bonsai-benchmark,A11,Aman,0,"email sarah","Email Sarah",1,0.000,1
+bonsai-benchmark,A12,Aman,0,"close it","Toes it",1,0.500,0
+bonsai-benchmark,A13,Aman,0,"find that email","Find that email.",1,0.000,1
+bonsai-benchmark,A14,Aman,0,"make it more formal","Make it more formal.",1,0.000,1
+bonsai-benchmark,A15,Aman,0,"move mail","Move mayor.",1,0.500,0
+heldout-benchmark,HI01,Samantha,0,"bring up mail","Bring up mail.",1,0.000,1
+heldout-benchmark,HI02,Samantha,0,"go to calendar","Go to calendar.",1,0.000,1
+heldout-benchmark,HI03,Samantha,0,"can you open safari please","Can you open Safari, please?",1,0.000,1
+heldout-benchmark,HI04,Samantha,0,"show the notes app","Show the notes ab",1,0.250,0
+heldout-benchmark,HI05,Samantha,0,"open finder","Open sinder",1,0.500,0
+heldout-benchmark,HI06,Samantha,0,"put safari on the left and mail on the right","Put Safari on the left end male on the right.",1,0.200,0
+heldout-benchmark,HI07,Samantha,0,"calendar and notes side by side","Calendar and notes side by side.",1,0.000,1
+heldout-benchmark,HI08,Samantha,0,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Samantha,0,"make the notes window full screen","Make the notes window full screen.",1,0.000,1
+heldout-benchmark,HI10,Samantha,0,"center this window","Center this window",1,0.000,1
+heldout-benchmark,HI11,Samantha,0,"make the mail window bigger","Make the mail window bigger.",1,0.000,1
+heldout-benchmark,HI12,Samantha,0,"scroll up a bit","Scroll up a bit.",1,0.000,1
+heldout-benchmark,HI13,Samantha,0,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Samantha,0,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI15,Samantha,0,"click on forward","Click on forward.",1,0.000,1
+heldout-benchmark,HI16,Samantha,0,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Samantha,0,"type see you soon","Type C U soon",1,0.500,0
+heldout-benchmark,HI18,Samantha,0,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Samantha,0,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Samantha,0,"reply to priya saying thanks for the update","Reply to Priya saying thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Samantha,0,"send an email to marco that the meeting moved to 3:45","Send an email to Marco that the meeting moved to 345.",1,0.167,0
+heldout-benchmark,HI22,Samantha,0,"write an email to dana asking whether the 12th still works","Write an email to Dana asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Samantha,0,"tell lee I'll be ten minutes late","Tell Lee I'll be ten minutes late.",1,0.000,1
+heldout-benchmark,HI24,Samantha,0,"look for the email from priya about the invoice","Look for the email from Priya about the invoice.",1,0.000,1
+heldout-benchmark,HI25,Samantha,0,"find the message from marco","Find the message from Marco.",1,0.000,1
+heldout-benchmark,HI26,Samantha,0,"open my latest email","Open my latest email.",1,0.000,1
+heldout-benchmark,HI27,Samantha,0,"search mail for flight confirmation","Search mail for flag confirmation.",1,0.200,0
+heldout-benchmark,HI28,Samantha,0,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Samantha,0,"am I busy at 10 am tomorrow","Am I busy at 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HI30,Samantha,0,"send the draft","Send the draft.",1,0.000,1
+heldout-benchmark,HI31,Samantha,0,"review my reply","Review my reply.",1,0.000,1
+heldout-benchmark,HA01,Samantha,0,"open that","Open that.",1,0.000,1
+heldout-benchmark,HA02,Samantha,0,"make it taller","Make it taller.",1,0.000,1
+heldout-benchmark,HA03,Samantha,0,"move it","Move it.",1,0.000,1
+heldout-benchmark,HA04,Samantha,0,"reply","Reets I",1,2.000,0
+heldout-benchmark,HA05,Samantha,0,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA06,Samantha,0,"remove this","Remove this.",1,0.000,1
+heldout-benchmark,HA07,Samantha,0,"check the time","Check the time.",1,0.000,1
+heldout-benchmark,HA08,Samantha,0,"find it","Find it.",1,0.000,1
+heldout-benchmark,HA09,Samantha,0,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Samantha,0,"change it to 5","Change it to five.",1,0.000,1
+heldout-benchmark,HA11,Samantha,0,"write to her","Write to her.",1,0.000,1
+heldout-benchmark,HA12,Samantha,0,"shut it","Shut it.",1,0.000,1
+heldout-benchmark,HA13,Samantha,0,"do that again","Do that again.",1,0.000,1
+heldout-benchmark,HA14,Samantha,0,"make this sound nicer","Make the sound nicer.",1,0.250,0
+heldout-benchmark,HA15,Samantha,0,"email","Email",1,0.000,1
+heldout-benchmark,HI01,Daniel,0,"bring up mail","Bring up mail.",1,0.000,1
+heldout-benchmark,HI02,Daniel,0,"go to calendar","Go to calendar.",1,0.000,1
+heldout-benchmark,HI03,Daniel,0,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Daniel,0,"show the notes app","Show the nodes app.",1,0.250,0
+heldout-benchmark,HI05,Daniel,0,"open finder","Open Finder",1,0.000,1
+heldout-benchmark,HI06,Daniel,0,"put safari on the left and mail on the right","Kud Safari on the left and male on the right.",1,0.200,0
+heldout-benchmark,HI07,Daniel,0,"calendar and notes side by side","Calendar and notes side by side.",1,0.000,1
+heldout-benchmark,HI08,Daniel,0,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Daniel,0,"make the notes window full screen","Make the notes window full screen.",1,0.000,1
+heldout-benchmark,HI10,Daniel,0,"center this window","Center this window.",1,0.000,1
+heldout-benchmark,HI11,Daniel,0,"make the mail window bigger","Make the male window bigger.",1,0.200,0
+heldout-benchmark,HI12,Daniel,0,"scroll up a bit","Scroll up a bit.",1,0.000,1
+heldout-benchmark,HI13,Daniel,0,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Daniel,0,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI15,Daniel,0,"click on forward","Click on forward.",1,0.000,1
+heldout-benchmark,HI16,Daniel,0,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Daniel,0,"type see you soon","Type C U soon",1,0.500,0
+heldout-benchmark,HI18,Daniel,0,"change monday to tuesday","Change Monday to Tuesday.",1,0.000,1
+heldout-benchmark,HI19,Daniel,0,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Daniel,0,"reply to priya saying thanks for the update","Reply to Priya saying thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Daniel,0,"send an email to marco that the meeting moved to 3:45","Send an email to Marco that the meeting moved to 3.45.",1,0.000,1
+heldout-benchmark,HI22,Daniel,0,"write an email to dana asking whether the 12th still works","Write an email to Dana asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Daniel,0,"tell lee I'll be ten minutes late","Tell Lee I'll be ten minutes late.",1,0.000,1
+heldout-benchmark,HI24,Daniel,0,"look for the email from priya about the invoice","Look for the email from Priyo about the invoice.",1,0.111,0
+heldout-benchmark,HI25,Daniel,0,"find the message from marco","Find the message from Marco.",1,0.000,1
+heldout-benchmark,HI26,Daniel,0,"open my latest email","Open my latest email.",1,0.000,1
+heldout-benchmark,HI27,Daniel,0,"search mail for flight confirmation","Search mail for flight confirmation",1,0.000,1
+heldout-benchmark,HI28,Daniel,0,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Daniel,0,"am I busy at 10 am tomorrow","Am I busy at 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HI30,Daniel,0,"send the draft","Send the draft",1,0.000,1
+heldout-benchmark,HI31,Daniel,0,"review my reply","Review my reply.",1,0.000,1
+heldout-benchmark,HA01,Daniel,0,"open that","Open that.",1,0.000,1
+heldout-benchmark,HA02,Daniel,0,"make it taller","Make it taller.",1,0.000,1
+heldout-benchmark,HA03,Daniel,0,"move it","Move it.",1,0.000,1
+heldout-benchmark,HA04,Daniel,0,"reply","Reply",1,0.000,1
+heldout-benchmark,HA05,Daniel,0,"send it to him","Send it to him",1,0.000,1
+heldout-benchmark,HA06,Daniel,0,"remove this","Remove this.",1,0.000,1
+heldout-benchmark,HA07,Daniel,0,"check the time","Check the time.",1,0.000,1
+heldout-benchmark,HA08,Daniel,0,"find it","Find it.",1,0.000,1
+heldout-benchmark,HA09,Daniel,0,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Daniel,0,"change it to 5","Change it to 5.",1,0.000,1
+heldout-benchmark,HA11,Daniel,0,"write to her","Right o' the",1,1.000,0
+heldout-benchmark,HA12,Daniel,0,"shut it","Shut it.",1,0.000,1
+heldout-benchmark,HA13,Daniel,0,"do that again","Do that again.",1,0.000,1
+heldout-benchmark,HA14,Daniel,0,"make this sound nicer","Make this sound nicer",1,0.000,1
+heldout-benchmark,HA15,Daniel,0,"email","Email.",1,0.000,1
+heldout-benchmark,HI01,Karen,0,"bring up mail","Bring up mail.",1,0.000,1
+heldout-benchmark,HI02,Karen,0,"go to calendar","Go to calendar.",1,0.000,1
+heldout-benchmark,HI03,Karen,0,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Karen,0,"show the notes app","Show the notes app",1,0.000,1
+heldout-benchmark,HI05,Karen,0,"open finder","Open signer",1,0.500,0
+heldout-benchmark,HI06,Karen,0,"put safari on the left and mail on the right","Put Safari on the left and male on the right.",1,0.100,0
+heldout-benchmark,HI07,Karen,0,"calendar and notes side by side","Calendar and notes side by side.",1,0.000,1
+heldout-benchmark,HI08,Karen,0,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Karen,0,"make the notes window full screen","Make the notes window full screen.",1,0.000,1
+heldout-benchmark,HI10,Karen,0,"center this window","Center this window",1,0.000,1
+heldout-benchmark,HI11,Karen,0,"make the mail window bigger","Make the mail window bigger.",1,0.000,1
+heldout-benchmark,HI12,Karen,0,"scroll up a bit","Scroll up a bit.",1,0.000,1
+heldout-benchmark,HI13,Karen,0,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Karen,0,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI15,Karen,0,"click on forward","Click on forward.",1,0.000,1
+heldout-benchmark,HI16,Karen,0,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Karen,0,"type see you soon","Type C you soon",1,0.250,0
+heldout-benchmark,HI18,Karen,0,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Karen,0,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Karen,0,"reply to priya saying thanks for the update","Reply to Priya saying thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Karen,0,"send an email to marco that the meeting moved to 3:45","Send an email to Marco that the meeting moved to 345.",1,0.167,0
+heldout-benchmark,HI22,Karen,0,"write an email to dana asking whether the 12th still works","Write an email to Dana asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Karen,0,"tell lee I'll be ten minutes late","Tell thee I'll be ten minutes late.",1,0.143,0
+heldout-benchmark,HI24,Karen,0,"look for the email from priya about the invoice","Look for the email from Priya about the invoice.",1,0.000,1
+heldout-benchmark,HI25,Karen,0,"find the message from marco","Find the message from Marco.",1,0.000,1
+heldout-benchmark,HI26,Karen,0,"open my latest email","Open my latest email.",1,0.000,1
+heldout-benchmark,HI27,Karen,0,"search mail for flight confirmation","Search mail for fly confirmation",1,0.200,0
+heldout-benchmark,HI28,Karen,0,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Karen,0,"am I busy at 10 am tomorrow","Am I busy at 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HI30,Karen,0,"send the draft","Send the draft",1,0.000,1
+heldout-benchmark,HI31,Karen,0,"review my reply","Review my reply",1,0.000,1
+heldout-benchmark,HA01,Karen,0,"open that","Open that.",1,0.000,1
+heldout-benchmark,HA02,Karen,0,"make it taller","Megatulla",1,1.000,0
+heldout-benchmark,HA03,Karen,0,"move it","Movid",1,1.000,0
+heldout-benchmark,HA04,Karen,0,"reply","Reply",1,0.000,1
+heldout-benchmark,HA05,Karen,0,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA06,Karen,0,"remove this","Remove this.",1,0.000,1
+heldout-benchmark,HA07,Karen,0,"check the time","Check the time.",1,0.000,1
+heldout-benchmark,HA08,Karen,0,"find it","Fundage",1,1.000,0
+heldout-benchmark,HA09,Karen,0,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Karen,0,"change it to 5","Change it to five.",1,0.000,1
+heldout-benchmark,HA11,Karen,0,"write to her","Ride to her.",1,0.333,0
+heldout-benchmark,HA12,Karen,0,"shut it","Shuttered",1,1.000,0
+heldout-benchmark,HA13,Karen,0,"do that again","Do that again.",1,0.000,1
+heldout-benchmark,HA14,Karen,0,"make this sound nicer","Make this sound nicer.",1,0.000,1
+heldout-benchmark,HA15,Karen,0,"email","Email.",1,0.000,1
+heldout-benchmark,HI01,Moira,0,"bring up mail","Bring up mail.",1,0.000,1
+heldout-benchmark,HI02,Moira,0,"go to calendar","Go to calendar.",1,0.000,1
+heldout-benchmark,HI03,Moira,0,"can you open safari please","Can you open Safari please?",1,0.000,1
+heldout-benchmark,HI04,Moira,0,"show the notes app","Show the notes app",1,0.000,1
+heldout-benchmark,HI05,Moira,0,"open finder","Open Finder",1,0.000,1
+heldout-benchmark,HI06,Moira,0,"put safari on the left and mail on the right","Put Safari on the left and male on the right.",1,0.100,0
+heldout-benchmark,HI07,Moira,0,"calendar and notes side by side","Calendar and notes side by side",1,0.000,1
+heldout-benchmark,HI08,Moira,0,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Moira,0,"make the notes window full screen","Make the notes window full screen.",1,0.000,1
+heldout-benchmark,HI10,Moira,0,"center this window","Center this window",1,0.000,1
+heldout-benchmark,HI11,Moira,0,"make the mail window bigger","Make the male window bigger.",1,0.200,0
+heldout-benchmark,HI12,Moira,0,"scroll up a bit","Scroll up a bit.",1,0.000,1
+heldout-benchmark,HI13,Moira,0,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Moira,0,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI15,Moira,0,"click on forward","Click on forward",1,0.000,1
+heldout-benchmark,HI16,Moira,0,"put the cursor in the subject field","Put the cursor in the subject field.",1,0.000,1
+heldout-benchmark,HI17,Moira,0,"type see you soon","Type see you soon.",1,0.000,1
+heldout-benchmark,HI18,Moira,0,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Moira,0,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Moira,0,"reply to priya saying thanks for the update","Reply to pre-assaying thanks for the update.",1,0.250,0
+heldout-benchmark,HI21,Moira,0,"send an email to marco that the meeting moved to 3:45","Send an email to Marco that the meeting moved to 3.45.",1,0.000,1
+heldout-benchmark,HI22,Moira,0,"write an email to dana asking whether the 12th still works","Write an email to Dana asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Moira,0,"tell lee I'll be ten minutes late","Tell Lee I'll be ten minutes late.",1,0.000,1
+heldout-benchmark,HI24,Moira,0,"look for the email from priya about the invoice","Look for the email from Priya about the invoice.",1,0.000,1
+heldout-benchmark,HI25,Moira,0,"find the message from marco","Find the message from Marco.",1,0.000,1
+heldout-benchmark,HI26,Moira,0,"open my latest email","Open my latest email.",1,0.000,1
+heldout-benchmark,HI27,Moira,0,"search mail for flight confirmation","Search mail for flight confirmation",1,0.000,1
+heldout-benchmark,HI28,Moira,0,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Moira,0,"am I busy at 10 am tomorrow","Am I busy at 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HI30,Moira,0,"send the draft","Send the draft",1,0.000,1
+heldout-benchmark,HI31,Moira,0,"review my reply","Review my reply.",1,0.000,1
+heldout-benchmark,HA01,Moira,0,"open that","Open that's",1,0.500,0
+heldout-benchmark,HA02,Moira,0,"make it taller","Make it taller.",1,0.000,1
+heldout-benchmark,HA03,Moira,0,"move it","Movis",1,1.000,0
+heldout-benchmark,HA04,Moira,0,"reply","Reply.",1,0.000,1
+heldout-benchmark,HA05,Moira,0,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA06,Moira,0,"remove this","Remove this.",1,0.000,1
+heldout-benchmark,HA07,Moira,0,"check the time","Check the time.",1,0.000,1
+heldout-benchmark,HA08,Moira,0,"find it","Finders",1,1.000,0
+heldout-benchmark,HA09,Moira,0,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Moira,0,"change it to 5","Change it to five.",1,0.000,1
+heldout-benchmark,HA11,Moira,0,"write to her","Write to her.",1,0.000,1
+heldout-benchmark,HA12,Moira,0,"shut it","Shutters",1,1.000,0
+heldout-benchmark,HA13,Moira,0,"do that again","Do that again.",1,0.000,1
+heldout-benchmark,HA14,Moira,0,"make this sound nicer","Make this sound nicer",1,0.000,1
+heldout-benchmark,HA15,Moira,0,"email","Email",1,0.000,1
+heldout-benchmark,HI01,Aman,0,"bring up mail","Pier Chloe's thermal piece ahising pashimi of Riki Randinabian Leone of the Lee",1,4.333,0
+heldout-benchmark,HI02,Aman,0,"go to calendar","Go to calendar",1,0.000,1
+heldout-benchmark,HI03,Aman,0,"can you open safari please","Can you open Safari please",1,0.000,1
+heldout-benchmark,HI04,Aman,0,"show the notes app","Sure the north app.",1,0.500,0
+heldout-benchmark,HI05,Aman,0,"open finder","Open Finder.",1,0.000,1
+heldout-benchmark,HI06,Aman,0,"put safari on the left and mail on the right","Put Safari on the left and mail on the right.",1,0.000,1
+heldout-benchmark,HI07,Aman,0,"calendar and notes side by side","Calendar notes side by side.",1,0.167,0
+heldout-benchmark,HI08,Aman,0,"snap this window to the right","Snap this window to the right.",1,0.000,1
+heldout-benchmark,HI09,Aman,0,"make the notes window full screen","Make the notes window full screen.",1,0.000,1
+heldout-benchmark,HI10,Aman,0,"center this window","Center this window.",1,0.000,1
+heldout-benchmark,HI11,Aman,0,"make the mail window bigger","Make the mail window bigger.",1,0.000,1
+heldout-benchmark,HI12,Aman,0,"scroll up a bit","Scroll UPA bit.",1,0.500,0
+heldout-benchmark,HI13,Aman,0,"go to the bottom of the page","Go to the bottom of the page.",1,0.000,1
+heldout-benchmark,HI14,Aman,0,"press the archive button","Press the archive button.",1,0.000,1
+heldout-benchmark,HI15,Aman,0,"click on forward","Click on forward.",1,0.000,1
+heldout-benchmark,HI16,Aman,0,"put the cursor in the subject field","Put the cussar in the subject field.",1,0.143,0
+heldout-benchmark,HI17,Aman,0,"type see you soon","Tight see you soon",1,0.250,0
+heldout-benchmark,HI18,Aman,0,"change monday to tuesday","Change Monday to Tuesday",1,0.000,1
+heldout-benchmark,HI19,Aman,0,"replace 2 pm with 2:30 pm","Replace 2 p.m. with 2.30 p.m.",1,0.571,0
+heldout-benchmark,HI20,Aman,0,"reply to priya saying thanks for the update","Reply to Priya saying thanks for the update.",1,0.000,1
+heldout-benchmark,HI21,Aman,0,"send an email to marco that the meeting moved to 3:45","Send an email to Marco that the meeting moved to 345.",1,0.167,0
+heldout-benchmark,HI22,Aman,0,"write an email to dana asking whether the 12th still works","Write an email to Dana asking whether the 12th still works.",1,0.000,1
+heldout-benchmark,HI23,Aman,0,"tell lee I'll be ten minutes late","Tell ye I'll be ten minutes late.",1,0.143,0
+heldout-benchmark,HI24,Aman,0,"look for the email from priya about the invoice","Look for the email from Priya about the invoice.",1,0.000,1
+heldout-benchmark,HI25,Aman,0,"find the message from marco","Find the message from Marco",1,0.000,1
+heldout-benchmark,HI26,Aman,0,"open my latest email","Open my latest email.",1,0.000,1
+heldout-benchmark,HI27,Aman,0,"search mail for flight confirmation","Search mail for flight confirmation",1,0.000,1
+heldout-benchmark,HI28,Aman,0,"what's on my calendar on thursday","What's on my calendar on Thursday?",1,0.000,1
+heldout-benchmark,HI29,Aman,0,"am I busy at 10 am tomorrow","Am I busy at 10 a.m. tomorrow?",1,0.286,0
+heldout-benchmark,HI30,Aman,0,"send the draft","Send the draft.",1,0.000,1
+heldout-benchmark,HI31,Aman,0,"review my reply","Review might apply.",1,0.667,0
+heldout-benchmark,HA01,Aman,0,"open that","Open that.",1,0.000,1
+heldout-benchmark,HA02,Aman,0,"make it taller","Make it taller.",1,0.000,1
+heldout-benchmark,HA03,Aman,0,"move it","Move it.",1,0.000,1
+heldout-benchmark,HA04,Aman,0,"reply","Reply",1,0.000,1
+heldout-benchmark,HA05,Aman,0,"send it to him","Send it to him.",1,0.000,1
+heldout-benchmark,HA06,Aman,0,"remove this","Remove this",1,0.000,1
+heldout-benchmark,HA07,Aman,0,"check the time","Check the time",1,0.000,1
+heldout-benchmark,HA08,Aman,0,"find it","Find it.",1,0.000,1
+heldout-benchmark,HA09,Aman,0,"put those two next to each other","Put those two next to each other.",1,0.000,1
+heldout-benchmark,HA10,Aman,0,"change it to 5","Change it to 5.",1,0.000,1
+heldout-benchmark,HA11,Aman,0,"write to her","Right to her.",1,0.333,0
+heldout-benchmark,HA12,Aman,0,"shut it","Shut it.",1,0.000,1
+heldout-benchmark,HA13,Aman,0,"do that again","Do that again?",1,0.000,1
+heldout-benchmark,HA14,Aman,0,"make this sound nicer","Make this sound nicer.",1,0.000,1
+heldout-benchmark,HA15,Aman,0,"email","E-Mayor",1,2.000,0
+context-benchmark,C01,Samantha,0,"open it","Open it.",1,0.000,1
+context-benchmark,C02,Samantha,0,"switch to it","Switch to it.",1,0.000,1
+context-benchmark,C03,Samantha,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C04,Samantha,0,"reply to him saying sounds good","Reply to him saying sounds good.",1,0.000,1
+context-benchmark,C05,Samantha,0,"email them that friday works","Emailed them that Friday works.",1,0.200,0
+context-benchmark,C06,Samantha,0,"reply to that email saying it's paid","Reply to that email saying it's paid.",1,0.000,1
+context-benchmark,C07,Samantha,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C08,Samantha,0,"open it","Open it.",1,0.000,1
+context-benchmark,C09,Samantha,0,"maximize it","Maximize it",1,0.000,1
+context-benchmark,C10,Samantha,0,"put that window on the left","Put that window on the left.",1,0.000,1
+context-benchmark,C11,Samantha,0,"send it","Send it",1,0.000,1
+context-benchmark,C12,Samantha,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C13,Samantha,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C14,Samantha,0,"open mail","Open mail",1,0.000,1
+context-benchmark,C15,Samantha,0,"reply to john that I agree","Reply to John that I agree.",1,0.000,1
+context-benchmark,C16,Samantha,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C17,Samantha,0,"find her last email","Find her last email.",1,0.000,1
+context-benchmark,C18,Samantha,0,"close it","Close it",1,0.000,1
+context-benchmark,C01,Daniel,0,"open it","Open it.",1,0.000,1
+context-benchmark,C02,Daniel,0,"switch to it","Switch to it.",1,0.000,1
+context-benchmark,C03,Daniel,0,"reply to her","Reply to the.",1,0.333,0
+context-benchmark,C04,Daniel,0,"reply to him saying sounds good","Reply to him saying sounds good.",1,0.000,1
+context-benchmark,C05,Daniel,0,"email them that friday works","Email them that Friday works.",1,0.000,1
+context-benchmark,C06,Daniel,0,"reply to that email saying it's paid","Reply to that email saying it's paid.",1,0.000,1
+context-benchmark,C07,Daniel,0,"reply to her","Reply to the.",1,0.333,0
+context-benchmark,C08,Daniel,0,"open it","Open it.",1,0.000,1
+context-benchmark,C09,Daniel,0,"maximize it","Maximize it.",1,0.000,1
+context-benchmark,C10,Daniel,0,"put that window on the left","Put that window on the left.",1,0.000,1
+context-benchmark,C11,Daniel,0,"send it","Send it.",1,0.000,1
+context-benchmark,C12,Daniel,0,"reply to her","Reply to the.",1,0.333,0
+context-benchmark,C13,Daniel,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C14,Daniel,0,"open mail","Open mail.",1,0.000,1
+context-benchmark,C15,Daniel,0,"reply to john that I agree","Reply to John that I agree.",1,0.000,1
+context-benchmark,C16,Daniel,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C17,Daniel,0,"find her last email","Find her last email.",1,0.000,1
+context-benchmark,C18,Daniel,0,"close it","Close it.",1,0.000,1
+context-benchmark,C01,Karen,0,"open it","Obernidge",1,1.000,0
+context-benchmark,C02,Karen,0,"switch to it","Switch to ED",1,0.333,0
+context-benchmark,C03,Karen,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C04,Karen,0,"reply to him saying sounds good","Reply to him saying sounds good.",1,0.000,1
+context-benchmark,C05,Karen,0,"email them that friday works","Email them that Friday works.",1,0.000,1
+context-benchmark,C06,Karen,0,"reply to that email saying it's paid","Reply to that email saying it's paid.",1,0.000,1
+context-benchmark,C07,Karen,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C08,Karen,0,"open it","Obernidge",1,1.000,0
+context-benchmark,C09,Karen,0,"maximize it","Maximize Ige",1,0.500,0
+context-benchmark,C10,Karen,0,"put that window on the left","Put that window on the left.",1,0.000,1
+context-benchmark,C11,Karen,0,"send it","Sendage",1,1.000,0
+context-benchmark,C12,Karen,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C13,Karen,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C14,Karen,0,"open mail","Odin mail",1,0.500,0
+context-benchmark,C15,Karen,0,"reply to john that I agree","Reply to John that I agree.",1,0.000,1
+context-benchmark,C16,Karen,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C17,Karen,0,"find her last email","Find her last email.",1,0.000,1
+context-benchmark,C18,Karen,0,"close it","Closage",1,1.000,0
+context-benchmark,C01,Moira,0,"open it","Openness",1,1.000,0
+context-benchmark,C02,Moira,0,"switch to it","Switch to is.",1,0.333,0
+context-benchmark,C03,Moira,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C04,Moira,0,"reply to him saying sounds good","Reply to him saying sounds good.",1,0.000,1
+context-benchmark,C05,Moira,0,"email them that friday works","Email them that Friday works.",1,0.000,1
+context-benchmark,C06,Moira,0,"reply to that email saying it's paid","Reply to that email saying it's paid.",1,0.000,1
+context-benchmark,C07,Moira,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C08,Moira,0,"open it","Openness",1,1.000,0
+context-benchmark,C09,Moira,0,"maximize it","Maximizes",1,1.000,0
+context-benchmark,C10,Moira,0,"put that window on the left","Put that window on the left.",1,0.000,1
+context-benchmark,C11,Moira,0,"send it","Send it",1,0.000,1
+context-benchmark,C12,Moira,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C13,Moira,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C14,Moira,0,"open mail","Oken mail",1,0.500,0
+context-benchmark,C15,Moira,0,"reply to john that I agree","Reply to John that I agree.",1,0.000,1
+context-benchmark,C16,Moira,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C17,Moira,0,"find her last email","Find her last email",1,0.000,1
+context-benchmark,C18,Moira,0,"close it","Closes",1,1.000,0
+context-benchmark,C01,Aman,0,"open it","But peace don't do.",1,2.000,0
+context-benchmark,C02,Aman,0,"switch to it","Switched it.",1,0.667,0
+context-benchmark,C03,Aman,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C04,Aman,0,"reply to him saying sounds good","Reply to him saying sounds good.",1,0.000,1
+context-benchmark,C05,Aman,0,"email them that friday works","Email them that Friday works.",1,0.000,1
+context-benchmark,C06,Aman,0,"reply to that email saying it's paid","Reply to that email saying it's paid.",1,0.000,1
+context-benchmark,C07,Aman,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C08,Aman,0,"open it","Open it",1,0.000,1
+context-benchmark,C09,Aman,0,"maximize it","Maximize it.",1,0.000,1
+context-benchmark,C10,Aman,0,"put that window on the left","Put that window on the left.",1,0.000,1
+context-benchmark,C11,Aman,0,"send it","Sen",1,1.000,0
+context-benchmark,C12,Aman,0,"reply to her","Reply to her.",1,0.000,1
+context-benchmark,C13,Aman,0,"change that to 4 pm","Chance that to 4 p.m.",1,0.600,0
+context-benchmark,C14,Aman,0,"open mail","Open mirror.",1,0.500,0
+context-benchmark,C15,Aman,0,"reply to john that I agree","Reply to John that I agree",1,0.000,1
+context-benchmark,C16,Aman,0,"change that to 4 pm","Change that to 4 p.m.",1,0.400,0
+context-benchmark,C17,Aman,0,"find her last email","Find her last email.",1,0.000,1
+context-benchmark,C18,Aman,0,"close it","Toes it",1,0.500,0

@@ -24,6 +24,8 @@ public struct ArgmaxSettings: Sendable {
     public var transcribeInterval: Double
     /// Where Flow ends one utterance's recognizer stream (see `UtteranceSegmenter`).
     public var segmentPolicy: UtteranceSegmenter.Policy
+    /// SDK inverse text normalization (spoken forms → written, e.g. times and numbers).
+    public var inverseTextNormalization: Bool
     public var verbose: Bool
 
     public init(
@@ -35,6 +37,7 @@ public struct ArgmaxSettings: Sendable {
         streamMode: StreamTranscriptionMode = .voiceTriggered,
         transcribeInterval: Double = 0.1,
         segmentPolicy: UtteranceSegmenter.Policy = UtteranceSegmenter.Policy(),
+        inverseTextNormalization: Bool = false,
         verbose: Bool = false
     ) {
         self.apiKey = apiKey
@@ -45,6 +48,7 @@ public struct ArgmaxSettings: Sendable {
         self.streamMode = streamMode
         self.transcribeInterval = transcribeInterval
         self.segmentPolicy = segmentPolicy
+        self.inverseTextNormalization = inverseTextNormalization
         self.verbose = verbose
     }
 
@@ -84,7 +88,7 @@ public actor ArgmaxTranscriber: SpeechTranscribing {
         // Supported by the SDK for Parakeet only, via an extra model; not wired yet.
         customVocabulary: false)
 
-    public let settings: ArgmaxSettings
+    public private(set) var settings: ArgmaxSettings
     public private(set) var diagnostics = ArgmaxDiagnostics(sdkVersion: ArgmaxSDK.sdkVersion)
 
     private var whisperKit: WhisperKitPro?
@@ -132,7 +136,8 @@ public actor ArgmaxTranscriber: SpeechTranscribing {
                 verbose: settings.verbose,
                 logLevel: settings.verbose ? .debug : .error,
                 load: true,
-                download: false)
+                download: false,
+                inverseTextNormalization: settings.inverseTextNormalization)
             whisperKit = try await WhisperKitPro(proConfig)
         } catch {
             diagnostics.lastLicenseEvent = licenseLog.get()
@@ -193,6 +198,19 @@ public actor ArgmaxTranscriber: SpeechTranscribing {
             await Self.route(audio: audio, first: first, live: live, options: options, segmenter: segmenter, events: continuation)
         }
         return events
+    }
+
+    /// Change the input (e.g. the next fixture file) without reloading the model.
+    /// Only allowed while not running.
+    public func setInput(_ input: ArgmaxSettings.Input) throws(AudioError) {
+        guard router == nil else { throw .alreadyRunning }
+        settings.input = input
+    }
+
+    /// Change where utterances are cut (see `UtteranceSegmenter`). Only allowed while not running.
+    public func setSegmentPolicy(_ policy: UtteranceSegmenter.Policy) throws(AudioError) {
+        guard router == nil else { throw .alreadyRunning }
+        settings.segmentPolicy = policy
     }
 
     public func stop() async {
