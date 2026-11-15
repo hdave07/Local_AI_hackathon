@@ -82,7 +82,9 @@ struct LiveDraftEditingTests {
         let before = await TestDraftCleanup.counts()
         let (session, store, executor) = make()
         try await LiveReplyDraftTests().openChen(session, store)
-        _ = await session.handle("Reply saying FLOWTEST SAFE: I can meet at 3:30.")
+        let reply = await session.handle("Reply saying FLOWTEST SAFE: I can meet at 3:30.")
+        log(executor)
+        print("LIVE-EDIT reply: \(reply.state) \(reply.say)")
         let created = try #require(await store.context.draft)
 
         for (utterance, expected) in [

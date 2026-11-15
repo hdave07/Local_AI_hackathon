@@ -172,6 +172,15 @@ final class ExecutorEngine {
                                           title: w.title.isEmpty ? nil : w.title, windowID: w.id.description)
             return ExecutionResult(status: .completed, observation: .window(selected), userMessage: r.userMessage)
         case .partiallyCompleted:
+            // Tiled side by side, but an app enforces its own minimum size: the result is visible
+            // and verified (left window left of the right one, not overlapping); say so.
+            if case .tile = command, r.observed.count == 2, r.observed[0].frame.maxX <= r.observed[1].frame.minX + 2 {
+                let w = r.observed[0]
+                return ExecutionResult(status: .completed,
+                                       observation: .window(SelectedWindow(app: KnownApp(name: w.app.name, bundleIdentifier: w.app.bundleID),
+                                                                           title: w.title.isEmpty ? nil : w.title, windowID: w.id.description)),
+                                       userMessage: "Side by side (\(r.userMessage))")
+            }
             return ExecutionResult(status: .partiallyCompleted, userMessage: r.userMessage)
         case .unverified:
             return ExecutionResult(status: .unverified, userMessage: r.userMessage)

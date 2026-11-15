@@ -85,6 +85,11 @@ public struct IntentRouterCore: Sendable {
         }
     }
 
+    /// Commands that must be routed as one utterance even though they contain "and" (tiling two apps).
+    public static func isWholeUtteranceCommand(_ utterance: String) -> Bool {
+        Rules.tileAnyPhrasing(Cleaner.clean(utterance)) != nil
+    }
+
     /// Dictated content ends where the utterance ends, so a spoken "?"/"!" belongs to it.
     static func restoreTerminalMark(_ intent: Intent, _ mark: String) -> Intent {
         guard !mark.isEmpty, let action = intent.action else { return intent }

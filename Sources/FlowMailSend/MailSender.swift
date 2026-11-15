@@ -23,13 +23,16 @@ public struct OutgoingDraft: Sendable, Equatable, Codable {
     public let bcc: [String]
     /// Length and hash of Mail's scripted content (change detection between two script calls).
     public let digest: String
+    /// Mail's own text of the draft (scripted `content`), compared with the text the user approved.
+    public let text: String?
 
-    public init(subject: String, to: [String], cc: [String] = [], bcc: [String] = [], digest: String) {
+    public init(subject: String, to: [String], cc: [String] = [], bcc: [String] = [], digest: String, text: String? = nil) {
         self.subject = subject
         self.to = to
         self.cc = cc
         self.bcc = bcc
         self.digest = digest
+        self.text = text
     }
 }
 
@@ -72,14 +75,18 @@ public struct ApprovedSend: Sendable, Equatable {
     public let recipients: [String]
     public let version: Int
     public let contentHash: String
+    /// The body the user approved, as verified on screen.
+    public let body: String
 
-    public init(approvalID: UUID, draftID: String, subject: String, recipients: [String], version: Int, contentHash: String) {
+    public init(approvalID: UUID, draftID: String, subject: String, recipients: [String], version: Int, contentHash: String,
+                body: String) {
         self.approvalID = approvalID
         self.draftID = draftID
         self.subject = subject
         self.recipients = recipients
         self.version = version
         self.contentHash = contentHash
+        self.body = body
     }
 }
 
@@ -184,10 +191,17 @@ public final class MailSender {
                 "Mail's draft: To \(draft.to.count), Cc \(draft.cc.count), Bcc \(draft.bcc.count); approved To \(approvedTo.count)",
             ])
         }
+        // Mail's own text must be the text the user approved on screen (the quoted original and
+        // whitespace aside). Unreadable or different text is never sent.
+        guard let scripted = draft.text, Self.sameOwnText(scripted, approved.body) else {
+            return .refused(.contentChanged, evidence: [draft.text == nil ? "Mail didn't report the draft's text"
+                                                         : "Mail's text differs from the approved text"])
+        }
         if mode == .live, let allow = configuration.recipientAllowlist, !approvedTo.allSatisfy(allow.contains) {
             return .refused(.recipientNotAllowed, evidence: ["a recipient is not on the live-test allowlist"])
         }
-        let checked = ["one open draft with this subject", "To matches the approval exactly; no Cc or Bcc"]
+        let checked = ["one open draft with this subject", "To matches the approval exactly; no Cc or Bcc",
+                       "Mail's text matches the approved text"]
         if Task.isCancelled { return .refused(.cancelled, evidence: checked + ["cancelled before sending"]) }
 
         // Claim the draft and the approval *before* dispatching: a concurrent or retried request is refused.
@@ -252,6 +266,23 @@ public final class MailSender {
     private func finish(_ approved: ApprovedSend, _ outcome: SendOutcome) -> SendOutcome {
         dispatchedDrafts[approved.draftID] = outcome
         return outcome
+    }
+
+    /// The writer's own text: everything before a quoted original ("On … wrote:") or a "> " quote,
+    /// with whitespace collapsed.
+    static func ownText(_ s: String) -> String {
+        var lines: [String] = []
+        for line in s.replacingOccurrences(of: "\u{00A0}", with: " ").components(separatedBy: .newlines) {
+            let t = line.trimmingCharacters(in: .whitespaces)
+            if t.range(of: #"^On .+ wrote:$"#, options: .regularExpression) != nil || t.hasPrefix(">") { break }
+            lines.append(t)
+        }
+        return lines.joined(separator: " ").split(whereSeparator: \.isWhitespace).joined(separator: " ")
+    }
+
+    static func sameOwnText(_ a: String, _ b: String) -> Bool {
+        let x = ownText(a), y = ownText(b)
+        return !x.isEmpty && x == y
     }
 
     static func normalized(_ addresses: [String]) -> [String] {

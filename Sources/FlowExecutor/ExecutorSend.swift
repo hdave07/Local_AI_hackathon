@@ -58,7 +58,7 @@ extension ExecutorEngine {
         // 3. Dispatch at most once and classify the outcome.
         let outcome = await sender.send(ApprovedSend(
             approvalID: approval.id, draftID: snapshot.id, subject: snapshot.subject, recipients: snapshot.recipients,
-            version: snapshot.version, contentHash: snapshot.contentHash))
+            version: snapshot.version, contentHash: snapshot.contentHash, body: snapshot.body))
         let to = snapshot.recipients.joined(separator: ", ")
         switch outcome {
         case .accepted(let queued, _):

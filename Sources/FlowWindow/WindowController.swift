@@ -89,9 +89,15 @@ public final class WindowController {
         let command = WindowCommand.activate(app)
         let handle = try await backend.open(bundleID: app.bundleIdentifier)
         var windows: [WindowState] = []
-        let verified = await waitUntil(configuration.activationTimeout) {
+        func ready() -> Bool {
             windows = ((try? backend.windows(of: handle)) ?? []).filter { $0.isStandard && !$0.isMinimized }
             return backend.frontmostApp()?.pid == handle.pid && !windows.isEmpty
+        }
+        // In front quickly; a running app with no window is asked to reopen one (like a Dock click).
+        var verified = await waitUntil(.milliseconds(1200), ready)
+        if !verified {
+            backend.reopen(bundleID: app.bundleIdentifier)
+            verified = await waitUntil(configuration.activationTimeout, ready)
         }
         let front = backend.frontmostApp()?.pid == handle.pid
         if verified {
@@ -111,7 +117,7 @@ public final class WindowController {
     private func move(_ selector: WindowSelector, _ position: WindowPosition, _ command: WindowCommand)
         async throws(WindowError) -> WindowActionResult
     {
-        let window = try resolve(selector, minimized: false)
+        let window = try await resolveShowing(selector, minimized: false)
         if let reason = unsupportedReason(window, needsResize: position != .center) {
             return unsupported(command, window, reason)
         }
@@ -124,7 +130,7 @@ public final class WindowController {
     private func resize(_ selector: WindowSelector, _ change: ResizeChange, _ command: WindowCommand)
         async throws(WindowError) -> WindowActionResult
     {
-        let window = try resolve(selector, minimized: false)
+        let window = try await resolveShowing(selector, minimized: false)
         if let reason = unsupportedReason(window, needsResize: true) {
             return unsupported(command, window, reason)
         }
@@ -143,8 +149,9 @@ public final class WindowController {
         guard left != right else {
             return result(command, .unsupported, unsupported: .sameApp, message: UnsupportedReason.sameApp.rawValue)
         }
-        let l = try resolve(.app(left), minimized: false)
-        let r = try resolve(.app(right), minimized: false)
+        // "Open Mail and Calendar and put them side by side": open whichever isn't running or has no window.
+        let l = try await resolveShowing(.app(left), minimized: false)
+        let r = try await resolveShowing(.app(right), minimized: false)
         for window in [l, r] {
             if let reason = unsupportedReason(window, needsResize: true) { return unsupported(command, window, reason) }
         }
@@ -236,7 +243,7 @@ public final class WindowController {
     private func setMinimized(_ selector: WindowSelector, _ minimize: Bool, _ command: WindowCommand)
         async throws(WindowError) -> WindowActionResult
     {
-        let window = try resolve(selector, minimized: !minimize)
+        let window = try await resolveShowing(selector, minimized: !minimize)
         guard window.canMinimize else { return unsupported(command, window, .notMinimizable) }
         return try await applyMinimized(command, window, minimize, recordUndo: true)
     }
@@ -276,7 +283,7 @@ public final class WindowController {
     /// changes, Flow stops there: the sheet is the user's decision (never "Don't Save").
     /// Closing is not undoable and never quits the app.
     private func close(_ selector: WindowSelector, _ command: WindowCommand) async throws(WindowError) -> WindowActionResult {
-        let window = try resolve(selector, minimized: false)
+        let window = try await resolveShowing(selector, minimized: false)
         try backend.close(window.id)
         var gone = false
         var sheet = false
@@ -343,6 +350,25 @@ public final class WindowController {
     }
 
     // MARK: Resolution (spec 02 §7 target rules)
+
+    /// `resolve`, but an app named by the user that reports no window (not running, no window open,
+    /// or its windows are in a background Stage Manager stage, where Accessibility lists none) is
+    /// brought forward first (opening or reopening a window if needed), then resolved again.
+    func resolveShowing(_ selector: WindowSelector, minimized: Bool) async throws(WindowError) -> WindowState {
+        do throws(WindowError) {
+            return try resolve(selector, minimized: minimized)
+        } catch {
+            guard case .app(let app) = selector.target else { throw error }
+            switch error {
+            case .noWindow, .appNotRunning: break
+            default: throw error
+            }
+            // Restoring needs a minimized window; opening the app would not produce one.
+            if minimized, case .appNotRunning = error { throw error }
+            _ = try await activate(app)
+            return try resolve(selector, minimized: minimized)
+        }
+    }
 
     func resolve(_ selector: WindowSelector, minimized: Bool) throws(WindowError) -> WindowState {
         let app: AppHandle

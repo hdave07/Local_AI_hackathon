@@ -44,7 +44,9 @@ public enum AvailabilityClassifier {
             let list = names.isEmpty ? "the requested" : names.joined(separator: " and ")
             return "your \(list) calendar\(names.count == 1 ? "" : "s")"
         case .allAuthorized:
-            return names.isEmpty ? "your calendars" : "your calendars (\(names.joined(separator: ", ")))"
+            if names.isEmpty { return "your calendars" }
+            // Short enough to say aloud; the full list is in the report's `calendarsChecked`.
+            return names.count <= 3 ? "your calendars (\(names.joined(separator: ", ")))" : "your \(names.count) calendars"
         }
     }
 

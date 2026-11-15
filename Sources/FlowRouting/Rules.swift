@@ -278,7 +278,32 @@ enum Rules {
     static let hideNumbers = Rx(#"(?:hide|remove|clear)\s+(?:the\s+)?numbers"#)
     static let chooseNumber = Rx(#"(?:(?:choose|pick|number|select number|go with)\s+)?(?:number\s+)?"# + numberWord)
 
+    /// "Open Mail and Calendar and put them side by side", "split screen notes with safari": any phrasing
+    /// that asks for side-by-side and names exactly two apps.
+    static let sideBySide = #"side by side|side-by-side|next to each other|beside each other|split screen|split view|split the screen"#
+    static func tileAnyPhrasing(_ s: String) -> RuleHit? {
+        let lower = s.lowercased()
+        guard lower.range(of: sideBySide, options: .regularExpression) != nil else { return nil }
+        let chunks = lower.replacingOccurrences(of: sideBySide, with: ",", options: .regularExpression)
+            .replacingOccurrences(of: #"\b(?:and|then|with|end)\b"#, with: ",", options: .regularExpression)
+            .split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
+        var apps: [KnownApp] = []
+        for chunk in chunks {
+            var words = chunk.split(separator: " ").map(String.init)
+            // Drop leading verbs and pronouns: "open mail", "put them", "please arrange notes".
+            while let first = words.first, Self.tileFillers.contains(first) { words.removeFirst() }
+            guard !words.isEmpty, let app = KnownApp.fromPhrase(words.joined(separator: " ")), !apps.contains(app) else { continue }
+            apps.append(app)
+        }
+        guard apps.count == 2 else { return nil }
+        return hit(.direct, .tileWindows(left: apps[0], right: apps[1]), "Tile \(apps[0].rawValue) and \(apps[1].rawValue)")
+    }
+    static let tileFillers: Set<String> = ["open", "launch", "start", "show", "bring", "up", "put", "place", "arrange", "set", "tile",
+                                           "split", "can", "you", "could", "please", "the", "my", "them", "both", "me", "and", "screen",
+                                           "a", "with", "have", "get", "pull", "on"]
+
     static func fastPath(_ s: String) -> RuleHit? {
+        if let hit = tileAnyPhrasing(s) { return hit }
         // Window and app commands with explicit targets.
         if let m = tileSides.match(s), let a = m[0].flatMap(KnownApp.fromPhrase), let sa = m[1]?.lowercased(),
             let b = m[2].flatMap(KnownApp.fromPhrase), let sb = m[3]?.lowercased(), sa != sb, a != b
