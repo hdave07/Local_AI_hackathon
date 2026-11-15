@@ -128,7 +128,7 @@ public struct ConversationContext: Sendable, Equatable {
             break  // the edited draft's verified state arrives from the executor (`draft`)
         case .restoreWindow(.app(let app)):
             activeApp = app
-        case .minimizeWindow, .restoreWindow, .closeWindow, .listWindows:
+        case .minimizeWindow, .restoreWindow, .closeWindow, .listWindows, .showNumbers, .hideNumbers, .chooseNumber:
             break
         }
         updatedAt = now

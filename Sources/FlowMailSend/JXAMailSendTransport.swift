@@ -35,7 +35,8 @@ public final class JXAMailSendTransport: MailSendTransport {
     }
 
     public func send(subject: String, expected: OutgoingDraft) async throws(MailError) -> SendDispatch {
-        let e: [String: Any] = ["to": expected.to, "cc": expected.cc, "bcc": expected.bcc, "digest": expected.digest]
+        let e: [String: Any] = ["to": expected.to, "cc": expected.cc, "bcc": expected.bcc, "digest": expected.digest,
+                                "text": expected.text ?? ""]
         let r: SendReply = try await call(["op": "send", "subject": subject, "expected": e])
         if let why = r.refused { return .refused(why) }
         return .dispatched(mailReturned: r.result)
@@ -70,8 +71,9 @@ public final class JXAMailSendTransport: MailSendTransport {
         let h = 5381; for (let i = 0; i < c.length; i++) { h = ((h * 33) ^ c.charCodeAt(i)) >>> 0; }
         return c.length + ':' + h.toString(16);
       };
+      const textOf = o => { try { return String(o.content() || '').slice(0, 20000); } catch (e) { return null; } };
       const info = o => ({ subject: o.subject(), to: addrs(o.toRecipients()), cc: addrs(o.ccRecipients()),
-                           bcc: addrs(o.bccRecipients()), digest: digestOf(o) });
+                           bcc: addrs(o.bccRecipients()), digest: digestOf(o), text: textOf(o) });
       const same = (a, b) => JSON.stringify(a.slice().sort()) === JSON.stringify(b.slice().sort());
 
       if (req.op === 'outgoing') return JSON.stringify({ drafts: open(req.subject).map(info) });

@@ -74,7 +74,11 @@ public enum TextEditor {
             let after = at.end < text.length && isWordChar(text.character(at: at.end)) && !content.hasSuffix(" ") ? " " : ""
             return .plan(make(snap, [Replacement(range: at, text: before + content + after)], summary: "Inserted “\(content)”"))
 
-        case .replace(let candidates, let occurrence):
+        case .replace(let spoken, let occurrence):
+            // "change four to four thirty" on "meet at 4": match the number as the text writes it.
+            let candidates = spoken.map { c in
+                TextEditor.occurrences(of: c.old, in: snap.text).isEmpty ? (SpokenNumbers.restyled(old: c.old, new: c.new, in: snap.text) ?? c) : c
+            }
             let valid = candidates.filter { !occurrences(of: $0.old, in: snap.text).isEmpty && $0.old != $0.new }
             guard let first = candidates.first else { return .nothingToDo("Say what to change.") }
             if valid.isEmpty {

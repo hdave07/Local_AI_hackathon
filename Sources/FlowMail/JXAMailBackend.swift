@@ -140,9 +140,18 @@ public final class JXAMailBackend: MailBackend, MailDraftBackend {
     }
 
     public func setDraftContent(subject: String, to: [String], expected: String, new: String) async throws(MailError) -> DraftContentWrite {
-        let reply: SetContentReply = try await call(["op": "setDraftContent", "subject": subject, "to": to, "expected": expected, "content": new])
+        try await setDraftContent(subject: subject, to: to, expected: expected, new: new, original: nil)
+    }
+
+    public func setDraftContent(subject: String, to: [String], expected: String, new: String, original: MailMessageRef?) async throws(MailError)
+        -> DraftContentWrite
+    {
+        var request: [String: Any] = ["op": "setDraftContent", "subject": subject, "to": to, "expected": expected, "content": new]
+        if let original { request["original"] = Self.encode(original) }
+        let reply: SetContentReply = try await call(request)
         switch reply.result {
         case "written": return .written(content: reply.content ?? "")
+        case "replaced": return .replaced(content: reply.content ?? "")
         case "changed": return .changed
         case "ambiguous": return .ambiguous(reply.count ?? 2)
         default: return .notFound
@@ -347,15 +356,34 @@ public final class JXAMailBackend: MailBackend, MailDraftBackend {
         } else {
           box = Mail.inbox;
         }
+        // With a sender, narrow by sender first (fast), then match the other words in the subject
+        // OR the body of those messages (real mail often says "tomorrow" only in the body).
+        // Without a sender, words must appear in the subject or sender (bodies of a whole inbox are too slow).
         const conds = [];
         if (req.sender) conds.push({ sender: { _contains: req.sender } });
         if (req.subject) conds.push({ subject: { _contains: req.subject } });
-        for (const t of req.terms) conds.push({ _or: [{ subject: { _contains: t } }, { sender: { _contains: t } }] });
+        const bodyTerms = req.sender ? req.terms : [];
+        if (!req.sender) for (const t of req.terms) conds.push({ _or: [{ subject: { _contains: t } }, { sender: { _contains: t } }] });
         const s = box.messages.whose(conds.length === 1 ? conds[0] : { _and: conds });
         const ids = s.id();
         if (ids.length === 0) return JSON.stringify({ total: 0, messages: [] });
         const dates = s.dateReceived();
-        const order = ids.map((_, i) => i).sort((a, b) => (dates[b] || 0) - (dates[a] || 0)).slice(0, req.limit);
+        let order = ids.map((_, i) => i).sort((a, b) => (dates[b] || 0) - (dates[a] || 0));
+        let total = ids.length;
+        if (bodyTerms.length) {
+          const subjects = s.subject();
+          const keep = [];
+          for (const i of order.slice(0, 60)) {  // newest 60 messages from that sender
+            let text = String(subjects[i] || '').toLowerCase();
+            const missing = bodyTerms.filter(t => text.indexOf(t.toLowerCase()) < 0);
+            if (missing.length) { try { text += ' ' + String(s[i].content() || '').toLowerCase(); } catch (e) {} }
+            if (bodyTerms.every(t => text.indexOf(t.toLowerCase()) >= 0)) keep.push(i);
+          }
+          order = keep;
+          total = keep.length;
+          if (total === 0) return JSON.stringify({ total: 0, messages: [] });
+        }
+        order = order.slice(0, req.limit);
         const messages = [];
         for (const i of order) {
           const m = s[i];
@@ -364,7 +392,7 @@ public final class JXAMailBackend: MailBackend, MailDraftBackend {
           if (!fixed) { const mb = m.mailbox(); account = accountOf(mb); path = pathOf(mb); }
           messages.push(summarize(m, account, path));
         }
-        return JSON.stringify({ total: ids.length, messages: messages });
+        return JSON.stringify({ total: total, messages: messages });
       }
 
       if (req.op === 'lookup' || req.op === 'open' || req.op === 'content') {
@@ -440,7 +468,34 @@ public final class JXAMailBackend: MailBackend, MailDraftBackend {
         if (exact.length === 0) return JSON.stringify({ result: 'changed' });
         if (exact.length > 1) return JSON.stringify({ result: 'ambiguous', count: exact.length });
         exact[0].content = req.content;
-        return JSON.stringify({ result: 'written', content: String(exact[0].content() || '') });
+        const now = String(exact[0].content() || '');
+        const norm = s => String(s).replace(/\s+/g, ' ').trim();
+        if (norm(now) === norm(req.content) || !req.original) return JSON.stringify({ result: 'written', content: now });
+        // Mail ignores scripted text changes to a visible draft. Re-create the reply to the same
+        // original, hidden, with the new text; close the old one only after the new one checks out.
+        const m = messageAt(req.original);
+        if (!m) return JSON.stringify({ result: 'written', content: now });
+        const r = Mail.reply(m, { openingWindow: false, replyToAll: false });
+        const l = lists(r);
+        const discard = () => { try { r.close({ saving: 'no' }); } catch (e) {} };
+        if (!same(l.to, want) || l.cc.length || l.bcc.length || r.subject() !== req.subject) { discard(); return JSON.stringify({ result: 'written', content: now }); }
+        r.content = req.content;
+        const set = String(r.content() || '');
+        if (norm(set) !== norm(req.content)) { discard(); return JSON.stringify({ result: 'written', content: now }); }
+        exact[0].close({ saving: 'no' });
+        // Remove only the autosaved copy of exactly the version just replaced (same subject,
+        // recipients and text), so replaced versions don't pile up in Drafts.
+        try {
+          delay(0.5);
+          Mail.draftsMailbox().messages.whose({ subject: req.subject })().forEach(d => { try {
+            const to = d.toRecipients().map(x => String(x.address()).toLowerCase());
+            if (same(to, want) && norm(d.content()) === norm(req.expected)) Mail.delete(d);
+          } catch (e) {} });
+        } catch (e) {}
+        r.visible = true;
+        Mail.activate();
+        for (let i = 0; i < 30; i++) { delay(0.1); try { if (Mail.windows().some(w => w.visible() && w.name() === req.subject)) break; } catch (e) {} }
+        return JSON.stringify({ result: 'replaced', content: set });
       }
 
       if (req.op === 'showDraft') {

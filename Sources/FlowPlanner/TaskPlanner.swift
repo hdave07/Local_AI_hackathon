@@ -45,6 +45,8 @@ public struct TaskPlanner: Sendable {
         let body = answeringReply ? spoken : Self.expandReplyToEmail(spoken, context: context)
         // Filler-only clauses ("Um, open notes" splits into "Um" + "open notes") carry no command.
         var clauses = answeringReply ? [body] : Self.clauses(body, extraVerbs: channelVerbs).filter { !Self.isFillerOnly($0) }
+        // Requests that only make sense whole ("open Mail and Calendar and put them side by side") are not split.
+        if clauses.count > 1, IntentRouterCore.isWholeUtteranceCommand(body) { clauses = [body] }
         // A discourse opener split off by its comma ("Actually, change 3:30 to 4") is not a command.
         while clauses.count > 1, Self.isOpenerOnly(clauses[0]) { clauses.removeFirst() }
         if wantsReview { clauses.append("show it to me") }

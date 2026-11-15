@@ -28,7 +28,7 @@ public enum WindowCommandParser {
     public static let usage = """
         activate <app> · move <app|active> ["title"] <left_half|right_half|maximize|center> · \
         resize <app|active> <wider|narrower|taller|shorter|larger|smaller> · tile <app> <app> · \
-        minimize <app|active> · restore <app|active> · close <app|active> · undo · list <app>   (apps: mail, calendar, notes, finder, safari)
+        minimize <app|active> · restore <app|active> · close <app|active> · undo · list <app>   (app: any installed app by name)
         """
 
     public static func parse(_ input: String) throws(CommandParseError) -> TypedCommand {

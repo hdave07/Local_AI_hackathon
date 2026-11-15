@@ -204,7 +204,8 @@ public struct HUDState: Sendable, Equatable {
         case .incomplete:
             hearing = nil
         case .turn(let turn):
-            let kind = Self.kind(of: turn.state)
+            // A turn that ran no plan (a question, a refusal) is information, never a verified success.
+            let kind = turn.planSummary == nil && Self.kind(of: turn.state) == .verified ? .info : Self.kind(of: turn.state)
             let said = turn.say.joined(separator: " ")
             let text: String
             switch turn.state {

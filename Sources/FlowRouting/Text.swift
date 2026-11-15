@@ -147,6 +147,7 @@ extension KnownApp {
         case .notes: ["notes", "note"]
         case .finder: ["finder", "files"]
         case .safari: ["safari", "browser"]
+        default: Set(Words.tokens(name))
         }
     }
 }

@@ -52,7 +52,8 @@ public struct FeedbackPolicy: Sendable, Equatable {
         case .awaitingConfirmation(let request):
             return SpeechCue(.confirmation, Self.spokenConfirmation(request))
         case .cancelled:
-            return verbosity == .minimal ? nil : SpeechCue(.interruption, "Stopped.")
+            // Say what was cancelled when the session explains it ("Okay, I won't send it…").
+            return verbosity == .minimal ? nil : SpeechCue(.interruption, said.isEmpty ? "Stopped." : said)
         case .stopped(_, let reason):
             return SpeechCue(.failure, Self.clean(reason))
         case .idle, .running, .completed:

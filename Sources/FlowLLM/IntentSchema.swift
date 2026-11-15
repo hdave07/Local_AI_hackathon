@@ -125,7 +125,7 @@ public enum IntentSchema {
 
         kind: direct | edit | task | dictation | clarification | unsupported
         action and how to fill target/detail:
-        - activate_app: target = app (mail, calendar, notes, finder, safari)
+        - activate_app: target = the app's name as spoken (any app, e.g. notes, calculator, spotify, system settings)
         - tile_windows: target = two apps separated by a comma, left first
         - move_window: target = app or "active"; detail = left_half | right_half | maximize | center
         - resize_window: target = app or "active"; detail = wider | narrower | taller | shorter | larger | smaller

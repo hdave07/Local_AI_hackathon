@@ -29,6 +29,8 @@ struct FlowApp: App {
         // Composition root. Defaults match the verified local setup; the
         // FLOW_LMSTUDIO_URL / FLOW_MODEL_ID environment variables override them.
         let env = ProcessInfo.processInfo.environment
+        // Every installed app can be opened and controlled by name (read-only scan of Applications folders).
+        InstalledAppScanner.installDirectory()
         let baseURL = env["FLOW_LMSTUDIO_URL"].flatMap(URL.init(string:)) ?? LMStudioConfiguration.defaultBaseURL
         let modelID = env["FLOW_MODEL_ID"] ?? LMStudioConfiguration.defaultModelID
 
@@ -71,13 +73,17 @@ struct FlowApp: App {
             // Read-only calendar (T-024). Development scope is the FlowTest calendar; FLOW_CALENDAR_SCOPE=all
             // reads every calendar the user has authorized. Answers always name the calendars checked.
             calendar: CalendarController(store: EventKitStore(),
-                                         scope: env["FLOW_CALENDAR_SCOPE"] == "all" ? .allAuthorized : .named(["FlowTest"]),
+                                         scope: Self.calendarScope(env["FLOW_CALENDAR_SCOPE"]),
                                          viewer: JXACalendarViewer()),
             // Confirmed sending (T-023C), off by default. FLOW_SEND_MODE=dry-run runs every check and
             // records the send without pressing Send. FLOW_SEND_MODE=live additionally requires
             // FLOW_SEND_ALLOWED_RECIPIENTS (comma-separated addresses); without it sending stays off.
             sender: Self.makeSender(env: env),
-            configuration: ExecutorConfiguration(mailScope: .testMailbox("FlowTest")))
+            // Real mail by default (the user's Inbox). FLOW_MAIL_MAILBOX=<name> restricts every search to one
+            // mailbox (e.g. the synthetic FlowTest mailbox used by the automated live tests).
+            // Voice editing of Flow's own reply drafts (T-023B) is on; FLOW_MAIL_EDITING=off turns it off.
+            configuration: ExecutorConfiguration(mailScope: env["FLOW_MAIL_MAILBOX"].map { .testMailbox($0) } ?? .inbox,
+                                                 allowMailDraftEditing: env["FLOW_MAIL_EDITING"]?.lowercased() != "off"))
         let session = TaskSession(store: IntentRouter(model: BonsaiIntentClassifier(client: client)), executor: executor)
         let coordinator = VoiceSessionCoordinator(session: session, transcriber: nil, permission: SystemMicrophonePermission())
 
@@ -89,6 +95,15 @@ struct FlowApp: App {
         let feedback: SpokenFeedback? = env["FLOW_SPOKEN_FEEDBACK"]?.lowercased() == "off"
             ? nil : SpokenFeedback(output: SystemSpeechOutput())
         let voice = VoiceViewModel(coordinator: coordinator, executor: executor, hud: hud, feedback: feedback)
+        // Rehearsal/test hook, off by default: FLOW_TEST_DRIVER=1 accepts typed commands posted as the local
+        // distributed notification "dev.flow.submit" (same path as the Voice tab's typed input).
+        if env["FLOW_TEST_DRIVER"] == "1" {
+            DistributedNotificationCenter.default().addObserver(forName: Notification.Name("dev.flow.submit"), object: nil, queue: .main) {
+                [weak voice] note in
+                guard let text = note.object as? String else { return }
+                MainActor.assumeIsolated { voice?.say(text) }
+            }
+        }
         _voiceModel = State(initialValue: voice)
         if let hud {
             hud.onToggleListening = { [weak voice] in
@@ -105,6 +120,12 @@ struct FlowApp: App {
             modelID: configuration.modelID,
             listModels: { () async throws(ClassificationError) -> [String] in try await client.listModels() }
         ))
+    }
+
+    /// All calendars the user authorized, unless FLOW_CALENDAR_SCOPE names calendars ("FlowTest" or "Work,Home").
+    static func calendarScope(_ value: String?) -> CalendarScope {
+        guard let value, !value.isEmpty, value.lowercased() != "all" else { return .allAuthorized }
+        return .named(value.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) })
     }
 
     /// Sending is disabled unless explicitly configured; live sending needs a recipient allowlist.

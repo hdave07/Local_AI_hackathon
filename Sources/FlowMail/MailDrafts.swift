@@ -92,6 +92,10 @@ public enum DraftContentWrite: Sendable, Equatable {
     case notFound
     /// Several drafts match equally; nothing was written.
     case ambiguous(Int)
+    /// Mail ignores scripted text changes to a visible draft, so the draft was replaced by an
+    /// identical reply (same original, recipients and subject) carrying the new text; the old
+    /// one was closed only after the new one checked out. This is its text now.
+    case replaced(content: String)
 }
 
 /// Mail scripting operations for drafts. There is no send, save or delete operation.
@@ -110,6 +114,17 @@ public protocol MailDraftBackend: AnyObject {
     /// exactly these To recipients (no Cc/Bcc) **only if** its text is still `expected`. Never
     /// changes recipients or subject; never sends, saves or closes the draft.
     func setDraftContent(subject: String, to: [String], expected: String, new: String) async throws(MailError) -> DraftContentWrite
+    /// As above; when Mail ignores the write, re-creates the reply to `original` with the new text.
+    func setDraftContent(subject: String, to: [String], expected: String, new: String, original: MailMessageRef?) async throws(MailError)
+        -> DraftContentWrite
+}
+
+public extension MailDraftBackend {
+    func setDraftContent(subject: String, to: [String], expected: String, new: String, original: MailMessageRef?) async throws(MailError)
+        -> DraftContentWrite
+    {
+        try await setDraftContent(subject: subject, to: to, expected: expected, new: new)
+    }
 }
 
 @MainActor
@@ -197,7 +212,7 @@ public final class AXMailComposeInspector: MailComposeInspecting {
     public func compose(titled subject: String) -> [MailComposeView] {
         guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: JXAMailBackend.bundleID).first else { return [] }
         let root = AXUIElementCreateApplication(app.processIdentifier)
-        AXUIElementSetMessagingTimeout(root, 1.0)
+        AXUIElementSetMessagingTimeout(root, 3.0)
         let windows = (Self.attr(root, kAXWindowsAttribute) as? [AXUIElement]) ?? []
         return windows.compactMap { w in
             guard let title = Self.attr(w, kAXTitleAttribute) as? String, title == subject else { return nil }
@@ -506,7 +521,7 @@ public final class MailDraftController {
         let write: DraftContentWrite
         do throws(MailError) {
             write = try await backend.setDraftContent(subject: entry.state.subject, to: entry.state.recipients,
-                                                      expected: expected, new: desired)
+                                                      expected: expected, new: desired, original: entry.state.inReplyTo)
         } catch {
             // Unknown outcome: the next read compares the live text and reports what happened.
             entry.content = nil
@@ -525,7 +540,11 @@ public final class MailDraftController {
         case .ambiguous(let n):
             return .init(status: .failed, draft: entry.state, authored: base.authored, error: .draftAmbiguous(n),
                          evidence: evidence + ["\(n) drafts match equally; nothing written"], userMessage: MailError.draftAmbiguous(n).userMessage)
-        case .written(let content):
+        case .written(let content), .replaced(let content):
+            if case .replaced = write {
+                evidence.append("Mail ignored the direct write; replaced the draft with an identical reply carrying the new text")
+                entry.windowToken = nil  // a new compose window; identified again by recipients and text
+            }
             evidence.append("compare-and-set write accepted (base version \(baseVersion))")
             let readBack = AuthoredText.split(content)
             let scriptOK = readBack.authored == newText && readBack.quoted == base.quoted
@@ -534,7 +553,9 @@ public final class MailDraftController {
             var view: MailComposeView?
             if let inspector {
                 let want = ComposeParser.normalize(newText)
-                let deadline = ContinuousClock.now + configuration.verifyTimeout
+                // A replaced draft is a new compose window, which takes a moment to appear.
+                let replaced: Bool = { if case .replaced = write { true } else { false } }()
+                let deadline = ContinuousClock.now + (replaced ? max(configuration.verifyTimeout, .seconds(10)) : configuration.verifyTimeout)
                 repeat {
                     let views = inspector.compose(titled: entry.state.subject)
                     if case .one(let v) = Self.select(views, token: entry.windowToken, names: [entry.senderName] + entry.state.recipients),

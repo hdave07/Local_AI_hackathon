@@ -25,7 +25,7 @@ final class FakeSendTransport: MailSendTransport {
 
     func outgoing(subject: String) async throws(MailError) -> [OutgoingDraft] {
         drafts.open.filter { $0.subject == subject }.map {
-            OutgoingDraft(subject: $0.subject, to: $0.to, cc: $0.cc, bcc: $0.bcc, digest: "\($0.body.count):\($0.body)")
+            OutgoingDraft(subject: $0.subject, to: $0.to, cc: $0.cc, bcc: $0.bcc, digest: "\($0.body.count):\($0.body)", text: $0.body)
         }
     }
 

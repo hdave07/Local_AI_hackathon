@@ -127,7 +127,7 @@ struct VoicePipelineTests {
         #expect(seen.withLock { $0 } == [.stop, .cancel])
     }
 
-    @Test(arguments: ["stop the music", "cancel my meeting", "please stop dictation now"])
+    @Test(arguments: ["stop the music", "cancel my meeting", "the bus stop is near"])
     func embeddedControlWordsGoToTheModel(phrase: String) async throws {
         let transcriber = FakeTranscriber([.event(.confirmed(phrase, language: nil))])
         let classifier = FakeClassifier()

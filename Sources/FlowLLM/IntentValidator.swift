@@ -151,7 +151,7 @@ public enum IntentValidator {
         case .requestSend:
             return .requestSend
 
-        case .editText, .minimizeWindow, .restoreWindow, .closeWindow, .listWindows:
+        case .editText, .minimizeWindow, .restoreWindow, .closeWindow, .listWindows, .showNumbers, .hideNumbers, .chooseNumber:
             // Deterministic-only (ADR 0010, ADR 0011): the model's schema never offers these,
             // and any output naming them is rejected rather than trusted.
             throw .unsupportedAction(type.rawValue)

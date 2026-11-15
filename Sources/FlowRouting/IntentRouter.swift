@@ -78,11 +78,16 @@ public struct IntentRouterCore: Sendable {
             }
             return RoutingDecision(outcome: .success(intent), stage: .model, trace: trace, pending: nil)
         case .failure(let error):
-            if let hit = Guard.question(for: error, rawContent: trace.attempts.last?.rawContent) {
+            if let hit = Guard.question(for: error, rawContent: trace.attempts.last?.rawContent, utterance: s) {
                 return RoutingDecision(outcome: .success(hit.intent), stage: hit.stage, trace: trace, pending: hit.pending)
             }
             return RoutingDecision(outcome: .failure(error), stage: .model, trace: trace, pending: nil)
         }
+    }
+
+    /// Commands that must be routed as one utterance even though they contain "and" (tiling two apps).
+    public static func isWholeUtteranceCommand(_ utterance: String) -> Bool {
+        Rules.tileAnyPhrasing(Cleaner.clean(utterance)) != nil
     }
 
     /// Dictated content ends where the utterance ends, so a spoken "?"/"!" belongs to it.

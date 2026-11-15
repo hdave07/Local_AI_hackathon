@@ -30,6 +30,10 @@ public enum ActionType: String, Sendable, Codable, CaseIterable {
     case closeWindow = "close_window"
     /// Lists the open windows of the apps Flow knows.
     case listWindows = "list_windows"
+    /// Numbered overlay on the frontmost app's clickable controls, and choosing one by number.
+    case showNumbers = "show_numbers"
+    case hideNumbers = "hide_numbers"
+    case chooseNumber = "choose_number"
 
     /// Text-editing actions, the only ones valid for `edit` / `dictation` intents.
     public var isTextAction: Bool { self == .insertText || self == .replaceText || self == .editText }
@@ -37,49 +41,141 @@ public enum ActionType: String, Sendable, Codable, CaseIterable {
     /// Actions the language model may emit (`edit_text` and the window actions below are deterministic-only).
     public static var modelEmittable: [ActionType] { allCases.filter { !deterministicOnly.contains($0) } }
 
-    public static let deterministicOnly: Set<ActionType> = [.editText, .minimizeWindow, .restoreWindow, .closeWindow, .listWindows]
+    public static let deterministicOnly: Set<ActionType> = [
+        .editText, .minimizeWindow, .restoreWindow, .closeWindow, .listWindows, .showNumbers, .hideNumbers, .chooseNumber,
+    ]
 }
 
-/// Apps Flow targets in the MVP (PRD D-004: Mail and Calendar anchor; Finder,
-/// Notes and Safari have limited generic coverage). Other apps are rejected so
-/// model output can never name an arbitrary process.
-public enum KnownApp: String, Sendable, Codable, CaseIterable {
-    case mail = "Mail"
-    case calendar = "Calendar"
-    case notes = "Notes"
-    case finder = "Finder"
-    case safari = "Safari"
+/// An app Flow can open, switch to and control windows of: any app installed on this Mac
+/// (found by `AppDirectory`), identified by bundle identifier. Model output can only ever
+/// name an app that is actually installed, never an arbitrary process.
+///
+/// Five apps have named constants (`.mail`, `.calendar`, …); Mail and Calendar also have deep
+/// integrations (search, reply drafts, availability). Every other app gets app and window control.
+public struct KnownApp: Sendable, Hashable, Codable, CustomStringConvertible {
+    /// The app's name as the user sees it ("Calculator", "Visual Studio Code").
+    public let name: String
+    public let bundleIdentifier: String
 
-    public var bundleIdentifier: String {
-        switch self {
-        case .mail: "com.apple.mail"
-        case .calendar: "com.apple.iCal"
-        case .notes: "com.apple.Notes"
-        case .finder: "com.apple.finder"
-        case .safari: "com.apple.Safari"
-        }
+    public init(name: String, bundleIdentifier: String) {
+        self.name = name
+        self.bundleIdentifier = bundleIdentifier
     }
 
-    /// Lenient name normalization for a small model ("notes_app", "Notes.app",
-    /// "the mail app", "apple calendar"). Returns nil for anything not allowlisted.
+    public static let mail = KnownApp(name: "Mail", bundleIdentifier: "com.apple.mail")
+    public static let calendar = KnownApp(name: "Calendar", bundleIdentifier: "com.apple.iCal")
+    public static let notes = KnownApp(name: "Notes", bundleIdentifier: "com.apple.Notes")
+    public static let finder = KnownApp(name: "Finder", bundleIdentifier: "com.apple.finder")
+    public static let safari = KnownApp(name: "Safari", bundleIdentifier: "com.apple.Safari")
+
+    /// Apps with named constants and spoken aliases (available even before apps are scanned).
+    public static let allCases: [KnownApp] = [.mail, .calendar, .notes, .finder, .safari]
+
+    /// Display name (kept for existing call sites).
+    public var rawValue: String { name }
+    public var description: String { name }
+
+    // Identity is the bundle identifier (names can differ by locale or version).
+    public static func == (a: KnownApp, b: KnownApp) -> Bool {
+        a.bundleIdentifier.caseInsensitiveCompare(b.bundleIdentifier) == .orderedSame
+    }
+    public func hash(into h: inout Hasher) { h.combine(bundleIdentifier.lowercased()) }
+
+    /// Lenient name normalization ("notes_app", "Notes.app", "the mail app", "apple calendar",
+    /// "calculator", "vs code"). Returns nil unless the name is one of the named apps or an app
+    /// installed on this Mac (see `AppDirectory`).
     public static func parse(_ raw: String) -> KnownApp? {
         var s = raw.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         s = s.replacingOccurrences(of: "_", with: " ")
-        for prefix in ["the ", "apple ", "macos "] where s.hasPrefix(prefix) {
+        for prefix in ["the ", "my "] where s.hasPrefix(prefix) {
             s.removeFirst(prefix.count)
         }
-        for suffix in [".app", " app", " application"] where s.hasSuffix(suffix) {
+        for suffix in [".app", " app", " application", " window", " windows"] where s.hasSuffix(suffix) && s.count > suffix.count {
             s.removeLast(suffix.count)
         }
         s = s.trimmingCharacters(in: .whitespaces)
-        switch s {
+        guard !s.isEmpty, s.count <= 60 else { return nil }
+        let bare = s.hasPrefix("apple ") ? String(s.dropFirst(6)) : s
+        switch bare {
         case "mail", "email", "apple mail": return .mail
         case "calendar", "ical": return .calendar
         case "notes", "note": return .notes
         case "finder": return .finder
         case "safari": return .safari
-        default: return nil
+        default: break
         }
+        return AppDirectory.lookup(s) ?? (bare != s ? AppDirectory.lookup(bare) : nil)
+    }
+}
+
+/// The apps installed on this Mac, by spoken name. Flow.app installs a scanner at launch
+/// (`InstalledAppScanner` in FlowWindow); tests install a fixed list. Without one, only the
+/// named apps (`KnownApp.allCases`) are known.
+public enum AppDirectory {
+    public struct Entry: Sendable, Equatable {
+        public let app: KnownApp
+        /// Extra spoken names ("vs code" for Visual Studio Code).
+        public let aliases: [String]
+        public init(app: KnownApp, aliases: [String] = []) {
+            self.app = app
+            self.aliases = aliases
+        }
+    }
+
+    final class Store: @unchecked Sendable {
+        let lock = NSLock()
+        var exact: [String: KnownApp] = [:]
+        var entries: [Entry] = []
+    }
+    static let store = Store()
+
+    /// Replaces the directory (called once at launch, and by tests).
+    public static func install(_ entries: [Entry]) {
+        var exact: [String: KnownApp] = [:]
+        // Ambiguous keys (two apps with the same spoken name) are dropped rather than guessed.
+        var ambiguous: Set<String> = []
+        for e in entries {
+            for key in Set(([e.app.name] + e.aliases).flatMap(keys)) {
+                if let existing = exact[key], existing != e.app { ambiguous.insert(key) } else { exact[key] = e.app }
+            }
+        }
+        for key in ambiguous { exact[key] = nil }
+        store.lock.lock()
+        store.exact = exact
+        store.entries = entries
+        store.lock.unlock()
+    }
+
+    /// Every installed app Flow knows about.
+    public static var apps: [KnownApp] {
+        store.lock.lock(); defer { store.lock.unlock() }
+        return store.entries.map(\.app)
+    }
+
+    /// An installed app by spoken name: exact name, name without spaces, or a unique prefix
+    /// of at least four letters ("calc" → Calculator). Never fuzzier than that.
+    public static func lookup(_ phrase: String) -> KnownApp? {
+        let key = normalize(phrase)
+        guard !key.isEmpty else { return nil }
+        store.lock.lock(); defer { store.lock.unlock() }
+        if let app = store.exact[key] ?? store.exact[key.replacingOccurrences(of: " ", with: "")] { return app }
+        guard key.count >= 4 else { return nil }
+        let candidates = Set(store.entries.filter { e in
+            ([e.app.name] + e.aliases).contains { normalize($0).hasPrefix(key) }
+        }.map(\.app))
+        return candidates.count == 1 ? candidates.first : nil
+    }
+
+    static func keys(_ name: String) -> [String] {
+        let n = normalize(name)
+        return [n, n.replacingOccurrences(of: " ", with: "")]
+    }
+
+    /// Lowercased letters, digits and single spaces ("Visual Studio Code" → "visual studio code").
+    public static func normalize(_ s: String) -> String {
+        let lowered = s.lowercased().replacingOccurrences(of: ".app", with: "")
+        let mapped = lowered.unicodeScalars.map { CharacterSet.alphanumerics.contains($0) ? Character($0) : " " }
+        return String(mapped).split(separator: " ").joined(separator: " ")
     }
 }
 
@@ -169,6 +265,9 @@ public enum FlowAction: Sendable, Equatable {
     case restoreWindow(WindowTarget)
     case closeWindow(WindowTarget)
     case listWindows
+    case showNumbers
+    case hideNumbers
+    case chooseNumber(Int)
 
     public var type: ActionType {
         switch self {
@@ -192,6 +291,9 @@ public enum FlowAction: Sendable, Equatable {
         case .restoreWindow: .restoreWindow
         case .closeWindow: .closeWindow
         case .listWindows: .listWindows
+        case .showNumbers: .showNumbers
+        case .hideNumbers: .hideNumbers
+        case .chooseNumber: .chooseNumber
         }
     }
 
@@ -200,7 +302,7 @@ public enum FlowAction: Sendable, Equatable {
         switch self {
         case .activateApp, .moveWindow, .resizeWindow, .tileWindows, .clickElement,
             .scroll, .focus, .readMessage, .queryCalendar, .showCalendar, .requestReview,
-            .minimizeWindow, .restoreWindow, .listWindows:
+            .minimizeWindow, .restoreWindow, .listWindows, .showNumbers, .hideNumbers, .chooseNumber:
             .low
         case .closeWindow:
             // Reversible only by reopening; the app's own "save changes?" sheet is never answered by Flow.
@@ -232,6 +334,8 @@ public enum FlowAction: Sendable, Equatable {
         case .editText(let command): "draft: “\(command)”"
         case .minimizeWindow(let t), .restoreWindow(let t), .closeWindow(let t): t.displayName
         case .listWindows: "open windows"
+        case .showNumbers, .hideNumbers: "numbered controls"
+        case .chooseNumber(let n): "number \(n)"
         }
     }
 }

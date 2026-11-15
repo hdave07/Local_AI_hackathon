@@ -19,7 +19,7 @@ public final class AXWindowBackend: WindowBackend {
     /// Flow's own window, "the active window" still means the app they were using.
     private var lastExternalApp: AppHandle?
 
-    public init(messagingTimeout: Float = 1.0) {
+    public init(messagingTimeout: Float = 3.0) {
         self.messagingTimeout = messagingTimeout
         if let front = NSWorkspace.shared.frontmostApplication, front.processIdentifier != getpid() {
             lastExternalApp = Self.handle(front)
@@ -146,6 +146,18 @@ public final class AXWindowBackend: WindowBackend {
         }
         let press = AXUIElementPerformAction(button as! AXUIElement, kAXPressAction as CFString)
         guard press == .success else { throw map(press, "closing the window") }
+    }
+
+    public func reopen(bundleID: String) {
+        // Opening the app bundle of a running app sends it the standard reopen event (as a Dock click).
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    public func regularRunningApps() -> [AppHandle] {
+        NSWorkspace.shared.runningApplications
+            .filter { $0.activationPolicy == .regular && $0.processIdentifier != getpid() && $0.bundleIdentifier != nil }
+            .map(Self.handle)
     }
 
     public func hasSheet(_ id: WindowID) -> Bool {

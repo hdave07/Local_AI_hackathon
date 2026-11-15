@@ -50,10 +50,10 @@ final class ScriptedMail: MailSendTransport {
 @Suite("MailSender: at-most-once dispatch and outcome classification")
 struct MailSenderTests {
     nonisolated static let subject = "Re: [FlowTest] Meeting tomorrow"
-    nonisolated static let draft = OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid"], digest: "15:I can meet at 3")
+    nonisolated static let draft = OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid"], digest: "15:I can meet at 3", text: "I can meet at 3")
     nonisolated static func approved(_ id: UUID = UUID(), draftID: String = "d1") -> ApprovedSend {
         ApprovedSend(approvalID: id, draftID: draftID, subject: subject, recipients: ["Sarah.Chen@example.invalid"], version: 1,
-                     contentHash: "h")
+                     contentHash: "h", body: "I can meet at 3")
     }
 
     func sender(_ mode: MailSendMode, _ mail: ScriptedMail, allow: Set<String>? = nil) -> MailSender {
@@ -130,15 +130,27 @@ struct MailSenderTests {
     }
 
     @Test(arguments: [
-        OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid"], cc: ["boss@example.invalid"], digest: "x"),
-        OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid"], bcc: ["spy@example.invalid"], digest: "x"),
-        OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid", "team@example.invalid"], digest: "x"),
-        OutgoingDraft(subject: subject, to: ["sarah.okafor@example.invalid"], digest: "x"),
+        OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid"], cc: ["boss@example.invalid"], digest: "x", text: "I can meet at 3"),
+        OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid"], bcc: ["spy@example.invalid"], digest: "x", text: "I can meet at 3"),
+        OutgoingDraft(subject: subject, to: ["sarah.chen@example.invalid", "team@example.invalid"], digest: "x", text: "I can meet at 3"),
+        OutgoingDraft(subject: subject, to: ["sarah.okafor@example.invalid"], digest: "x", text: "I can meet at 3"),
     ])
     func extraOrDifferentRecipientsAreRefused(draft: OutgoingDraft) async {
         let mail = ScriptedMail([draft])
         guard case .refused(.recipientMismatch, _) = await sender(.live, mail).send(Self.approved()) else { Issue.record("sent"); return }
         #expect(mail.sendCalls == 0)
+    }
+
+    @Test func mailsTextMustMatchTheApprovedText() async {
+        for text in ["I can meet at 4", nil] as [String?] {
+            let mail = ScriptedMail([OutgoingDraft(subject: Self.subject, to: ["sarah.chen@example.invalid"], digest: "d", text: text)])
+            guard case .refused(.contentChanged, _) = await sender(.live, mail).send(Self.approved()) else { Issue.record("sent \(String(describing: text))"); return }
+            #expect(mail.sendCalls == 0)
+        }
+        // The quoted original and whitespace don't count.
+        let quoted = "I can meet  at 3\n\nOn Fri, 13 Nov 2026, Sarah Chen wrote:\n> Can we meet?"
+        let mail = ScriptedMail([OutgoingDraft(subject: Self.subject, to: ["sarah.chen@example.invalid"], digest: "d", text: quoted)])
+        guard case .accepted = await sender(.live, mail).send(Self.approved()) else { Issue.record("refused"); return }
     }
 
     @Test func duplicateComposeWindowsAreRefused() async {
@@ -149,7 +161,7 @@ struct MailSenderTests {
 
     @Test func lastMomentChangeInsideTheSendScriptIsRefused() async {
         let mail = ScriptedMail([Self.draft])
-        mail.beforeSend = { mail.open = [OutgoingDraft(subject: Self.subject, to: ["sarah.chen@example.invalid"], digest: "16:I can meet at 4")] }
+        mail.beforeSend = { mail.open = [OutgoingDraft(subject: Self.subject, to: ["sarah.chen@example.invalid"], digest: "16:I can meet at 4", text: "I can meet at 3")] }
         let s = sender(.live, mail)
         guard case .refused(.contentChanged, _) = await s.send(Self.approved()) else { Issue.record("sent"); return }
         #expect(mail.sendCalls == 0 && s.dispatchCount == 0)
@@ -174,7 +186,7 @@ struct MailSenderTests {
     }
 
     @Test func dryRunStillRunsEveryCheck() async {
-        let mail = ScriptedMail([OutgoingDraft(subject: Self.subject, to: ["sarah.chen@example.invalid"], cc: ["x@example.invalid"], digest: "x")])
+        let mail = ScriptedMail([OutgoingDraft(subject: Self.subject, to: ["sarah.chen@example.invalid"], cc: ["x@example.invalid"], digest: "x", text: "I can meet at 3")])
         let s = sender(.dryRun, mail)
         guard case .refused(.recipientMismatch, _) = await s.send(Self.approved()) else { Issue.record("rehearsed"); return }
         #expect(s.dryRunLog.isEmpty)

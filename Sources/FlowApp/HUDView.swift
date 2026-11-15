@@ -49,6 +49,8 @@ struct HUDView: View {
                 Image(systemName: "questionmark.bubble.fill").foregroundStyle(FlowTheme.blush)
                     .accessibilityLabel("Flow is waiting for your answer")
             }
+            iconButton(s.listening ? "stop.circle.fill" : "mic.fill", help: s.listening ? "Stop listening" : "Start listening",
+                       label: s.listening ? "Stop listening" : "Start listening") { model.toggleListening() }
             iconButton("chevron.down", help: "Expand", label: "Expand the Flow HUD") { model.setCollapsed(false) }
         }
         .padding(.leading, 6).padding(.trailing, 10).padding(.vertical, 5)
@@ -107,13 +109,20 @@ struct HUDView: View {
             }
             Spacer(minLength: 4)
             HStack(spacing: 0) {
-                iconButton(s.listening ? "mic.slash.fill" : "mic.fill",
-                           help: s.listening ? "Stop listening" : "Start listening",
+                iconButton(s.listening ? "stop.circle.fill" : "mic.fill",
+                           help: s.listening ? "Stop listening (or say “stop”)" : "Start listening",
                            label: s.listening ? "Stop listening" : "Start listening") { model.toggleListening() }
                 iconButton("textformat.size", help: "Text size", label: "Change text size") { model.cycleTextScale() }
                 iconButton("chevron.up", help: "Collapse", label: "Collapse the Flow HUD") { model.setCollapsed(true) }
                 iconButton("xmark", help: "Hide the HUD (your task keeps going)",
                            label: "Hide the Flow HUD. Your task keeps going.") { model.hide() }
+                Menu {
+                    Button("Show Flow window") { model.showMainWindow() }
+                    Divider()
+                    Button("Quit Flow") { model.quit() }
+                } label: { Image(systemName: "ellipsis") }
+                    .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                    .help("More").accessibilityLabel("More: show Flow window, quit Flow")
             }
         }
     }

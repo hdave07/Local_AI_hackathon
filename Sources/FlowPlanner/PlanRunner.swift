@@ -188,7 +188,11 @@ public actor PlanRunner {
         inFlight?.cancel()
         approval = nil
         switch state {
-        case .running, .awaitingChoice, .awaitingConfirmation:
+        case .awaitingConfirmation:
+            state = .cancelled(planID: plan?.id)
+            log(.cancelled)
+            spoken.append(SendWording.declined)  // nothing was sent; the draft is still open
+        case .running, .awaitingChoice:
             state = .cancelled(planID: plan?.id)
             log(.cancelled)
             spoken.append("Stopped.")

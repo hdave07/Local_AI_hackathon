@@ -24,6 +24,10 @@ public protocol WindowBackend: AnyObject {
     func close(_ id: WindowID) throws(WindowError)
     /// The window shows a sheet (e.g. "Do you want to save changes?").
     func hasSheet(_ id: WindowID) -> Bool
+    /// Every running app with a Dock presence (regular activation policy), except Flow itself.
+    func regularRunningApps() -> [AppHandle]
+    /// Asks a running app to show a window, as a Dock click does (no-op if unsupported).
+    func reopen(bundleID: String)
     /// Usable area of the primary display (excludes menu bar and Dock), AX coordinates.
     func usableScreenFrame() -> CGRect?
     /// On-screen window bounds for a process from the window server, AX-compatible coordinates.
@@ -33,4 +37,6 @@ public protocol WindowBackend: AnyObject {
 public extension WindowBackend {
     func close(_ id: WindowID) throws(WindowError) { throw .axFailure(operation: "closing the window", code: -1) }
     func hasSheet(_ id: WindowID) -> Bool { false }
+    func regularRunningApps() -> [AppHandle] { [] }
+    func reopen(bundleID: String) {}
 }

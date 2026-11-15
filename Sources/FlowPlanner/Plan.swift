@@ -122,7 +122,8 @@ public enum Capability: String, Sendable, Equatable {
         switch action {
         case .activateApp: self = .activate
         case .moveWindow, .resizeWindow, .tileWindows, .minimizeWindow, .restoreWindow, .closeWindow: self = .arrangeWindows
-        case .listWindows: self = .lookup
+        case .listWindows, .showNumbers: self = .lookup
+        case .hideNumbers, .chooseNumber: self = .interact
         case .clickElement, .focus: self = .interact
         case .scroll: self = .scroll
         case .insertText, .replaceText, .editText: self = .editText

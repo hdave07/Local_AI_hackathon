@@ -42,7 +42,7 @@ enum Make {
         Intent(kind: .unsupported, summary: message, source: .deterministic)
     }
 
-    static let whichApp = "Which app: Mail, Calendar, Notes, Finder or Safari?"
+    static let whichApp = "Which app? You can name any app on this Mac."
     static let wherePosition = "Where should it go: left half, right half, center, or maximize?"
 }
 
@@ -84,9 +84,26 @@ enum Rules {
     /// Not representable in `FlowAction` yet (needs the shared contract in ADR 0004 / Track A
     /// ADR 0003 §2). Recognized deterministically so the model never guesses at them.
     static func overlay(_ s: String) -> RuleHit? {
-        guard showNumbers.match(s) != nil || hideNumbers.match(s) != nil || chooseNumber.match(s) != nil else { return nil }
-        return RuleHit(
-            intent: Make.decline("Numbered selection isn't connected to voice yet."), stage: .overlay)
+        let lower = s.lowercased()
+        if showNumbers.match(lower) != nil || showClickable.match(lower) != nil {
+            return RuleHit(intent: Make.intent(.direct, .showNumbers, "Show numbers on what I can click"), stage: .overlay)
+        }
+        if hideNumbers.match(lower) != nil {
+            return RuleHit(intent: Make.intent(.direct, .hideNumbers, "Hide the numbers"), stage: .overlay)
+        }
+        if let m = chooseNumber.match(lower) ?? clickNumber.match(lower), let n = m[0].flatMap(Self.number) {
+            return RuleHit(intent: Make.intent(.direct, .chooseNumber(n), "Choose number \(n)"), stage: .overlay)
+        }
+        return nil
+    }
+
+    static let showClickable = Rx(#"(?:show|tell|give)(?:\s+me)?\s+(?:what|everything|the things|things)\s+(?:i\s+)?can\s+(?:click|press|select|tap)(?:\s+on)?(?:\s+here)?|(?:show|display|list)(?:\s+me)?\s+(?:the\s+)?(?:numbered\s+(?:options|buttons|controls|items)|(?:available\s+)?(?:buttons|controls|options)(?:\s+(?:here|in (?:the|this) (?:current\s+)?(?:app|window)))?)"#)
+    static let clickNumber = Rx(#"(?:click|press|tap|select|pick|choose|hit)\s+(?:on\s+)?number\s+"# + numberWord)
+
+    static func number(_ word: String) -> Int? {
+        let words = ["one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+                     "eleven": 11, "twelve": 12]
+        return Int(word) ?? words[word.lowercased()]
     }
 
     /// Words in a click/focus label that make the press consequential.
@@ -113,7 +130,7 @@ enum Rules {
             return RuleHit(intent: Make.decline("I can't quit apps. I can close a window instead: say “close this window” or “close Notes”."),
                            stage: .clarify)
         case "close":
-            return RuleHit(intent: Make.decline("I can close windows of Mail, Calendar, Notes, Finder or Safari. Say “close this window” or “close Notes”."),
+            return RuleHit(intent: Make.decline("I couldn't tell which window to close. Say “close this window”, or name the app, like “close Notes”."),
                            stage: .clarify)
         default:
             return RuleHit(intent: Make.decline("Deleting isn't supported yet."), stage: .clarify)
@@ -261,7 +278,32 @@ enum Rules {
     static let hideNumbers = Rx(#"(?:hide|remove|clear)\s+(?:the\s+)?numbers"#)
     static let chooseNumber = Rx(#"(?:(?:choose|pick|number|select number|go with)\s+)?(?:number\s+)?"# + numberWord)
 
+    /// "Open Mail and Calendar and put them side by side", "split screen notes with safari": any phrasing
+    /// that asks for side-by-side and names exactly two apps.
+    static let sideBySide = #"side by side|side-by-side|next to each other|beside each other|split screen|split view|split the screen"#
+    static func tileAnyPhrasing(_ s: String) -> RuleHit? {
+        let lower = s.lowercased()
+        guard lower.range(of: sideBySide, options: .regularExpression) != nil else { return nil }
+        let chunks = lower.replacingOccurrences(of: sideBySide, with: ",", options: .regularExpression)
+            .replacingOccurrences(of: #"\b(?:and|then|with|end)\b"#, with: ",", options: .regularExpression)
+            .split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
+        var apps: [KnownApp] = []
+        for chunk in chunks {
+            var words = chunk.split(separator: " ").map(String.init)
+            // Drop leading verbs and pronouns: "open mail", "put them", "please arrange notes".
+            while let first = words.first, Self.tileFillers.contains(first) { words.removeFirst() }
+            guard !words.isEmpty, let app = KnownApp.fromPhrase(words.joined(separator: " ")), !apps.contains(app) else { continue }
+            apps.append(app)
+        }
+        guard apps.count == 2 else { return nil }
+        return hit(.direct, .tileWindows(left: apps[0], right: apps[1]), "Tile \(apps[0].rawValue) and \(apps[1].rawValue)")
+    }
+    static let tileFillers: Set<String> = ["open", "launch", "start", "show", "bring", "up", "put", "place", "arrange", "set", "tile",
+                                           "split", "can", "you", "could", "please", "the", "my", "them", "both", "me", "and", "screen",
+                                           "a", "with", "have", "get", "pull", "on"]
+
     static func fastPath(_ s: String) -> RuleHit? {
+        if let hit = tileAnyPhrasing(s) { return hit }
         // Window and app commands with explicit targets.
         if let m = tileSides.match(s), let a = m[0].flatMap(KnownApp.fromPhrase), let sa = m[1]?.lowercased(),
             let b = m[2].flatMap(KnownApp.fromPhrase), let sb = m[3]?.lowercased(), sa != sb, a != b
@@ -348,8 +390,15 @@ enum Rules {
             if let hit = consequentialClick(label) { return hit }
             return hit(.direct, .clickElement(label: label), "Click “\(label)”")
         }
+        // "launch Spotify" when no such app is installed: say so plainly (never guess another app).
+        if let m = launchUnknown.match(s), let phrase = m[0], Words.tokens(phrase).count <= 3,
+           Set(Words.tokens(phrase)).isDisjoint(with: ["email", "emails", "mail", "message", "messages", "draft", "reply", "it", "that", "this", "calendar"]) {
+            return RuleHit(intent: Make.decline("I couldn't find an app called “\(phrase)” on this Mac."), stage: .clarify)
+        }
         return nil
     }
+
+    static let launchUnknown = Rx(#"(?:launch|open|start|run|switch to|bring up|go to)\s+(?:the\s+)?(?:app\s+)?(.+?)(?:\s+app(?:lication)?)?"#)
 
     static func draft(_ s: String) -> RuleHit? {
         if let m = draftAsk.match(s), let name = m[0], isPersonName(name), let content = m[1] {

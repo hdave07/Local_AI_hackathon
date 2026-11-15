@@ -39,6 +39,9 @@ public enum NavCommand: Sendable, Equatable {
         case .clickElement(let label): self = .click(TargetReference.parse(label), .frontmost)
         case .focus(let label): self = .focus(TargetReference.parse(label), .frontmost)
         case .scroll(let direction): self = .scroll(nil, direction, .frontmost)
+        case .showNumbers: self = .showNumbers(nil, .frontmost)
+        case .hideNumbers: self = .hideNumbers
+        case .chooseNumber(let n): self = .choose(n)
         default: return nil
         }
     }
